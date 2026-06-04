@@ -9,6 +9,7 @@
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov --coverage-reporter=text",
     "type-check": "turbo run type-check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

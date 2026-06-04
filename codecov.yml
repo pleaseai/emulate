@@ -1,0 +1,19 @@
+coverage:
+  status:
+    project:
+      default:
+        # Don't fail CI on coverage drops; report only
+        informational: true
+    patch:
+      default:
+        informational: true
+
+comment:
+  layout: 'condensed_header, diff, files'
+  behavior: default
+  require_changes: true
+
+ignore:
+  - '**/dist/**'
+  - '**/__tests__/**'
+  - docs
