@@ -19,7 +19,11 @@ using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 
 ## Getting started
 
+Tool versions are pinned with [mise](https://mise.jdx.dev) — `mise install`
+provisions bun and node. (Without mise, any recent bun works.)
+
 ```bash
+mise install
 bun install
 bun run build
 
@@ -106,12 +110,16 @@ docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators
 ```
 
-Runtime/package manager is [bun](https://bun.sh); task orchestration is Turborepo.
+Runtime/package manager is [bun](https://bun.sh); task orchestration is Turborepo;
+linting is [@pleaseai/eslint-config](https://github.com/pleaseai/code-style).
 
 ```bash
 bun run test        # all tests (bun:test)
 bun run type-check  # all type checks
+bun run lint        # eslint (use lint:fix to auto-fix)
 bun run build       # all builds (tsup)
+
+mise run ci         # lint + type-check + test + build
 ```
 
 ## Adding a new service
