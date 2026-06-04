@@ -1,0 +1,69 @@
+{
+  "name": "@pleaseai/emulate",
+  "version": "0.1.0",
+  "description": "Local drop-in replacement services for CI and no-network sandboxes — Korean services (Kakao, Naver, Toss Payments) and BaaS (Firebase, Supabase)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "bun": "./src/api.ts",
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./cli": {
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/api.js",
+  "types": "./dist/api.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pleaseai/emulate.git",
+    "directory": "packages/emulate"
+  },
+  "bugs": {
+    "url": "https://github.com/pleaseai/emulate/issues"
+  },
+  "keywords": [
+    "emulator",
+    "mock",
+    "api",
+    "kakao",
+    "naver",
+    "tosspayments",
+    "firebase",
+    "supabase",
+    "oauth",
+    "testing",
+    "ci",
+    "local-development"
+  ],
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "emulate": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "bun test",
+    "clean": "rm -rf dist .turbo",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@emulators/core": "^0.6.0",
+    "@pleaseai/emulate-firebase": "workspace:*",
+    "@pleaseai/emulate-kakao": "workspace:*",
+    "@pleaseai/emulate-naver": "workspace:*",
+    "@pleaseai/emulate-supabase": "workspace:*",
+    "@pleaseai/emulate-toss-payments": "workspace:*",
+    "commander": "^14",
+    "picocolors": "^1.1.1",
+    "yaml": "^2"
+  },
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5.7"
+  }
+}
