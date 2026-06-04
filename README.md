@@ -72,18 +72,18 @@ curl -X POST http://localhost:4002/v1/payments/confirm \
 ### Programmatic use in tests
 
 ```ts
-import { createEmulator } from "@pleaseai/emulate";
+import { createEmulator } from '@pleaseai/emulate'
 
 const emulator = await createEmulator({
-  service: "supabase",
+  service: 'supabase',
   port: 4004,
   seed: {
     supabase: {
-      anon_key: "test-anon-key",
-      tables: { todos: [{ id: 1, title: "Buy groceries", completed: false }] },
+      anon_key: 'test-anon-key',
+      tables: { todos: [{ id: 1, title: 'Buy groceries', completed: false }] },
     },
   },
-});
+})
 
 // ... run your tests. emulator.reset() restores seeded state, emulator.close() shuts down.
 ```

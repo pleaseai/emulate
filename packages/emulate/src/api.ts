@@ -1,86 +1,92 @@
-import { createServer, serve, type AppKeyResolver } from "@emulators/core";
-import { SERVICE_REGISTRY } from "./registry.js";
-export type { ServiceName } from "./registry.js";
-import type { ServiceName } from "./registry.js";
-import { resolveBaseUrl } from "./base-url.js";
+import type { AppKeyResolver } from '@emulators/core'
+import type { ServiceName } from './registry.js'
+import { createServer, serve } from '@emulators/core'
+import { resolveBaseUrl } from './base-url.js'
+import { SERVICE_REGISTRY } from './registry.js'
+
+export type { ServiceName } from './registry.js'
 
 export interface SeedConfig {
-  tokens?: Record<string, { login: string; scopes?: string[] }>;
-  [service: string]: unknown;
+  tokens?: Record<string, { login: string, scopes?: string[] }>
+  [service: string]: unknown
 }
 
 export interface EmulatorOptions {
-  service: ServiceName;
-  port?: number;
-  seed?: SeedConfig;
-  baseUrl?: string;
+  service: ServiceName
+  port?: number
+  seed?: SeedConfig
+  baseUrl?: string
 }
 
 export interface Emulator {
-  url: string;
-  reset(): void;
-  close(): Promise<void>;
+  url: string
+  reset: () => void
+  close: () => Promise<void>
 }
 
 export async function createEmulator(options: EmulatorOptions): Promise<Emulator> {
-  const { service, port = 4000, seed: seedConfig } = options;
+  const { service, port = 4000, seed: seedConfig } = options
 
-  const entry = SERVICE_REGISTRY[service];
+  const entry = SERVICE_REGISTRY[service]
   if (!entry) {
-    throw new Error(`Unknown service: ${service}`);
+    throw new Error(`Unknown service: ${service}`)
   }
 
-  const loaded = await entry.load();
+  const loaded = await entry.load()
 
-  const tokens: Record<string, { login: string; id: number; scopes?: string[] }> = {};
+  const tokens: Record<string, { login: string, id: number, scopes?: string[] }> = {}
   if (seedConfig?.tokens) {
-    let tokenId = 100;
+    let tokenId = 100
     for (const [token, user] of Object.entries(seedConfig.tokens)) {
-      tokens[token] = { login: user.login, id: tokenId++, scopes: user.scopes };
+      tokens[token] = { login: user.login, id: tokenId++, scopes: user.scopes }
     }
-  } else {
-    tokens["test_token_admin"] = { login: "admin", id: 2, scopes: [] };
+  }
+  else {
+    tokens.test_token_admin = { login: 'admin', id: 2, scopes: [] }
   }
 
-  const svcSeedConfig = seedConfig?.[service] as Record<string, unknown> | undefined;
-  const seedBaseUrl =
-    typeof svcSeedConfig?.baseUrl === "string" && svcSeedConfig.baseUrl.length > 0 ? svcSeedConfig.baseUrl : undefined;
-  const baseUrl = resolveBaseUrl({ service, port, baseUrl: options.baseUrl, seedBaseUrl });
+  const svcSeedConfig = seedConfig?.[service] as Record<string, unknown> | undefined
+  const seedBaseUrl
+    = typeof svcSeedConfig?.baseUrl === 'string' && svcSeedConfig.baseUrl.length > 0 ? svcSeedConfig.baseUrl : undefined
+  const baseUrl = resolveBaseUrl({ service, port, baseUrl: options.baseUrl, seedBaseUrl })
 
-  // eslint-disable-next-line prefer-const -- reassigned after closure captures it
-  let cachedResolver: AppKeyResolver | undefined;
+  let cachedResolver: AppKeyResolver | undefined
   const appKeyResolver: AppKeyResolver | undefined = loaded.createAppKeyResolver
-    ? (appId) => cachedResolver!(appId)
-    : undefined;
+    ? appId => cachedResolver!(appId)
+    : undefined
 
-  const fallbackUser = entry.defaultFallback(svcSeedConfig);
+  const fallbackUser = entry.defaultFallback(svcSeedConfig)
 
-  const { app, store, webhooks } = createServer(loaded.plugin, { port, baseUrl, tokens, appKeyResolver, fallbackUser });
-  cachedResolver = loaded.createAppKeyResolver?.(store);
+  const { app, store, webhooks } = createServer(loaded.plugin, { port, baseUrl, tokens, appKeyResolver, fallbackUser })
+  cachedResolver = loaded.createAppKeyResolver?.(store)
 
   const seed = () => {
-    loaded.plugin.seed?.(store, baseUrl);
+    loaded.plugin.seed?.(store, baseUrl)
     if (svcSeedConfig && loaded.seedFromConfig) {
-      loaded.seedFromConfig(store, baseUrl, svcSeedConfig, webhooks);
+      loaded.seedFromConfig(store, baseUrl, svcSeedConfig, webhooks)
     }
-  };
-  seed();
+  }
+  seed()
 
-  const httpServer = serve({ fetch: app.fetch, port });
+  const httpServer = serve({ fetch: app.fetch, port })
 
   return {
     url: baseUrl,
     reset() {
-      store.reset();
-      seed();
+      store.reset()
+      seed()
     },
     close(): Promise<void> {
       return new Promise((resolve, reject) => {
         httpServer.close((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
+          if (err) {
+            reject(err)
+          }
+          else {
+            resolve()
+          }
+        })
+      })
     },
-  };
+  }
 }

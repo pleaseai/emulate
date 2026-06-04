@@ -1,21 +1,9 @@
 {
   "name": "@pleaseai/emulate",
+  "type": "module",
   "version": "0.1.0",
   "description": "Local drop-in replacement services for CI and no-network sandboxes — Korean services (Kakao, Naver, Toss Payments) and BaaS (Firebase, Supabase)",
   "license": "Apache-2.0",
-  "type": "module",
-  "exports": {
-    ".": {
-      "bun": "./src/api.ts",
-      "types": "./dist/api.d.ts",
-      "import": "./dist/api.js"
-    },
-    "./cli": {
-      "import": "./dist/index.js"
-    }
-  },
-  "main": "./dist/api.js",
-  "types": "./dist/api.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/pleaseai/emulate.git",
@@ -38,12 +26,24 @@
     "ci",
     "local-development"
   ],
-  "files": [
-    "dist"
-  ],
+  "exports": {
+    ".": {
+      "bun": "./src/api.ts",
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./cli": {
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/api.js",
+  "types": "./dist/api.d.ts",
   "bin": {
     "emulate": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
