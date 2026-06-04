@@ -17,3 +17,35 @@ ignore:
   - '**/dist/**'
   - '**/__tests__/**'
   - docs
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        informational: true
+  individual_components:
+    - component_id: cli
+      name: cli
+      paths:
+        - packages/emulate/**
+    - component_id: kakao
+      name: kakao
+      paths:
+        - packages/kakao/**
+    - component_id: naver
+      name: naver
+      paths:
+        - packages/naver/**
+    - component_id: toss-payments
+      name: toss-payments
+      paths:
+        - packages/toss-payments/**
+    - component_id: firebase
+      name: firebase
+      paths:
+        - packages/firebase/**
+    - component_id: supabase
+      name: supabase
+      paths:
+        - packages/supabase/**
