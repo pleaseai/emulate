@@ -41,6 +41,7 @@ export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
         ],
         users: [
           {
+            user_id: 1001,
             nickname: "홍길동",
             email: "hong@example.com",
             profile_image_url: "https://k.kakaocdn.net/dn/profile.jpg",
