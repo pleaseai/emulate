@@ -1,0 +1,19 @@
+README.md
+  s_9c0d35080e884a::t_9f7552960104f5 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "ac0eea4383e0d4b1e6ddbc6c4436ad19d24bc91f",
+  "prompts": {},
+  "sessions": {
+    "s_9c0d35080e884a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "13e69c37-0e17-4dfb-a96b-3b2635149986",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
