@@ -1,0 +1,109 @@
+packages/kakao/src/index.ts
+  s_9c0d35080e884a::t_844b1628374277 1-12,14-124,126-127
+packages/toss-payments/src/index.ts
+  s_9c0d35080e884a::t_4a9f49618dc227 1-5,7-58,60-61
+packages/naver/src/__tests__/naver.test.ts
+  s_9c0d35080e884a::t_29505dc0dbbd2b 1-343
+packages/kakao/src/entities.ts
+  s_9c0d35080e884a::t_06b5a06a2b5312 1-44
+packages/supabase/src/helpers.ts
+  s_9c0d35080e884a::t_f7bf7da049edcf 1-148
+README.md
+  s_9c0d35080e884a::t_344b78095b7474 1-129
+packages/firebase/src/routes/fcm.ts
+  s_9c0d35080e884a::t_0ee85a47fc144d 1
+  s_9c0d35080e884a::t_fe6c90e88ee5f0 2-67
+packages/supabase/src/routes/rest.ts
+  s_9c0d35080e884a::t_f47f2812efad92 1-267
+packages/toss-payments/src/routes/payments.ts
+  s_9c0d35080e884a::t_7e6a411402c312 1-164
+packages/supabase/src/__tests__/supabase.test.ts
+  s_9c0d35080e884a::t_52bfe355cf358b 1-396
+packages/kakao/src/store.ts
+  s_9c0d35080e884a::t_d153cacd4c528e 1-20
+packages/firebase/src/routes/internal.ts
+  s_9c0d35080e884a::t_c4cef49bf01d8a 1-41
+packages/firebase/src/store.ts
+  s_9c0d35080e884a::t_8276f38c107e44 1-26
+packages/kakao/src/__tests__/kakao.test.ts
+  s_9c0d35080e884a::t_076e5d1435bd02 1-324
+packages/naver/src/entities.ts
+  s_9c0d35080e884a::t_2e77ea9be65499 1-41
+packages/firebase/src/index.ts
+  s_9c0d35080e884a::t_83ae89500f698d 1-8,10-47,56-94,96-97
+  s_9c0d35080e884a::t_18cc5638f948e6 48-55
+packages/kakao/src/helpers.ts
+  s_9c0d35080e884a::t_2eddd35d088681 1-75
+packages/toss-payments/src/__tests__/tosspayments.test.ts
+  s_9c0d35080e884a::t_80eea97decba0f 1-336,338,342-349,351-376,379-383
+  s_9c0d35080e884a::t_a7860ff1b6d8d8 337,339-341,350,377-378
+packages/firebase/src/helpers.ts
+  s_9c0d35080e884a::t_bd1dad949a6c0a 1-143
+packages/naver/src/routes/profile.ts
+  s_9c0d35080e884a::t_15590f7f47ecf9 1-45
+packages/supabase/src/index.ts
+  s_9c0d35080e884a::t_853df39bf598e7 1-7,9-96,98-99
+packages/emulate/src/__tests__/api.test.ts
+  s_9c0d35080e884a::t_5e4e7e16637bc2 34
+  s_9c0d35080e884a::t_12dd5ab2cfd21a 1-33,35-159
+packages/kakao/src/routes/user.ts
+  s_9c0d35080e884a::t_2af069e57bfb10 1-151
+packages/firebase/src/routes/identity.ts
+  s_9c0d35080e884a::t_e1c2d00607f56f 1-310
+packages/firebase/src/routes/token.ts
+  s_9c0d35080e884a::t_1a1369bed971db 1-82
+packages/naver/src/routes/oauth.ts
+  s_9c0d35080e884a::t_4c88bcceae44d4 2-106,108-158,160-201,203-235,237-263,265-277,279-291
+  s_9c0d35080e884a::t_118a6de7e5d3bd 159,202,236,264,278
+  s_9c0d35080e884a::t_a600b371f162eb 107
+  s_9c0d35080e884a::t_93987642e50076 1
+packages/firebase/src/entities.ts
+  s_9c0d35080e884a::t_ae19c7c5a0a897 1-48
+packages/toss-payments/src/helpers.ts
+  s_9c0d35080e884a::t_b326fe9efb9912 1-111
+packages/supabase/src/routes/internal.ts
+  s_9c0d35080e884a::t_685df8ccdf5534 1-16
+packages/toss-payments/src/store.ts
+  s_9c0d35080e884a::t_e20ce02d7a0e80 1-14
+packages/supabase/src/routes/auth.ts
+  s_9c0d35080e884a::t_95dbc59b353fa2 1-171
+packages/kakao/src/routes/oauth.ts
+  s_9c0d35080e884a::t_d5aa110bc46526 1,9,19,73-76,78-82,112,130-133,136,149,152,161-181,183,186,196,213,224,229,235-236,243,245,250,254-260,266,277,290,292,299
+  s_9c0d35080e884a::t_b98b32ec863895 2-8,10-18,20-72,77,83-111,113-129,134-135,137-148,150-151,153-160,182,184-185,187-195,197-212,214-223,225-228,230-234,237-242,244,246-249,251-253,261-265,267-276,278-289,291,293-298,300-304
+packages/naver/src/index.ts
+  s_9c0d35080e884a::t_5a178c33bae41f 1-5,7-118,120-121
+packages/naver/src/helpers.ts
+  s_9c0d35080e884a::t_b25703f7a3207b 1-86
+packages/firebase/src/__tests__/firebase.test.ts
+  s_9c0d35080e884a::t_f0c2bf4c7eb8da 1-415
+docs/EMULATOR-CONVENTIONS.md
+  s_9c0d35080e884a::t_b7917c69ed92a0 1-161
+packages/toss-payments/src/routes/checkout.ts
+  s_9c0d35080e884a::t_c0a8f4945d1337 1-162
+packages/supabase/src/store.ts
+  s_9c0d35080e884a::t_b79f72fbdc71b5 1-31
+packages/toss-payments/src/entities.ts
+  s_9c0d35080e884a::t_b26665dcc9b8a1 1-54
+packages/supabase/src/entities.ts
+  s_9c0d35080e884a::t_35e14e20d53f61 1-39
+packages/naver/src/store.ts
+  s_9c0d35080e884a::t_82b4b4b28da68b 1-18
+packages/emulate/src/registry.ts
+  s_9c0d35080e884a::t_8776a1771bb963 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "6899976daaa827c68e5c5d3edcdc2ada4687315d",
+  "prompts": {},
+  "sessions": {
+    "s_9c0d35080e884a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "13e69c37-0e17-4dfb-a96b-3b2635149986",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
