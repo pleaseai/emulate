@@ -1,5 +1,8 @@
 # emulate
 
+[![CI](https://github.com/pleaseai/emulate/actions/workflows/ci.yml/badge.svg)](https://github.com/pleaseai/emulate/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/pleaseai/emulate/graph/badge.svg)](https://codecov.io/github/pleaseai/emulate)
+
 Local drop-in replacement services for CI and no-network sandboxes.
 Fully stateful, production-fidelity API emulation for Korean services
 (Kakao, Naver, Toss Payments) and BaaS platforms (Firebase, Supabase).
