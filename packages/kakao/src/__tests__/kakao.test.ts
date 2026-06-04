@@ -21,7 +21,7 @@ function form(data: Record<string, string>): Request {
   });
 }
 
-/** authorize → 인가 코드 발급 (즉시 승인 경로) */
+/** authorize → authorization code issuance (immediate approval path) */
 async function getCode(
   app: Hono<AppEnv>,
   opts: { state?: string; redirectUri?: string; clientId?: string } = {},
@@ -147,7 +147,7 @@ describe("kakao token", () => {
     const body = (await res.json()) as Record<string, unknown>;
     expect(body.token_type).toBe("bearer");
     expect(typeof body.access_token).toBe("string");
-    // 단순화: refresh_token 항상 유지
+    // Simplification: the refresh_token is always kept
     expect(body.refresh_token).toBe(refresh);
   });
 });
@@ -217,7 +217,7 @@ describe("kakao user api", () => {
     expect(res.status).toBe(200);
     expect(((await res.json()) as any).id).toBe(SEED_USER_ID);
 
-    // 두 토큰 모두 무효
+    // Both tokens invalid
     expect((await freshApp.fetch(authed("/v2/user/me", t1.access))).status).toBe(401);
     expect((await freshApp.fetch(authed("/v2/user/me", t2.access))).status).toBe(401);
 
@@ -302,7 +302,7 @@ describe("kakao seedFromConfig", () => {
     expect(hong!.nickname).toBe("홍길동");
     expect(hong!.email).toBe("hong@example.com");
 
-    // user_id 자동 부여
+    // user_id auto-assignment
     const kim = ks.users.all().find((u) => u.nickname === "김철수");
     expect(kim).toBeDefined();
     expect(kim!.user_id).toBeGreaterThan(1001);

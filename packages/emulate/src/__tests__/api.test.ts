@@ -10,7 +10,7 @@ afterAll(async () => {
 });
 
 async function start(service: keyof typeof SERVICE_REGISTRY, port: number): Promise<Emulator> {
-  // initConfig를 시드로 그대로 사용 — registry 계약과 seedFromConfig가 일치하는지도 함께 검증된다
+  // Use initConfig directly as the seed — this also verifies that the registry contract and seedFromConfig agree
   const emulator = await createEmulator({
     service,
     port,

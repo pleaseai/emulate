@@ -38,7 +38,7 @@ export interface KakaoSeedConfig {
   webhooks?: Array<{ url: string; events: string[] }>;
 }
 
-/** 다음 카카오 회원번호 자동 부여 (기존 user_id 중 최대 + 1) */
+/** Auto-assign the next Kakao member number (max of existing user_id + 1) */
 function nextUserId(store: Store): number {
   const ks = getKakaoStore(store);
   const users = ks.users.all();

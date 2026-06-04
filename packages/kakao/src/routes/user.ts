@@ -3,7 +3,7 @@ import { getKakaoStore, type KakaoStore } from "../store.js";
 import { kapiError, parseKakaoBody, extractBearer } from "../helpers.js";
 import type { KakaoToken, KakaoUser } from "../entities.js";
 
-/** access_token으로 활성 토큰 + 사용자 조회. 무효 시 null. */
+/** Look up the active token + user by access_token. null if invalid. */
 function resolveAuth(
   c: Context,
   ks: KakaoStore,
@@ -34,7 +34,7 @@ export function userRoutes(ctx: RouteContext): void {
     const auth = resolveAuth(c, ks());
     if (!auth) return kapiError(c, 401, "this access token does not exist", -401);
     const expiresIn = Math.max(0, Math.floor((auth.token.expires_at - Date.now()) / 1000));
-    // app_id는 client_id를 숫자화한 안정적인 값으로 재현
+    // Reproduce app_id as a stable numeric value derived from client_id
     return c.json({
       id: auth.user.user_id,
       expires_in: expiresIn,
@@ -45,7 +45,7 @@ export function userRoutes(ctx: RouteContext): void {
   app.post("/v1/user/logout", (c) => {
     const auth = resolveAuth(c, ks());
     if (!auth) return kapiError(c, 401, "this access token does not exist", -401);
-    // 해당 access_token만 무효화
+    // Invalidate only this access_token
     ks().tokens.update(auth.token.id, { active: false });
     return c.json({ id: auth.user.user_id });
   });
@@ -54,11 +54,11 @@ export function userRoutes(ctx: RouteContext): void {
     const auth = resolveAuth(c, ks());
     if (!auth) return kapiError(c, 401, "this access token does not exist", -401);
     const userId = auth.user.user_id;
-    // 해당 사용자의 모든 토큰 무효화
+    // Invalidate all tokens for this user
     for (const t of ks().tokens.all()) {
       if (t.user_id === userId) ks().tokens.update(t.id, { active: false });
     }
-    // 앱 연결 해제 기록
+    // Record the app disconnection
     const appRec = ks().apps.findOneBy("client_id", auth.token.client_id);
     if (appRec && !appRec.unlinked_user_ids.includes(userId)) {
       ks().apps.update(appRec.id, {
@@ -68,7 +68,7 @@ export function userRoutes(ctx: RouteContext): void {
     return c.json({ id: userId });
   });
 
-  // POST /v2/api/talk/memo/default/send — 나에게 메시지 보내기
+  // POST /v2/api/talk/memo/default/send — send a message to myself
   app.post("/v2/api/talk/memo/default/send", async (c) => {
     const auth = resolveAuth(c, ks());
     if (!auth) return kapiError(c, 401, "this access token does not exist", -401);
@@ -89,7 +89,7 @@ export function userRoutes(ctx: RouteContext): void {
     return c.json({ result_code: 0 });
   });
 
-  // GET /internal/talk/memos — 검사용 inbox
+  // GET /internal/talk/memos — inbox for inspection
   app.get("/internal/talk/memos", (c) => {
     const memos = ks()
       .memos.all()

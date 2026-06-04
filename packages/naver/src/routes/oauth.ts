@@ -17,7 +17,7 @@ export function oauthRoutes(ctx: RouteContext): void {
   const { app, store } = ctx;
   const ns = () => getNaverStore(store);
 
-  // GET /oauth2.0/authorize — 네아로 로그인
+  // GET /oauth2.0/authorize — Naver login
   app.get("/oauth2.0/authorize", (c) => {
     const responseType = c.req.query("response_type");
     const clientId = c.req.query("client_id");

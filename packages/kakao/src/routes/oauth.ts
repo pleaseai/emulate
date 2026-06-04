@@ -9,16 +9,16 @@ import {
 import { getKakaoStore, type KakaoStore } from "../store.js";
 import { randomToken, oauthError, parseKakaoBody } from "../helpers.js";
 
-const CODE_TTL_MS = 10 * 60 * 1000; // 인가 코드 10분
-const ACCESS_TOKEN_TTL_S = 21599; // 약 6시간
-const REFRESH_TOKEN_TTL_S = 5183999; // 약 60일
+const CODE_TTL_MS = 10 * 60 * 1000; // authorization code 10 minutes
+const ACCESS_TOKEN_TTL_S = 21599; // about 6 hours
+const REFRESH_TOKEN_TTL_S = 5183999; // about 60 days
 const DEFAULT_SCOPE = "profile_nickname profile_image account_email";
 
 export function oauthRoutes(ctx: RouteContext): void {
   const { app, store } = ctx;
   const ks = (): KakaoStore => getKakaoStore(store);
 
-  // GET /oauth/authorize — 로그인 페이지 또는 즉시 인가 코드 발급
+  // GET /oauth/authorize — login page or immediate authorization code issuance
   app.get("/oauth/authorize", (c) => {
     const clientId = c.req.query("client_id");
     const redirectUri = c.req.query("redirect_uri");
@@ -34,7 +34,7 @@ export function oauthRoutes(ctx: RouteContext): void {
     }
     const appRec = ks().apps.findOneBy("client_id", clientId);
     if (!appRec) {
-      // KOE101: 존재하지 않는 client_id
+      // KOE101: nonexistent client_id
       return c.html(
         renderErrorPage(
           "KOE101",
@@ -46,7 +46,7 @@ export function oauthRoutes(ctx: RouteContext): void {
     }
 
     if (!redirectUri || !matchesRedirectUri(redirectUri, appRec.redirect_uris)) {
-      // KOE006: 등록되지 않은 redirect_uri
+      // KOE006: unregistered redirect_uri
       return c.html(
         renderErrorPage(
           "KOE006",
@@ -64,7 +64,7 @@ export function oauthRoutes(ctx: RouteContext): void {
       );
     }
 
-    // ?user_id=<카카오회원번호> 가 있으면 즉시 승인
+    // If ?user_id=<kakao member number> is present, approve immediately
     const userIdParam = c.req.query("user_id");
     if (userIdParam) {
       const userId = Number(userIdParam);
@@ -82,7 +82,7 @@ export function oauthRoutes(ctx: RouteContext): void {
       return c.redirect(url.toString(), 302);
     }
 
-    // 로그인 페이지 렌더링: 시드된 사용자 목록을 버튼으로
+    // Render the login page: seeded user list as buttons
     const users = ks().users.all();
     const buttons = users
       .map((u) => {
@@ -108,7 +108,7 @@ export function oauthRoutes(ctx: RouteContext): void {
     );
   });
 
-  // 로그인 페이지 버튼은 POST로도 동작 (renderUserButton은 method=post)
+  // The login page buttons also work via POST (renderUserButton uses method=post)
   app.post("/oauth/authorize", (c) => {
     const url = new URL(c.req.url);
     const clientId = url.searchParams.get("client_id");
@@ -140,7 +140,7 @@ export function oauthRoutes(ctx: RouteContext): void {
     return c.redirect(out.toString(), 302);
   });
 
-  // POST /oauth/token — 토큰 발급/갱신
+  // POST /oauth/token — token issuance/refresh
   app.post("/oauth/token", async (c) => {
     const body = await parseKakaoBody(c);
     const grantType = body.grant_type;
@@ -214,7 +214,7 @@ function handleAuthorizationCode(c: Context, body: Record<string, string>, ks: K
   if (!appRec) {
     return oauthError(c, 401, "invalid_client", "App not found for the given client_id.", "KOE101");
   }
-  // client_secret 검증 (앱에 secret이 설정된 경우)
+  // client_secret verification (when a secret is configured on the app)
   if (appRec.client_secret) {
     if (!clientSecret || !constantTimeSecretEqual(clientSecret, appRec.client_secret)) {
       return oauthError(c, 401, "invalid_client", "client_secret does not match.", "KOE010");
@@ -286,7 +286,7 @@ function handleRefreshToken(c: Context, body: Record<string, string>, ks: KakaoS
 
   const now = Date.now();
   const newAccessToken = randomToken();
-  // 단순화: refresh_token은 항상 유지
+  // Simplification: the refresh_token is always kept
   ks.tokens.update(tokenRec.id, {
     access_token: newAccessToken,
     expires_at: now + ACCESS_TOKEN_TTL_S * 1000,

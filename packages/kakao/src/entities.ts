@@ -1,15 +1,15 @@
 import type { Entity } from "@emulators/core";
 
 export interface KakaoApp extends Entity {
-  client_id: string; // REST API 키
+  client_id: string; // REST API key
   client_secret: string | null;
   redirect_uris: string[];
-  // unlink된(연결 해제된) 사용자의 카카오 회원번호 목록
+  // List of Kakao member numbers of unlinked (disconnected) users
   unlinked_user_ids: number[];
 }
 
 export interface KakaoUser extends Entity {
-  user_id: number; // 카카오 회원번호 (외부 노출 id)
+  user_id: number; // Kakao member number (externally exposed id)
   nickname: string;
   email: string | null;
   profile_image_url: string | null;
@@ -33,8 +33,8 @@ export interface KakaoToken extends Entity {
   client_id: string;
   user_id: number;
   scope: string;
-  expires_at: number; // access_token 만료 epoch ms
-  refresh_expires_at: number; // refresh_token 만료 epoch ms
+  expires_at: number; // access_token expiry epoch ms
+  refresh_expires_at: number; // refresh_token expiry epoch ms
   active: boolean;
 }
 

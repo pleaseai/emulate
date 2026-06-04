@@ -1,36 +1,38 @@
-# 에뮬레이터 패키지 컨벤션
+# Emulator package conventions
 
-모든 서비스 에뮬레이터는 [vercel-labs/emulate](https://github.com/vercel-labs/emulate)의
-`@emulators/*` 패턴을 따른다. `@emulators/core@0.6.0`을 npm 의존성으로 사용한다.
+Every service emulator follows the `@emulators/*` patterns from
+[vercel-labs/emulate](https://github.com/vercel-labs/emulate) and uses
+`@emulators/core@0.6.0` as an npm dependency.
 
-## 패키지 레이아웃
+## Package layout
 
 ```
 packages/<service>/
-  package.json          # @pleaseai/emulate-<service>, bun export 조건 포함 (이미 생성됨)
-  tsconfig.json         # ../../tsconfig.base.json extends (이미 생성됨)
-  tsup.config.ts        # 이미 생성됨
+  package.json          # @pleaseai/emulate-<service>, includes the bun export condition
+  tsconfig.json         # extends ../../tsconfig.base.json
+  tsup.config.ts
   src/
-    entities.ts         # Entity를 확장하는 타입 정의
-    store.ts            # getXxxStore(store) — 네임스페이스드 컬렉션
-    helpers.ts          # 서비스별 에러/응답 헬퍼
-    index.ts            # plugin + seedFromConfig export
-    routes/*.ts         # RouteContext를 받는 라우트 등록 함수
-    __tests__/*.test.ts # bun:test 테스트
+    entities.ts         # types extending core Entity
+    store.ts            # getXxxStore(store) — namespaced collections
+    helpers.ts          # service-specific error/response helpers
+    index.ts            # exports plugin + seedFromConfig
+    routes/*.ts         # route registration functions taking RouteContext
+    __tests__/*.test.ts # bun:test tests
 ```
 
-## 핵심 패턴
+## Core patterns
 
 ### entities.ts
 
-모든 엔티티는 core `Entity`(`id: number`, `created_at`, `updated_at` — insert 시 자동 부여)를 확장한다.
-서비스 외부 노출 ID는 별도 필드(`uuid` 등)로 둔다.
+Every entity extends core `Entity` (`id: number`, `created_at`, `updated_at` —
+assigned automatically on insert). Externally visible service IDs live in a
+separate field (`uuid`, etc.).
 
 ```ts
 import type { Entity } from "@emulators/core";
 
 export interface KakaoUser extends Entity {
-  user_id: number; // 카카오 회원번호 (외부 노출 id)
+  user_id: number; // Kakao member number (the externally exposed id)
   nickname: string;
   email: string | null;
 }
@@ -54,9 +56,11 @@ export function getKakaoStore(store: Store): KakaoStore {
 }
 ```
 
-- 컬렉션 이름은 `<service>.<plural>`로 네임스페이스.
-- 두 번째 인자는 인덱스 필드 — `findBy`/`findOneBy`로 조회할 필드만 지정.
-- 같은 컬렉션을 다른 인덱스로 재요청하면 throw되므로 인덱스는 store.ts에서만 정의.
+- Collection names are namespaced as `<service>.<plural>`.
+- The second argument lists index fields — only the fields queried via
+  `findBy`/`findOneBy`.
+- Re-requesting an existing collection with different indexes throws, so
+  indexes are defined exclusively in store.ts.
 
 ### routes/*.ts
 
@@ -75,8 +79,10 @@ export function userRoutes(ctx: RouteContext): void {
 }
 ```
 
-- 실서비스 응답 JSON 필드명/형식을 그대로 재현한다 (snake_case/camelCase 등 실서비스 기준).
-- 에러 응답도 실서비스 형식을 따른다 (각 서비스 helpers.ts에 헬퍼로 구현).
+- Reproduce the real service's response JSON field names and formats exactly
+  (snake_case/camelCase per the real service).
+- Error responses also follow the real service's format (implemented as
+  helpers in each service's helpers.ts).
 
 ### index.ts
 
@@ -89,43 +95,49 @@ export const kakaoPlugin: ServicePlugin = {
     userRoutes(ctx);
   },
   seed(store, baseUrl) {
-    // 기본 시드 (시드 설정 없이 띄워도 동작하는 최소 데이터)
+    // Default seed (minimal data so the emulator works without a seed config)
   },
 };
 
 export function seedFromConfig(store: Store, baseUrl: string, config: KakaoSeedConfig, webhooks?: WebhookDispatcher): void {
-  // emulate.config.yaml의 서비스 섹션을 받아 시드. 중복 시드 방지(findOneBy 후 skip).
+  // Receives the service section of emulate.config.yaml. Must be idempotent
+  // (findOneBy then skip), and config values win over plugin.seed() defaults.
 }
 
 export default kakaoPlugin;
 ```
 
-`seedFromConfig`의 config 형태는 CLI 레지스트리(`packages/emulate/src/registry.ts`)의
-해당 서비스 `initConfig`와 일치해야 한다.
+The config shape accepted by `seedFromConfig` must match the service's
+`initConfig` in the CLI registry (`packages/emulate/src/registry.ts`).
 
-## 인증
+## Authentication
 
-- core의 `authMiddleware`가 전역 등록되어 있으나 **Authorization 헤더가 없으면 그냥 통과**한다.
-  서비스별 인증(Bearer 토큰 검증, Basic auth, apikey 헤더 등)은 라우트/헬퍼에서 직접 구현한다.
-- OAuth 액세스 토큰은 서비스 store의 컬렉션(`<service>.tokens` 등)에 저장하고 라우트에서 조회한다.
-- `constantTimeSecretEqual`, `normalizeUri`, `matchesRedirectUri`, `parseCookies`, `bodyStr`이
-  core에서 제공된다 (OAuth 구현용).
+- Core's `authMiddleware` is registered globally but **passes through when no
+  Authorization header is present**. Service-specific auth (Bearer token
+  validation, Basic auth, apikey headers, etc.) is implemented directly in
+  routes/helpers.
+- OAuth access tokens are stored in a service store collection
+  (`<service>.tokens`, etc.) and looked up in routes.
+- Core provides `constantTimeSecretEqual`, `normalizeUri`,
+  `matchesRedirectUri`, `parseCookies`, and `bodyStr` for OAuth implementations.
 
-## OAuth 로그인 페이지
+## OAuth login page
 
-`renderCardPage`(core export)로 사용자 선택 로그인 페이지를 렌더링할 수 있다.
-authorize 엔드포인트는 시드된 사용자 목록을 보여주고, 선택 시 code를 발급해 redirect_uri로 302.
-`?user=<id>` 쿼리로 즉시 승인하는 자동화 경로도 함께 제공한다 (테스트/CI용).
+`renderCardPage` (a core export) renders a user-picker login page.
+The authorize endpoint shows the seeded users and, on selection, issues a code
+and 302s to the redirect_uri. Also provide an instant-approval path via a
+`?user=<id>` query for automation (tests/CI).
 
-## 웹훅
+## Webhooks
 
-`webhooks.dispatch(event, undefined, payload, "<service>")`로 발송.
-구독은 `webhooks.register({ url, events, active: true, owner: "<service>" })`.
-시드 설정에 `webhooks: [{ url, events }]`를 받을 수 있으면 seedFromConfig에서 등록.
+Dispatch with `webhooks.dispatch(event, undefined, payload, "<service>")`.
+Subscribe with `webhooks.register({ url, events, active: true, owner: "<service>" })`.
+If the seed config accepts `webhooks: [{ url, events }]`, register them in
+seedFromConfig.
 
-## 테스트 (bun:test)
+## Tests (bun:test)
 
-포트 바인딩 없이 `app.fetch`로 직접 Request를 보낸다:
+Send Requests directly through `app.fetch` without binding a port:
 
 ```ts
 import { describe, it, expect, beforeEach } from "bun:test";
@@ -151,11 +163,14 @@ it("issues token for authorization code", async () => {
 });
 ```
 
-- 해피 패스 + 주요 에러 경로(잘못된 code/token/key, 필수 필드 누락, 404)를 모두 커버.
-- 외부 네트워크 접근 금지 — 모든 것은 인메모리.
+- Cover the happy path plus the main error paths (bad code/token/key, missing
+  required fields, 404s).
+- No external network access — everything stays in memory.
 
-## 스타일
+## Style
 
-- ESM, `.js` 확장자 import (`./store.js`).
-- 파일당 하나의 라우트 그룹. 응답 포맷 함수(`formatXxx`)는 라우트 파일 하단에.
-- 주석은 비자명한 동작(실서비스와 의도적으로 다른 부분)에만.
+- ESM with `.js` extension imports (`./store.js`).
+- One route group per file. Response formatting functions (`formatXxx`) go at
+  the bottom of the route file.
+- Comment only non-obvious behavior (places that intentionally diverge from
+  the real service).

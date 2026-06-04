@@ -5,7 +5,7 @@ export function randomToken(prefix = ""): string {
   return prefix + randomBytes(24).toString("hex");
 }
 
-/** kauth.kakao.com /oauth/token 에러 형식 */
+/** kauth.kakao.com /oauth/token error format */
 export function oauthError(
   c: Context,
   status: number,
@@ -19,12 +19,12 @@ export function oauthError(
   );
 }
 
-/** kapi.kakao.com 에러 형식 ({msg, code}) */
+/** kapi.kakao.com error format ({msg, code}) */
 export function kapiError(c: Context, status: number, msg: string, code: number) {
   return c.json({ msg, code }, status as ContentfulStatusCode);
 }
 
-/** form-urlencoded 또는 JSON 본문을 평탄한 객체로 파싱 */
+/** Parse a form-urlencoded or JSON body into a flat object */
 export async function parseKakaoBody(c: Context): Promise<Record<string, string>> {
   const contentType = c.req.header("content-type") ?? "";
   const result: Record<string, string> = {};
@@ -66,7 +66,7 @@ export async function parseKakaoBody(c: Context): Promise<Record<string, string>
   return result;
 }
 
-/** Authorization: Bearer <token> 헤더에서 토큰 추출 */
+/** Extract the token from the Authorization: Bearer <token> header */
 export function extractBearer(c: Context): string | null {
   const header = c.req.header("Authorization") ?? c.req.header("authorization");
   if (!header) return null;
