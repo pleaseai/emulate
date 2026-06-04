@@ -1,0 +1,61 @@
+packages/emulate/src/__tests__/api.test.ts
+  s_9c0d35080e884a::t_683badedd98ca2 13
+packages/kakao/src/entities.ts
+  s_9c0d35080e884a::t_7c284d0b9d6975 7
+  s_9c0d35080e884a::t_b7c884f5f4002a 12
+  s_9c0d35080e884a::t_72682649bdd44d 4
+  s_9c0d35080e884a::t_dba95031bef206 36-37
+README.md
+  s_9c0d35080e884a::t_aed2c17f9ff1cc 3-5,7-8,10,12,14-16,18,20,26,29,32,36-38,40,42,45,49,53,57,60,63,65,72,83,88,91-93,95,99,106,109,112-114,117,119-120,122,124-127
+packages/kakao/src/routes/oauth.ts
+  s_9c0d35080e884a::t_9c0549e88515e7 111
+  s_9c0d35080e884a::t_6f7e088b4a8c9e 12-14
+  s_9c0d35080e884a::t_d90047f1638b3c 49
+  s_9c0d35080e884a::t_2b4e463b877064 67
+  s_9c0d35080e884a::t_553ccce5fbf53c 85
+  s_9c0d35080e884a::t_79885fb099e96f 289
+  s_9c0d35080e884a::t_795e88698f25bc 143
+  s_9c0d35080e884a::t_fe0f60644f629c 217
+  s_9c0d35080e884a::t_ac5e36ec8a9d15 21
+  s_9c0d35080e884a::t_b355bed3c2f7a4 37
+packages/kakao/src/__tests__/kakao.test.ts
+  s_9c0d35080e884a::t_b8e8fe4f28c066 24
+  s_9c0d35080e884a::t_a0f3bbb06c1b44 305
+  s_9c0d35080e884a::t_bf28e4c63b291a 220
+  s_9c0d35080e884a::t_deddec1a594d51 150
+packages/kakao/src/helpers.ts
+  s_9c0d35080e884a::t_f18952528a3704 22
+  s_9c0d35080e884a::t_f38c0eee9e4105 27
+  s_9c0d35080e884a::t_8c926d086dc32d 8
+  s_9c0d35080e884a::t_b1f9d2c52c7d81 69
+docs/EMULATOR-CONVENTIONS.md
+  s_9c0d35080e884a::t_db1b61e3e57e4a 1,3-5,7,11-13,15-20,23,27-29,35,59-63,82-85,98,103-104,110-111,113,115-122,124,126-129,131,133-136,138,140,166-168,170,172-176
+packages/naver/src/routes/oauth.ts
+  s_9c0d35080e884a::t_b0faed903ed244 20
+packages/kakao/src/index.ts
+  s_9c0d35080e884a::t_089aab87caef10 41
+packages/kakao/src/routes/user.ts
+  s_9c0d35080e884a::t_4491d73977d483 92
+  s_9c0d35080e884a::t_cc62c0351fcf94 6
+  s_9c0d35080e884a::t_ee9f599b0a45f6 48
+  s_9c0d35080e884a::t_d49349ce9042de 37
+  s_9c0d35080e884a::t_4e7d7deac84424 71
+  s_9c0d35080e884a::t_f8a2fc72c87d83 61
+  s_9c0d35080e884a::t_9075de5875dc43 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "b9e12ec3bd2498e020f839a5411a1f936c8c1e68",
+  "prompts": {},
+  "sessions": {
+    "s_9c0d35080e884a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "13e69c37-0e17-4dfb-a96b-3b2635149986",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
