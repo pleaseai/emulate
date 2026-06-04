@@ -1,0 +1,22 @@
+sonar-project.properties
+  s_9c0d35080e884a::t_14d481280912f4 3
+.github/workflows/ci.yml
+  s_9c0d35080e884a::t_dfe6beed511b86 16-17
+  s_9c0d35080e884a::t_17eaf02a5f1c7a 51-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "3aa9b14b3944a6150baf97ae7a0d17a4793f8145",
+  "prompts": {},
+  "sessions": {
+    "s_9c0d35080e884a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "13e69c37-0e17-4dfb-a96b-3b2635149986",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
