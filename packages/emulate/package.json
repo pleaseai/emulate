@@ -58,7 +58,7 @@
     "@pleaseai/emulate-naver": "workspace:*",
     "@pleaseai/emulate-supabase": "workspace:*",
     "@pleaseai/emulate-toss-payments": "workspace:*",
-    "commander": "^14",
+    "commander": "^15",
     "picocolors": "^1.1.1",
     "yaml": "^2"
   },
