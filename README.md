@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/pleaseai/emulate/actions/workflows/ci.yml/badge.svg)](https://github.com/pleaseai/emulate/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/pleaseai/emulate/graph/badge.svg)](https://codecov.io/github/pleaseai/emulate)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pleaseai_emulate&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pleaseai_emulate)
 
 Local drop-in replacement services for CI and no-network sandboxes.
 Fully stateful, production-fidelity API emulation for Korean services
