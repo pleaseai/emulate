@@ -1,0 +1,85 @@
+packages/supabase/tsconfig.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-4
+packages/emulate/src/api.ts
+  s_9c0d35080e884a::t_f5900b2bb028f3 1-86
+packages/kakao/package.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-40
+packages/toss-payments/tsconfig.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-4
+package.json
+  s_9c0d35080e884a::t_2633274aeba24c 1-20
+packages/toss-payments/tsup.config.ts
+  s_9c0d35080e884a::t_3af40f4660056e 1-7
+packages/supabase/tsup.config.ts
+  s_9c0d35080e884a::t_3af40f4660056e 1-7
+packages/emulate/tsconfig.json
+  s_9c0d35080e884a::t_8588e18dfec129 1-4
+packages/naver/src/index.ts
+  s_9c0d35080e884a::t_e16e4042d6b820 1-7
+packages/firebase/src/index.ts
+  s_9c0d35080e884a::t_e16e4042d6b820 1-7
+packages/supabase/package.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-40
+packages/firebase/package.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-40
+packages/naver/tsup.config.ts
+  s_9c0d35080e884a::t_3af40f4660056e 1-7
+packages/emulate/src/base-url.ts
+  s_9c0d35080e884a::t_ce1cb0ee42183f 1-14
+packages/firebase/tsup.config.ts
+  s_9c0d35080e884a::t_3af40f4660056e 1-7
+packages/firebase/tsconfig.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-4
+tsconfig.base.json
+  s_9c0d35080e884a::t_0334c0c128379e 1-15
+packages/toss-payments/src/index.ts
+  s_9c0d35080e884a::t_e16e4042d6b820 1-7
+packages/supabase/src/index.ts
+  s_9c0d35080e884a::t_e16e4042d6b820 1-7
+.gitignore
+  s_9c0d35080e884a::t_232e075d1e93db 1-8
+packages/emulate/src/commands/list.ts
+  s_9c0d35080e884a::t_eaadeae2a457a6 1-14
+packages/kakao/src/index.ts
+  s_9c0d35080e884a::t_e16e4042d6b820 1-7
+packages/kakao/tsconfig.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-4
+packages/naver/package.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-40
+packages/emulate/src/commands/init.ts
+  s_9c0d35080e884a::t_63fc54c8cde7da 1-48
+packages/emulate/package.json
+  s_9c0d35080e884a::t_67ea790a6543ea 1-69
+packages/emulate/src/commands/start.ts
+  s_9c0d35080e884a::t_e397d4a9af565a 1-128
+packages/toss-payments/package.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-40
+packages/emulate/src/registry.ts
+  s_9c0d35080e884a::t_363ee40b32c33f 1-169
+packages/emulate/tsup.config.ts
+  s_9c0d35080e884a::t_2a25d71341ffa3 1-8
+packages/emulate/src/index.ts
+  s_9c0d35080e884a::t_69548dfbe21f66 1-33
+packages/kakao/tsup.config.ts
+  s_9c0d35080e884a::t_3af40f4660056e 1-7
+turbo.json
+  s_9c0d35080e884a::t_4f423e6eaf5e9f 1-22
+packages/naver/tsconfig.json
+  s_9c0d35080e884a::t_3af40f4660056e 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "3556931e4d8bfbe3e0ca3cc2da4118182d487832",
+  "prompts": {},
+  "sessions": {
+    "s_9c0d35080e884a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "13e69c37-0e17-4dfb-a96b-3b2635149986",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
