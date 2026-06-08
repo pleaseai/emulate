@@ -14,6 +14,17 @@
         "typescript": "^6",
       },
     },
+    "packages/asana": {
+      "name": "@pleaseai/emulate-asana",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
     "packages/emulate": {
       "name": "@pleaseai/emulate",
       "version": "0.1.0",
@@ -22,6 +33,7 @@
       },
       "dependencies": {
         "@emulators/core": "^0.6.0",
+        "@pleaseai/emulate-asana": "workspace:*",
         "@pleaseai/emulate-firebase": "workspace:*",
         "@pleaseai/emulate-kakao": "workspace:*",
         "@pleaseai/emulate-linear": "workspace:*",
@@ -227,6 +239,8 @@
     "@pkgr/core": ["@pkgr/core@0.3.6", "", {}, "sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA=="],
 
     "@pleaseai/emulate": ["@pleaseai/emulate@workspace:packages/emulate"],
+
+    "@pleaseai/emulate-asana": ["@pleaseai/emulate-asana@workspace:packages/asana"],
 
     "@pleaseai/emulate-firebase": ["@pleaseai/emulate-firebase@workspace:packages/firebase"],
 
