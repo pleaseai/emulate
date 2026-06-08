@@ -1,0 +1,24 @@
+# orca.yaml — setup script run when Orca creates a worktree.
+#
+# Orca (a worktree-native IDE for parallel agents) runs scripts.setup whenever it
+# creates a new worktree. This file is committed, so the whole team shares it.
+# Copy it into the root of a repo under repos/ and commit it there.
+# Details: Skill("standards:dev-tooling") -> references/worktree-setup.md
+# Reference: https://github.com/chatbot-pf/engineering-standards/blob/main/orca.yaml
+#
+# Injected environment variables:
+#   $ORCA_ROOT_PATH     — main checkout (root repo) path; the source for copying gitignored local files
+#   $ORCA_WORKTREE_PATH — the newly created worktree path; the copy target and the setup working directory
+
+scripts:
+  setup: |
+    set -e
+    # 1. Trust the new worktree's mise.toml (trust is per-path; without it gradle/flutter fail with "Config files not trusted").
+    mise trust --quiet
+    # 2. Install the tools declared in mise.toml [tools] (java/gradle/flutter/bun); bun is declared here too and provisioned together.
+    mise install
+    # 3. Copy gitignored local files (.env, .claude/settings.local.json, Firebase secrets, ...) from the main checkout into the worktree.
+    #    Invoke via `mise exec -- bunx` so the mise-installed bun is used regardless of whether bun is on the host PATH.
+    mise exec -- bunx @pleaseai/worktreeinclude "$ORCA_ROOT_PATH" "$ORCA_WORKTREE_PATH"
+    # 4. Install dependencies inside the worktree.
+    mise exec -- bun install
