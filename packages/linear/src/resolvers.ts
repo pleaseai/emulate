@@ -93,10 +93,7 @@ function resolveQuery(fieldName: string, args: Record<string, unknown>, context:
 }
 
 function directValue(source: Record<string, unknown>, fieldName: string): unknown {
-  if (fieldName in source) {
-    return source[fieldName]
-  }
-  return undefined
+  return Object.hasOwn(source, fieldName) ? source[fieldName] : undefined
 }
 
 function resolveOrganization(

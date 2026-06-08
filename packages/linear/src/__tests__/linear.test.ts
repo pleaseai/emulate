@@ -321,4 +321,13 @@ describe('Linear GraphQL emulator', () => {
     expect(res.status).toBe(400)
     expect(body.errors[0].extensions.code).toBe('BAD_REQUEST')
   })
+
+  it('rejects non-POST methods on /graphql with a 405', async () => {
+    for (const method of ['GET', 'PUT', 'PATCH', 'DELETE']) {
+      const res = await app.request(`${base}/graphql`, { method })
+      const body = (await res.json()) as any
+      expect(res.status).toBe(405)
+      expect(body.errors[0].extensions.code).toBe('METHOD_NOT_ALLOWED')
+    }
+  })
 })
