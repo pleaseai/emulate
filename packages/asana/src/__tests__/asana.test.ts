@@ -787,3 +787,193 @@ describe('Asana - seedFromConfig', () => {
     expect(as.users.all().filter(u => u.email === 'user@test.com').length).toBe(1)
   })
 })
+
+// ── Validation & resource checks ───────────────────────────
+
+describe('Asana - Validation', () => {
+  let app: Hono
+  let workspaceGid: string
+  let projectGid: string
+  let sectionGid: string
+
+  beforeEach(() => {
+    const testApp = createTestApp()
+    app = testApp.app
+    const as = getAsanaStore(testApp.store)
+    workspaceGid = as.workspaces.all().find(w => w.name === 'Test Workspace')!.gid
+    projectGid = as.projects.all().find(p => p.name === 'Test Project')!.gid
+    sectionGid = as.sections.findBy('project_gid', projectGid).find(s => s.name === 'To Do')!.gid
+  })
+
+  async function postTask(data: Record<string, unknown>) {
+    return app.request(`${base}/api/1.0/tasks`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data }),
+    })
+  }
+
+  it('GET /projects requires workspace or team', async () => {
+    const res = await app.request(`${base}/api/1.0/projects`, { headers: authHeaders() })
+    expect(res.status).toBe(400)
+  })
+
+  it('GET /projects returns 404 for an unknown workspace', async () => {
+    const res = await app.request(`${base}/api/1.0/projects?workspace=999999`, { headers: authHeaders() })
+    expect(res.status).toBe(404)
+  })
+
+  it('GET /projects returns 404 for an unknown team', async () => {
+    const res = await app.request(`${base}/api/1.0/projects?team=999999`, { headers: authHeaders() })
+    expect(res.status).toBe(404)
+  })
+
+  it('GET /tasks requires a workspace, project, or section filter', async () => {
+    const res = await app.request(`${base}/api/1.0/tasks`, { headers: authHeaders() })
+    expect(res.status).toBe(400)
+  })
+
+  it('GET /tasks returns 404 for an unknown project', async () => {
+    const res = await app.request(`${base}/api/1.0/tasks?project=999999`, { headers: authHeaders() })
+    expect(res.status).toBe(404)
+  })
+
+  it('POST /tasks returns 404 for an unknown project', async () => {
+    const res = await postTask({ name: 'X', workspace: workspaceGid, projects: ['999999'] })
+    expect(res.status).toBe(404)
+  })
+
+  it('POST /tasks returns 404 for an unknown membership project', async () => {
+    const res = await postTask({ name: 'X', workspace: workspaceGid, memberships: [{ project: '999999' }] })
+    expect(res.status).toBe(404)
+  })
+
+  it('POST /tasks returns 404 for an unknown membership section', async () => {
+    const res = await postTask({ name: 'X', workspace: workspaceGid, memberships: [{ project: projectGid, section: '999999' }] })
+    expect(res.status).toBe(404)
+  })
+
+  it('POST /tasks rejects a membership section from a different project', async () => {
+    const projRes = await app.request(`${base}/api/1.0/projects`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { name: 'Other Project', workspace: workspaceGid } }),
+    })
+    const otherProjectGid = (await projRes.json() as any).data.gid
+    const secRes = await app.request(`${base}/api/1.0/projects/${otherProjectGid}/sections`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { name: 'Foreign Section' } }),
+    })
+    const foreignSectionGid = (await secRes.json() as any).data.gid
+
+    const res = await postTask({ name: 'X', workspace: workspaceGid, memberships: [{ project: projectGid, section: foreignSectionGid }] })
+    expect(res.status).toBe(400)
+  })
+
+  it('POST /tasks returns 404 for an unknown parent', async () => {
+    const res = await postTask({ name: 'X', workspace: workspaceGid, parent: '999999' })
+    expect(res.status).toBe(404)
+  })
+
+  it('POST /tasks resolves the "me" assignee to the authenticated user', async () => {
+    const meRes = await app.request(`${base}/api/1.0/users/me`, { headers: authHeaders() })
+    const meGid = (await meRes.json() as any).data.gid
+
+    const res = await postTask({ name: 'Assigned to me', workspace: workspaceGid, assignee: 'me' })
+    expect(res.status).toBe(201)
+    const body = await res.json() as any
+    expect(body.data.assignee.gid).toBe(meGid)
+  })
+
+  it('POST /tasks sets completed_at when created as completed', async () => {
+    const res = await postTask({ name: 'Done', workspace: workspaceGid, completed: true })
+    expect(res.status).toBe(201)
+    const body = await res.json() as any
+    expect(body.data.completed).toBe(true)
+    expect(body.data.completed_at).not.toBeNull()
+  })
+
+  it('POST /tasks accepts a membership section from the same project', async () => {
+    const res = await postTask({ name: 'Sectioned', workspace: workspaceGid, memberships: [{ project: projectGid, section: sectionGid }] })
+    expect(res.status).toBe(201)
+    const body = await res.json() as any
+    expect(body.data.memberships.length).toBe(1)
+  })
+
+  it('POST /tasks/:gid/addFollowers and removeFollowers', async () => {
+    const meRes = await app.request(`${base}/api/1.0/users/me`, { headers: authHeaders() })
+    const meGid = (await meRes.json() as any).data.gid
+    const createRes = await postTask({ name: 'Followed', workspace: workspaceGid })
+    const taskGid = (await createRes.json() as any).data.gid
+
+    const addRes = await app.request(`${base}/api/1.0/tasks/${taskGid}/addFollowers`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { followers: [meGid] } }),
+    })
+    expect(addRes.status).toBe(200)
+    expect((await addRes.json() as any).data.followers.length).toBe(1)
+
+    const rmRes = await app.request(`${base}/api/1.0/tasks/${taskGid}/removeFollowers`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { followers: [meGid] } }),
+    })
+    expect(rmRes.status).toBe(200)
+    expect((await rmRes.json() as any).data.followers.length).toBe(0)
+  })
+
+  it('follower endpoints return 404 for an unknown task', async () => {
+    const addRes = await app.request(`${base}/api/1.0/tasks/999999/addFollowers`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { followers: ['1'] } }),
+    })
+    expect(addRes.status).toBe(404)
+    const rmRes = await app.request(`${base}/api/1.0/tasks/999999/removeFollowers`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { followers: ['1'] } }),
+    })
+    expect(rmRes.status).toBe(404)
+  })
+
+  it('PUT /projects updates all mutable fields', async () => {
+    const res = await app.request(`${base}/api/1.0/projects/${projectGid}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: {
+        name: 'Renamed',
+        notes: 'n',
+        html_notes: '<b>n</b>',
+        color: 'blue',
+        archived: true,
+        privacy_setting: 'private',
+        default_view: 'board',
+        owner: '1',
+        team: '2',
+      } }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json() as any
+    expect(body.data.archived).toBe(true)
+    expect(body.data.default_view).toBe('board')
+  })
+
+  it('GET /projects/:gid/tasks lists tasks in a project', async () => {
+    await postTask({ name: 'PT', workspace: workspaceGid, projects: [projectGid] })
+    const res = await app.request(`${base}/api/1.0/projects/${projectGid}/tasks`, { headers: authHeaders() })
+    expect(res.status).toBe(200)
+    expect((await res.json() as any).data.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('GET /projects/:gid/task_counts counts milestones', async () => {
+    await postTask({ name: 'MS', workspace: workspaceGid, projects: [projectGid], resource_subtype: 'milestone', completed: true })
+    const res = await app.request(`${base}/api/1.0/projects/${projectGid}/task_counts`, { headers: authHeaders() })
+    expect(res.status).toBe(200)
+    const body = await res.json() as any
+    expect(body.data.num_milestones).toBeGreaterThanOrEqual(1)
+    expect(body.data.num_completed_milestones).toBeGreaterThanOrEqual(1)
+  })
+})
