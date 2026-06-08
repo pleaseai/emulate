@@ -43,6 +43,9 @@
   "bin": {
     "emulate": "./dist/index.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],

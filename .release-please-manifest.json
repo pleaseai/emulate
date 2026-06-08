@@ -1,0 +1,10 @@
+{
+  "packages/asana": "0.1.0",
+  "packages/emulate": "0.1.0",
+  "packages/firebase": "0.1.0",
+  "packages/kakao": "0.1.0",
+  "packages/linear": "0.1.0",
+  "packages/naver": "0.1.0",
+  "packages/supabase": "0.1.0",
+  "packages/toss-payments": "0.1.0"
+}
