@@ -25,9 +25,16 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     const assigneeParam = c.req.query('assignee')
     const workspaceGid = c.req.query('workspace')
 
+    if (!projectGid && !sectionGid && !workspaceGid) {
+      return asanaError(c, 400, 'workspace, project, or section: Missing input')
+    }
+
     let taskGids: Set<string> | null = null
 
     if (projectGid) {
+      if (!as().projects.findOneBy('gid', projectGid)) {
+        return asanaError(c, 404, 'project: Not Found')
+      }
       const rels = as().taskProjects.findBy('project_gid', projectGid)
       taskGids = new Set(rels.map(r => r.task_gid))
     }
@@ -44,7 +51,7 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     }
 
     let tasks = taskGids
-      ? as().tasks.all().filter(t => taskGids!.has(t.gid))
+      ? as().tasks.all().filter(t => taskGids?.has(t.gid))
       : as().tasks.all()
 
     if (assigneeParam) {
@@ -96,24 +103,55 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
       return asanaError(c, 400, 'workspace: Missing input')
     }
 
+    // Validate referenced resources exist before creating the task
+    for (const pGid of projectGids) {
+      if (!as().projects.findOneBy('gid', pGid)) {
+        return asanaError(c, 404, 'project: Not Found')
+      }
+    }
+    for (const m of membershipData ?? []) {
+      if (!as().projects.findOneBy('gid', m.project)) {
+        return asanaError(c, 404, 'project: Not Found')
+      }
+      if (m.section && !as().sections.findOneBy('gid', m.section)) {
+        return asanaError(c, 404, 'section: Not Found')
+      }
+    }
+    const parentGid = (body.parent as string) ?? null
+    if (parentGid && !as().tasks.findOneBy('gid', parentGid)) {
+      return asanaError(c, 404, 'parent: Not Found')
+    }
+
+    // Resolve the assignee, mapping the 'me' keyword to the authenticated user
+    const assigneeInput = body.assignee as string | undefined
+    let assigneeGid: string | null = null
+    if (assigneeInput) {
+      const login = assigneeInput === 'me'
+        ? (c.get('authUser')?.login ?? assigneeInput)
+        : assigneeInput
+      assigneeGid = resolveUser(as(), login)?.gid ?? assigneeInput
+    }
+
+    const completed = (body.completed as boolean) ?? false
+
     const gid = generateGid()
     const task = as().tasks.insert({
       gid,
       resource_type: 'task',
       resource_subtype: (body.resource_subtype as AsanaTask['resource_subtype']) ?? 'default_task',
       name: body.name as string,
-      assignee_gid: (body.assignee as string) ?? null,
+      assignee_gid: assigneeGid,
       workspace_gid: workspaceGid,
-      completed: (body.completed as boolean) ?? false,
-      completed_at: null,
+      completed,
+      completed_at: completed ? new Date().toISOString() : null,
       due_on: (body.due_on as string) ?? null,
       due_at: (body.due_at as string) ?? null,
       start_on: (body.start_on as string) ?? null,
       notes: (body.notes as string) ?? '',
-      html_notes: (body.html_notes as string) ?? '',
+      html_notes: (body.html_notes as string | undefined) ?? '',
       liked: false,
       num_likes: 0,
-      parent_gid: (body.parent as string) ?? null,
+      parent_gid: parentGid,
       permalink_url: '',
       follower_gids: (body.followers as string[]) ?? [],
     })

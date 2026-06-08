@@ -21,6 +21,16 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
     const workspaceGid = c.req.query('workspace')
     const teamGid = c.req.query('team')
 
+    if (!workspaceGid && !teamGid) {
+      return asanaError(c, 400, 'workspace or team: Missing input')
+    }
+    if (workspaceGid && !as().workspaces.findOneBy('gid', workspaceGid)) {
+      return asanaError(c, 404, 'workspace: Not Found')
+    }
+    if (teamGid && !as().teams.findOneBy('gid', teamGid)) {
+      return asanaError(c, 404, 'team: Not Found')
+    }
+
     let projects = as().projects.all()
     if (workspaceGid) {
       projects = projects.filter(p => p.workspace_gid === workspaceGid)
@@ -60,7 +70,7 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
       archived: false,
       color: (body.color as string) ?? null,
       notes: (body.notes as string) ?? '',
-      html_notes: (body.html_notes as string) ?? '',
+      html_notes: (body.html_notes as string | undefined) ?? '',
       privacy_setting: (body.privacy_setting as AsanaProject['privacy_setting']) ?? 'public_to_workspace',
       default_view: (body.default_view as AsanaProject['default_view']) ?? 'list',
       completed: false,
