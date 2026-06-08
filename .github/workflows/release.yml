@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# Least-privilege by default; jobs opt into the scopes they need.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Maintains the release PR and, when it is merged, tags + creates the
+  # GitHub releases for every package whose changelog changed.
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
+    steps:
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Builds and publishes only the packages that were just released to npm.
+  publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # OIDC token for npm Trusted Publishing — no NPM_TOKEN needed. npm also
+      # generates a provenance attestation automatically on trusted publishes.
+      id-token: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      # Installs the tool versions pinned in mise.toml (bun + node, which
+      # provides the npm CLI used to publish).
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      # Trusted Publishing (OIDC) requires npm >= 11.5.1; the npm bundled with
+      # node 22 is 10.x, so upgrade it before publishing.
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
+
+      - name: Publish released packages
+        env:
+          # release-please emits the dirs it released as a JSON array, e.g.
+          # ["packages/asana","packages/emulate"].
+          PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
+        run: |
+          echo "$PATHS_RELEASED" | jq -r '.[]' | while read -r pkg; do
+            echo "::group::publish $pkg"
+            # `bun pm pack` rewrites `workspace:*` deps to the concrete version
+            # in the tarball (npm pack/publish on its own would not). npm then
+            # publishes that tarball, authenticating via OIDC (Trusted Publisher
+            # configured on npmjs.com) and attaching provenance automatically.
+            tarball="$(cd "$pkg" && bun pm pack --quiet)"
+            npm publish "$pkg/$tarball" --access public
+            echo "::endgroup::"
+          done
