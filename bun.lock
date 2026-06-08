@@ -24,6 +24,7 @@
         "@emulators/core": "^0.6.0",
         "@pleaseai/emulate-firebase": "workspace:*",
         "@pleaseai/emulate-kakao": "workspace:*",
+        "@pleaseai/emulate-linear": "workspace:*",
         "@pleaseai/emulate-naver": "workspace:*",
         "@pleaseai/emulate-supabase": "workspace:*",
         "@pleaseai/emulate-toss-payments": "workspace:*",
@@ -52,6 +53,18 @@
       "version": "0.1.0",
       "dependencies": {
         "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
+    "packages/linear": {
+      "name": "@pleaseai/emulate-linear",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+        "graphql": "^16.13.2",
       },
       "devDependencies": {
         "tsup": "^8",
@@ -218,6 +231,8 @@
     "@pleaseai/emulate-firebase": ["@pleaseai/emulate-firebase@workspace:packages/firebase"],
 
     "@pleaseai/emulate-kakao": ["@pleaseai/emulate-kakao@workspace:packages/kakao"],
+
+    "@pleaseai/emulate-linear": ["@pleaseai/emulate-linear@workspace:packages/linear"],
 
     "@pleaseai/emulate-naver": ["@pleaseai/emulate-naver@workspace:packages/naver"],
 
@@ -566,6 +581,8 @@
     "globrex": ["globrex@0.1.2", "", {}, "sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg=="],
 
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
+
+    "graphql": ["graphql@16.14.1", "", {}, "sha512-cQOsSMS/IrDz82PVyRDvf/Q1F/bRbBVjJlh+xYOkI1qw2bWRvWGiWc+m2O0d6l4Bt1fyY+8kzJ8JFWGJqNeDBg=="],
 
     "hosted-git-info": ["hosted-git-info@9.0.3", "", { "dependencies": { "lru-cache": "^11.1.0" } }, "sha512-Hc+ghLoSt6QaYZUv0WBiIvmMDZuZZ7oaDvdH8MbfOO4lOsxdXLEvuC6ePoGs9H1X9oCLyq6+NVN0MKqD+ydxyg=="],
 

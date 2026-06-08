@@ -20,7 +20,7 @@ export interface ServiceEntry {
   initConfig: Record<string, unknown>
 }
 
-const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase'] as const
+const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase', 'linear'] as const
 export type ServiceName = (typeof SERVICE_NAME_LIST)[number]
 export const SERVICE_NAMES: readonly ServiceName[] = SERVICE_NAME_LIST
 
@@ -170,6 +170,32 @@ export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
             { id: 2, title: '청소하기', completed: true },
           ],
         },
+      },
+    },
+  },
+
+  linear: {
+    label: 'Linear GraphQL API emulator',
+    endpoints:
+      'GraphQL queries for issues, projects, teams, users, organizations, labels, workflow states with Relay-style pagination',
+    async load() {
+      const mod = await import('@pleaseai/emulate-linear')
+      return { plugin: mod.linearPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback() {
+      return { login: 'linear-admin', id: 1, scopes: ['read'] }
+    },
+    initConfig: {
+      linear: {
+        api_keys: ['lin_api_test'],
+        organizations: [{ id: 'org-1', name: 'My Org' }],
+        teams: [{ id: 'team-1', name: 'Engineering', key: 'ENG', organization: 'org-1' }],
+        users: [{ id: 'user-1', name: 'Developer', email: 'dev@example.com', organization: 'org-1' }],
+        workflow_states: [
+          { id: 'ws-1', name: 'Todo', type: 'unstarted', team: 'team-1' },
+          { id: 'ws-2', name: 'In Progress', type: 'started', team: 'team-1' },
+        ],
+        issues: [{ id: 'issue-1', title: 'First issue', team: 'team-1', state: 'ws-1', assignee: 'user-1' }],
       },
     },
   },
