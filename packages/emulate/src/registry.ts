@@ -20,7 +20,7 @@ export interface ServiceEntry {
   initConfig: Record<string, unknown>
 }
 
-const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase'] as const
+const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase', 'asana'] as const
 export type ServiceName = (typeof SERVICE_NAME_LIST)[number]
 export const SERVICE_NAMES: readonly ServiceName[] = SERVICE_NAME_LIST
 
@@ -170,6 +170,29 @@ export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
             { id: 2, title: '청소하기', completed: true },
           ],
         },
+      },
+    },
+  },
+
+  asana: {
+    label: 'Asana project management API emulator',
+    endpoints: 'users, workspaces, projects, sections, tasks, tags, stories, teams, webhooks',
+    async load() {
+      const mod = await import('@pleaseai/emulate-asana')
+      return { plugin: mod.asanaPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback(cfg) {
+      const users = cfg?.users as Array<{ email?: string, name?: string }> | undefined
+      const firstUser = users?.[0]?.email ?? users?.[0]?.name ?? 'me'
+      return { login: firstUser, id: 1, scopes: [] }
+    },
+    initConfig: {
+      asana: {
+        workspaces: [{ name: 'My Workspace', is_organization: true }],
+        users: [{ name: 'Developer', email: 'dev@example.com' }],
+        teams: [{ name: 'Engineering', workspace: 'My Workspace' }],
+        projects: [{ name: 'My Project', workspace: 'My Workspace', team: 'Engineering', owner: 'Developer' }],
+        tasks: [{ name: 'Example Task', project: 'My Project', assignee: 'Developer' }],
       },
     },
   },

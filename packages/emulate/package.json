@@ -21,6 +21,7 @@
     "tosspayments",
     "firebase",
     "supabase",
+    "asana",
     "oauth",
     "testing",
     "ci",
@@ -53,6 +54,7 @@
   },
   "dependencies": {
     "@emulators/core": "^0.6.0",
+    "@pleaseai/emulate-asana": "workspace:*",
     "@pleaseai/emulate-firebase": "workspace:*",
     "@pleaseai/emulate-kakao": "workspace:*",
     "@pleaseai/emulate-naver": "workspace:*",
