@@ -113,8 +113,12 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
       if (!as().projects.findOneBy('gid', m.project)) {
         return asanaError(c, 404, 'project: Not Found')
       }
-      if (m.section && !as().sections.findOneBy('gid', m.section)) {
+      const section = m.section ? as().sections.findOneBy('gid', m.section) : null
+      if (m.section && !section) {
         return asanaError(c, 404, 'section: Not Found')
+      }
+      if (section && section.project_gid !== m.project) {
+        return asanaError(c, 400, 'section: Invalid for project')
       }
     }
     const parentGid = (body.parent as string) ?? null
