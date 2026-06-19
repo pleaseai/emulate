@@ -1,0 +1,23 @@
+packages/asana/README.md
+  s_36b37931233f00::t_7a42e192404874 50
+skills/supabase/SKILL.md
+  s_36b37931233f00::t_e861f6b3f827e2 104-105
+skills/asana/SKILL.md
+  s_36b37931233f00::t_d364d2d084c778 54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "0ffba9b33681cb6add5831b9c9b5f01cd7966f21",
+  "prompts": {},
+  "sessions": {
+    "s_36b37931233f00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "de581276-6cd5-433b-9abd-ed2baa7eae92",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
