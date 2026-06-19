@@ -1,0 +1,33 @@
+skills/firebase/SKILL.md
+  s_36b37931233f00::t_bb03cef59f8f07 1-88
+skills/kakao/SKILL.md
+  s_36b37931233f00::t_5b3e10c3fee215 1-77
+skills/asana/SKILL.md
+  s_36b37931233f00::t_df796c39313082 1-113
+skills/tosspayments/SKILL.md
+  s_36b37931233f00::t_9afa18fc143131 40
+  s_36b37931233f00::t_e6897220a7849d 1-39,41-83
+skills/supabase/SKILL.md
+  s_36b37931233f00::t_14b076713170a6 1-106
+skills/naver/SKILL.md
+  s_36b37931233f00::t_5decce631fa121 45
+  s_36b37931233f00::t_15725a9c93524b 1-44,46-82
+packages/asana/README.md
+  s_36b37931233f00::t_325fe2cebf3ad9 1-158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "c78d3cecfbe98aa518ffbc5ce299504895f96cfa",
+  "prompts": {},
+  "sessions": {
+    "s_36b37931233f00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "de581276-6cd5-433b-9abd-ed2baa7eae92",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
