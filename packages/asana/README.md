@@ -47,7 +47,7 @@ key in your config:
 ```yaml
 tokens:
   test-token:
-    login: dev@example.com   # matches a seeded user's email, gid, or name
+    login: dev@example.com # matches a seeded user's email, gid, or name
     scopes: []
 ```
 
