@@ -2,6 +2,7 @@
   "name": "emulate-monorepo",
   "type": "module",
   "private": true,
+  "license": "Apache-2.0",
   "workspaces": [
     "packages/*"
   ],
