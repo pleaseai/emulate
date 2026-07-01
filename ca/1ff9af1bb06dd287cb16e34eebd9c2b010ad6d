@@ -1,0 +1,39 @@
+CONTRIBUTING.md
+  s_f0c447c07ea585::t_d716f7ae92fc2f 1-51
+NOTICE
+  s_f0c447c07ea585::t_98359a861098bf 1-6
+package.json
+  s_f0c447c07ea585::t_d2afb3975355f6 5
+README.md
+  s_f0c447c07ea585::t_0ef9c5699f606b 7-8
+.github/ISSUE_TEMPLATE/bug_report.md
+  s_f0c447c07ea585::t_df1f3d805728d4 1-31
+.github/ISSUE_TEMPLATE/config.yml
+  s_f0c447c07ea585::t_df30a65329e071 1-8
+.github/ISSUE_TEMPLATE/feature_request.md
+  s_f0c447c07ea585::t_263304c2093591 1-22
+.github/PULL_REQUEST_TEMPLATE.md
+  s_f0c447c07ea585::t_ad005a989d90d7 1-17
+CODE_OF_CONDUCT.md
+  s_f0c447c07ea585::t_6e4a91288e2efc 1-132
+LICENSE
+  s_f0c447c07ea585::t_1edddac2166463 1-202
+SECURITY.md
+  s_f0c447c07ea585::t_07c059d89045c6 1-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "ca1ff9af1bb06dd287cb16e34eebd9c2b010ad6d",
+  "prompts": {},
+  "sessions": {
+    "s_f0c447c07ea585": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9026827b-9f5e-4cb2-ac4f-0218019c1c6d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
