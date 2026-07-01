@@ -2,11 +2,11 @@
   "name": "emulate-monorepo",
   "type": "module",
   "private": true,
-  "license": "Apache-2.0",
   "workspaces": [
     "packages/*"
   ],
   "packageManager": "bun@1.3.14",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
