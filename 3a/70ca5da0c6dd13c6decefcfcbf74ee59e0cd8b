@@ -1,0 +1,51 @@
+packages/workos/src/routes/oauth.ts
+  s_01aae14021cdbd::t_e0ec2c951c3216 2
+  s_01aae14021cdbd::t_94e43f830aa198 256-259
+  s_01aae14021cdbd::t_839f9d451037bb 299-315
+packages/autumn/src/routes/api.ts
+  s_01aae14021cdbd::t_5ca10011f2f526 159-160,162
+packages/spotify/src/routes/token.ts
+  s_01aae14021cdbd::t_2b6c4a464661d0 3,77
+  s_01aae14021cdbd::t_6906da699485d5 19-33
+packages/spotify/src/routes/catalog.ts
+  s_01aae14021cdbd::t_fbe730c6857135 66-74
+packages/workos/src/routes/user-management.ts
+  s_01aae14021cdbd::t_8ae8a5b09d4600 179-183,189
+  s_01aae14021cdbd::t_6d1a013858152b 198-202
+  s_01aae14021cdbd::t_b7a7434a36738b 230
+packages/posthog/src/routes/api.ts
+  s_01aae14021cdbd::t_f1d1b2b18fc8a4 7-9
+packages/x/src/routes/oauth.ts
+  s_01aae14021cdbd::t_dffbff51b90cc4 280-311
+  s_01aae14021cdbd::t_993ab8c2aca207 187-189,193
+packages/x/src/routes/openapi.ts
+  s_01aae14021cdbd::t_e10722b9166d52 73-97,102-122
+packages/x/src/routes/tweets.ts
+  s_01aae14021cdbd::t_12501a2b2bc25e 226-230
+packages/posthog/src/routes/oauth.ts
+  s_01aae14021cdbd::t_ee72df3b2d0c18 328-338
+packages/autumn/src/routes/checkout.ts
+  s_01aae14021cdbd::t_4cff45bc7ebbe9 39-42
+packages/workos/src/routes/organizations.ts
+  s_01aae14021cdbd::t_5ca10011f2f526 12-13
+packages/spotify/src/store.ts
+  s_01aae14021cdbd::t_b6d4bce2667a64 33-34,37-38,40,44-48
+packages/x/src/index.ts
+  s_01aae14021cdbd::t_d4e03b091865a8 89-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3a70ca5da0c6dd13c6decefcfcbf74ee59e0cd8b",
+  "prompts": {},
+  "sessions": {
+    "s_01aae14021cdbd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eeb4b80d-1621-46cd-88e0-1c2257aeeaab",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
