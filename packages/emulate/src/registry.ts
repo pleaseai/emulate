@@ -20,7 +20,7 @@ export interface ServiceEntry {
   initConfig: Record<string, unknown>
 }
 
-const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase', 'asana', 'linear'] as const
+const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase', 'asana', 'linear', 'autumn', 'gitlab', 'posthog', 'spotify', 'workos', 'x'] as const
 export type ServiceName = (typeof SERVICE_NAME_LIST)[number]
 export const SERVICE_NAMES: readonly ServiceName[] = SERVICE_NAME_LIST
 
@@ -219,6 +219,131 @@ export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
           { id: 'ws-2', name: 'In Progress', type: 'started', team: 'team-1' },
         ],
         issues: [{ id: 'issue-1', title: 'First issue', team: 'team-1', state: 'ws-1', assignee: 'user-1' }],
+      },
+    },
+  },
+
+  autumn: {
+    label: 'Autumn billing API emulator',
+    endpoints: 'customers get_or_create/update, balances track/check, plans list, billing attach, checkout page',
+    async load() {
+      const mod = await import('@pleaseai/emulate-autumn')
+      return { plugin: mod.autumnPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback() {
+      return { login: 'am_emulate_admin', id: 1, scopes: [] }
+    },
+    initConfig: {
+      autumn: {
+        plans: [
+          { id: 'free', name: 'Free', auto_enable: true, items: [{ feature_id: 'executions', included: 100 }] },
+          { id: 'pro', name: 'Pro', price: { amount: 20, interval: 'month' }, items: [{ feature_id: 'executions', included: 10000 }] },
+        ],
+        customers: [{ id: 'org_demo', subscriptions: [{ plan_id: 'pro', status: 'active' }] }],
+      },
+    },
+  },
+
+  gitlab: {
+    label: 'GitLab GraphQL API emulator',
+    endpoints: 'GraphQL endpoint with introspection against the GitLab schema',
+    async load() {
+      const mod = await import('@pleaseai/emulate-gitlab')
+      return { plugin: mod.gitlabPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback() {
+      return { login: 'gitlab-admin', id: 1, scopes: ['api'] }
+    },
+    initConfig: {
+      gitlab: {},
+    },
+  },
+
+  posthog: {
+    label: 'PostHog analytics API emulator',
+    endpoints: 'event capture, users, projects, OAuth 2.0 authorize/token with scoped clients',
+    async load() {
+      const mod = await import('@pleaseai/emulate-posthog')
+      return { plugin: mod.posthogPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback(cfg) {
+      const firstEmail = (cfg?.users as Array<{ email?: string }> | undefined)?.[0]?.email ?? 'admin@example.com'
+      return { login: firstEmail, id: 1, scopes: [] }
+    },
+    initConfig: {
+      posthog: {
+        users: [{ email: 'dev@example.com', name: 'Developer' }],
+        projects: [{ name: 'Demo Project', api_token: 'phc_test_token' }],
+      },
+    },
+  },
+
+  spotify: {
+    label: 'Spotify Web API emulator',
+    endpoints: 'OAuth 2.0 client credentials token, search, artists, albums, tracks',
+    async load() {
+      const mod = await import('@pleaseai/emulate-spotify')
+      return { plugin: mod.spotifyPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback() {
+      return { login: 'spotify-app', id: 1, scopes: [] }
+    },
+    initConfig: {
+      spotify: {
+        clients: [{ client_id: 'spotify_client_id_example', client_secret: 'spotify_client_secret_example', name: 'Demo App' }],
+        artists: [
+          {
+            name: 'Daft Punk',
+            genres: ['electronic'],
+            albums: [{ name: 'Discovery', release_date: '2001-03-12', tracks: [{ name: 'One More Time' }] }],
+          },
+        ],
+      },
+    },
+  },
+
+  workos: {
+    label: 'WorkOS user management API emulator',
+    endpoints: 'user management authenticate, organizations, memberships, invitations, API keys, OAuth/OIDC, vault',
+    async load() {
+      const mod = await import('@pleaseai/emulate-workos')
+      return { plugin: mod.workosPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback(cfg) {
+      const firstEmail = (cfg?.users as Array<{ email?: string }> | undefined)?.[0]?.email ?? 'admin@example.com'
+      return { login: firstEmail, id: 1, scopes: [] }
+    },
+    initConfig: {
+      workos: {
+        users: [{ email: 'dev@example.com', first_name: 'Dev', last_name: 'Eloper' }],
+        organizations: [{ name: 'Demo Org', members: ['dev@example.com'] }],
+      },
+    },
+  },
+
+  x: {
+    label: 'X (Twitter) API v2 emulator',
+    endpoints: 'OAuth 2.0 PKCE authorize/token, tweets, users lookup, timelines',
+    async load() {
+      const mod = await import('@pleaseai/emulate-x')
+      return { plugin: mod.xPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback(cfg) {
+      const firstUsername = (cfg?.users as Array<{ username?: string }> | undefined)?.[0]?.username ?? 'developer'
+      return { login: firstUsername, id: 1, scopes: [] }
+    },
+    initConfig: {
+      x: {
+        users: [{ username: 'developer', name: 'Developer' }],
+        oauth_clients: [
+          {
+            client_id: 'x_client_id_example',
+            client_secret: 'x_client_secret_example',
+            client_type: 'confidential',
+            redirect_uris: ['http://localhost:3000/api/auth/callback/x'],
+          },
+        ],
+        tweets: [{ text: 'Hello from the emulator!', author: 'developer' }],
       },
     },
   },

@@ -25,6 +25,18 @@
         "typescript": "^6",
       },
     },
+    "packages/autumn": {
+      "name": "@pleaseai/emulate-autumn",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "autumn-js": "1.2.28",
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
     "packages/emulate": {
       "name": "@pleaseai/emulate",
       "version": "0.1.0",
@@ -34,12 +46,18 @@
       "dependencies": {
         "@emulators/core": "^0.6.0",
         "@pleaseai/emulate-asana": "workspace:*",
+        "@pleaseai/emulate-autumn": "workspace:*",
         "@pleaseai/emulate-firebase": "workspace:*",
+        "@pleaseai/emulate-gitlab": "workspace:*",
         "@pleaseai/emulate-kakao": "workspace:*",
         "@pleaseai/emulate-linear": "workspace:*",
         "@pleaseai/emulate-naver": "workspace:*",
+        "@pleaseai/emulate-posthog": "workspace:*",
+        "@pleaseai/emulate-spotify": "workspace:*",
         "@pleaseai/emulate-supabase": "workspace:*",
         "@pleaseai/emulate-toss-payments": "workspace:*",
+        "@pleaseai/emulate-workos": "workspace:*",
+        "@pleaseai/emulate-x": "workspace:*",
         "commander": "^15",
         "picocolors": "^1.1.1",
         "yaml": "^2",
@@ -54,6 +72,18 @@
       "version": "0.1.0",
       "dependencies": {
         "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
+    "packages/gitlab": {
+      "name": "@pleaseai/emulate-gitlab",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+        "graphql": "^16.13.2",
       },
       "devDependencies": {
         "tsup": "^8",
@@ -94,6 +124,28 @@
         "typescript": "^6",
       },
     },
+    "packages/posthog": {
+      "name": "@pleaseai/emulate-posthog",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
+    "packages/spotify": {
+      "name": "@pleaseai/emulate-spotify",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
     "packages/supabase": {
       "name": "@pleaseai/emulate-supabase",
       "version": "0.1.0",
@@ -107,6 +159,30 @@
     },
     "packages/toss-payments": {
       "name": "@pleaseai/emulate-toss-payments",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+      },
+      "devDependencies": {
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
+    "packages/workos": {
+      "name": "@pleaseai/emulate-workos",
+      "version": "0.1.0",
+      "dependencies": {
+        "@emulators/core": "^0.6.0",
+        "jose": "^6",
+      },
+      "devDependencies": {
+        "@workos-inc/node": "^8.13.0",
+        "tsup": "^8",
+        "typescript": "^6",
+      },
+    },
+    "packages/x": {
+      "name": "@pleaseai/emulate-x",
       "version": "0.1.0",
       "dependencies": {
         "@emulators/core": "^0.6.0",
@@ -242,7 +318,11 @@
 
     "@pleaseai/emulate-asana": ["@pleaseai/emulate-asana@workspace:packages/asana"],
 
+    "@pleaseai/emulate-autumn": ["@pleaseai/emulate-autumn@workspace:packages/autumn"],
+
     "@pleaseai/emulate-firebase": ["@pleaseai/emulate-firebase@workspace:packages/firebase"],
+
+    "@pleaseai/emulate-gitlab": ["@pleaseai/emulate-gitlab@workspace:packages/gitlab"],
 
     "@pleaseai/emulate-kakao": ["@pleaseai/emulate-kakao@workspace:packages/kakao"],
 
@@ -250,9 +330,17 @@
 
     "@pleaseai/emulate-naver": ["@pleaseai/emulate-naver@workspace:packages/naver"],
 
+    "@pleaseai/emulate-posthog": ["@pleaseai/emulate-posthog@workspace:packages/posthog"],
+
+    "@pleaseai/emulate-spotify": ["@pleaseai/emulate-spotify@workspace:packages/spotify"],
+
     "@pleaseai/emulate-supabase": ["@pleaseai/emulate-supabase@workspace:packages/supabase"],
 
     "@pleaseai/emulate-toss-payments": ["@pleaseai/emulate-toss-payments@workspace:packages/toss-payments"],
+
+    "@pleaseai/emulate-workos": ["@pleaseai/emulate-workos@workspace:packages/workos"],
+
+    "@pleaseai/emulate-x": ["@pleaseai/emulate-x@workspace:packages/x"],
 
     "@pleaseai/eslint-config": ["@pleaseai/eslint-config@0.0.4", "", { "dependencies": { "@antfu/eslint-config": "^8.0.0", "eslint-plugin-package-json": "^0.91.0" }, "peerDependencies": { "eslint": "^9.10.0 || ^10.0.0" } }, "sha512-FWzFoZfz1Di/BCT+G9HZpyWcOT4L3lcu9jWRfOWTjRsCkEtbUVBbgp9Wa8+C5lumGq5S5ecAKyDbfAb6xd+w0Q=="],
 
@@ -394,6 +482,8 @@
 
     "@vue/shared": ["@vue/shared@3.5.35", "", {}, "sha512-zSbjL7gRXwks2ZQLRGCajBtBXEOXW9Ddhn/HvSdrGkE2dqGnumzW8XtusRrxrE9LvqtiqDXQ+A60Hp6mvdYxfA=="],
 
+    "@workos-inc/node": ["@workos-inc/node@8.13.0", "", { "dependencies": { "eventemitter3": "^5.0.4" } }, "sha512-NgQKHpwh8AbT4KvAsW91Y+4f4jja2IvFPQ5atcy5NUxUMVRgXzRFEee3erawfXrTmiCVqJjd9PljHySKBXmHKQ=="],
+
     "acorn": ["acorn@8.16.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw=="],
 
     "acorn-jsx": ["acorn-jsx@5.3.2", "", { "peerDependencies": { "acorn": "^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ=="],
@@ -405,6 +495,8 @@
     "any-promise": ["any-promise@1.3.0", "", {}, "sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A=="],
 
     "are-docs-informative": ["are-docs-informative@0.0.2", "", {}, "sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig=="],
+
+    "autumn-js": ["autumn-js@1.2.28", "", { "dependencies": { "query-string": "^9.2.2", "rou3": "^0.6.1", "zod": "^4.0.0" }, "peerDependencies": { "better-auth": "^1.6.0", "better-call": "^1.0.12", "express": "^5.2.1", "hono": "^4.0.0", "next": "^14.0.0 || ^15.0.0 || ^16.0.0", "react": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["better-auth", "better-call", "express", "hono", "next", "react"] }, "sha512-NSvfseItww7VxJ1rec75ewrA6HeS9MUoV2J+DWpDBIp7y9grSwEUOnpTuIE2SKOrGTsUzwuCx2CATNkkGjphzg=="],
 
     "balanced-match": ["balanced-match@4.0.4", "", {}, "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA=="],
 
@@ -455,6 +547,8 @@
     "debug": ["debug@4.4.3", "", { "dependencies": { "ms": "^2.1.3" }, "peerDependencies": { "supports-color": "*" }, "optionalPeers": ["supports-color"] }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 
     "decode-named-character-reference": ["decode-named-character-reference@1.3.0", "", { "dependencies": { "character-entities": "^2.0.0" } }, "sha512-GtpQYB283KrPp6nRw50q3U9/VfOutZOe103qlN7BPP6Ad27xYnOIWv4lPzo8HCAL+mMZofJ9KEy30fq6MfaK6Q=="],
+
+    "decode-uri-component": ["decode-uri-component@0.4.1", "", {}, "sha512-+8VxcR21HhTy8nOt6jf20w0c9CADrw1O8d+VZ/YzzCt4bJ3uBjw+D1q2osAB8RnpwwaeYBxy0HyKQxD5JBMuuQ=="],
 
     "deep-is": ["deep-is@0.1.4", "", {}, "sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ=="],
 
@@ -548,6 +642,8 @@
 
     "esutils": ["esutils@2.0.3", "", {}, "sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g=="],
 
+    "eventemitter3": ["eventemitter3@5.0.4", "", {}, "sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw=="],
+
     "exsolve": ["exsolve@1.0.8", "", {}, "sha512-LmDxfWXwcTArk8fUEnOfSZpHOJ6zOMUJKOtFLFqJLoKJetuQG874Uc7/Kki7zFLzYybmZhp1M7+98pfMqeX8yA=="],
 
     "fast-deep-equal": ["fast-deep-equal@3.1.3", "", {}, "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="],
@@ -567,6 +663,8 @@
     "fdir": ["fdir@6.5.0", "", { "peerDependencies": { "picomatch": "^3 || ^4" }, "optionalPeers": ["picomatch"] }, "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="],
 
     "file-entry-cache": ["file-entry-cache@8.0.0", "", { "dependencies": { "flat-cache": "^4.0.0" } }, "sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ=="],
+
+    "filter-obj": ["filter-obj@5.1.0", "", {}, "sha512-qWeTREPoT7I0bifpPUXtxkZJ1XJzxWtfoWWkdVGqa+eCr3SHW/Ocp89o8vLvbUuQnadybJpjOKu4V+RwO6sGng=="],
 
     "find-up": ["find-up@5.0.0", "", { "dependencies": { "locate-path": "^6.0.0", "path-exists": "^4.0.0" } }, "sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng=="],
 
@@ -822,6 +920,8 @@
 
     "quansync": ["quansync@0.2.11", "", {}, "sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA=="],
 
+    "query-string": ["query-string@9.4.1", "", { "dependencies": { "decode-uri-component": "^0.4.1", "filter-obj": "^5.1.0", "split-on-first": "^3.0.0" } }, "sha512-lSyJeN3RuaG7DZGWThtYRhk96+kEyZ/+doZpERuWbjeFL+Ok3vEat/swU498rAI0NcVt5/RJp8UDuLz7FckxrA=="],
+
     "readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 
     "refa": ["refa@0.12.1", "", { "dependencies": { "@eslint-community/regexpp": "^4.8.0" } }, "sha512-J8rn6v4DBb2nnFqkqwy6/NnTYMcgLA+sLr0iIO41qpv0n+ngb7ksag2tMRl0inb1bbO/esUwzW1vbJi7K0sI0g=="],
@@ -839,6 +939,8 @@
     "resolve-pkg-maps": ["resolve-pkg-maps@1.0.0", "", {}, "sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw=="],
 
     "rollup": ["rollup@4.61.1", "", { "dependencies": { "@types/estree": "1.0.9" }, "optionalDependencies": { "@rollup/rollup-android-arm-eabi": "4.61.1", "@rollup/rollup-android-arm64": "4.61.1", "@rollup/rollup-darwin-arm64": "4.61.1", "@rollup/rollup-darwin-x64": "4.61.1", "@rollup/rollup-freebsd-arm64": "4.61.1", "@rollup/rollup-freebsd-x64": "4.61.1", "@rollup/rollup-linux-arm-gnueabihf": "4.61.1", "@rollup/rollup-linux-arm-musleabihf": "4.61.1", "@rollup/rollup-linux-arm64-gnu": "4.61.1", "@rollup/rollup-linux-arm64-musl": "4.61.1", "@rollup/rollup-linux-loong64-gnu": "4.61.1", "@rollup/rollup-linux-loong64-musl": "4.61.1", "@rollup/rollup-linux-ppc64-gnu": "4.61.1", "@rollup/rollup-linux-ppc64-musl": "4.61.1", "@rollup/rollup-linux-riscv64-gnu": "4.61.1", "@rollup/rollup-linux-riscv64-musl": "4.61.1", "@rollup/rollup-linux-s390x-gnu": "4.61.1", "@rollup/rollup-linux-x64-gnu": "4.61.1", "@rollup/rollup-linux-x64-musl": "4.61.1", "@rollup/rollup-openbsd-x64": "4.61.1", "@rollup/rollup-openharmony-arm64": "4.61.1", "@rollup/rollup-win32-arm64-msvc": "4.61.1", "@rollup/rollup-win32-ia32-msvc": "4.61.1", "@rollup/rollup-win32-x64-gnu": "4.61.1", "@rollup/rollup-win32-x64-msvc": "4.61.1", "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-I4KW6iuRpuu2uHBLraZ1wNZe0DP7lnRha+VJ9tNaYVaVgKhW0aI3h4RYnoRPeql0flHm/Co55b7snEDcOfOJrA=="],
+
+    "rou3": ["rou3@0.6.3", "", {}, "sha512-1HSG1ENTj7Kkm5muMnXuzzfdDOf7CFnbSYFA+H3Fp/rB9lOCxCPgy1jlZxTKyFoC5jJay8Mmc+VbPLYRjzYLrA=="],
 
     "scslre": ["scslre@0.3.0", "", { "dependencies": { "@eslint-community/regexpp": "^4.8.0", "refa": "^0.12.0", "regexp-ast-analysis": "^0.7.0" } }, "sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ=="],
 
@@ -865,6 +967,8 @@
     "spdx-expression-parse": ["spdx-expression-parse@4.0.0", "", { "dependencies": { "spdx-exceptions": "^2.1.0", "spdx-license-ids": "^3.0.0" } }, "sha512-Clya5JIij/7C6bRR22+tnGXbc4VKlibKSVj2iHvVeX5iMW7s1SIQlqu699JkODJJIhh/pUu8L0/VLh8xflD+LQ=="],
 
     "spdx-license-ids": ["spdx-license-ids@3.0.23", "", {}, "sha512-CWLcCCH7VLu13TgOH+r8p1O/Znwhqv/dbb6lqWy67G+pT1kHmeD/+V36AVb/vq8QMIQwVShJ6Ssl5FPh0fuSdw=="],
+
+    "split-on-first": ["split-on-first@3.0.0", "", {}, "sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA=="],
 
     "strip-indent": ["strip-indent@4.1.1", "", {}, "sha512-SlyRoSkdh1dYP0PzclLE7r0M9sgbFKKMFXpFRUMNuKhQSbC6VQIGzq3E0qsfvGJaUFJPGv6Ws1NZ/haTAjfbMA=="],
 
@@ -937,6 +1041,8 @@
     "yaml-eslint-parser": ["yaml-eslint-parser@2.0.0", "", { "dependencies": { "eslint-visitor-keys": "^5.0.0", "yaml": "^2.0.0" } }, "sha512-h0uDm97wvT2bokfwwTmY6kJ1hp6YDFL0nRHwNKz8s/VD1FH/vvZjAKoMUE+un0eaYBSG7/c6h+lJTP+31tjgTw=="],
 
     "yocto-queue": ["yocto-queue@0.1.0", "", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
+
+    "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 
     "zwitch": ["zwitch@2.0.4", "", {}, "sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A=="],
 

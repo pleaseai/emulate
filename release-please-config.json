@@ -8,12 +8,18 @@
   ],
   "packages": {
     "packages/asana": {},
+    "packages/autumn": {},
     "packages/emulate": {},
     "packages/firebase": {},
+    "packages/gitlab": {},
     "packages/kakao": {},
     "packages/linear": {},
     "packages/naver": {},
+    "packages/posthog": {},
+    "packages/spotify": {},
     "packages/supabase": {},
-    "packages/toss-payments": {}
+    "packages/toss-payments": {},
+    "packages/workos": {},
+    "packages/x": {}
   }
 }
