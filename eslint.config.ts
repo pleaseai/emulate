@@ -6,7 +6,7 @@ export default pleaseai(
   },
   {
     // The CLI legitimately prints to stdout.
-    files: ['packages/emulate/src/index.ts', 'packages/emulate/src/commands/**'],
+    files: ['packages/emulate/src/index.ts', 'packages/emulate/src/commands/**', 'packages/emulate/src/portless.ts'],
     rules: {
       'no-console': 'off',
     },

@@ -66,7 +66,8 @@ npx @pleaseai/emulate list
 | `-p, --port <port>` | `4000` | Base port (auto-increments per service) |
 | `-s, --service <services>` | all | Comma-separated services to enable |
 | `--seed <file>` | auto-detect | Path to seed config (YAML or JSON) |
-| `--base-url <url>` | — | Override base URL (single service only) |
+| `--base-url <url>` | — | Override base URL (supports `{service}` interpolation) |
+| `--portless` | off | Serve over HTTPS via [portless](/guides/portless/) (auto-registers aliases) |
 
 When a single service is started with `--service`, it runs on the base port.
 When multiple services run together, ports are assigned sequentially from the

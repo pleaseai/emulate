@@ -1,4 +1,5 @@
 import type { Emulator, SeedConfig } from '../api.js'
+import type { PortlessAlias } from '../portless.js'
 import type { ServiceName } from '../registry.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -6,6 +7,7 @@ import process from 'node:process'
 import pc from 'picocolors'
 import { parse as parseYaml } from 'yaml'
 import { createEmulator } from '../api.js'
+import { ensurePortless, portlessBaseUrl, registerAliases, removeAliases } from '../portless.js'
 import { SERVICE_NAMES, SERVICE_REGISTRY } from '../registry.js'
 
 export interface StartOptions {
@@ -13,6 +15,7 @@ export interface StartOptions {
   service?: string
   seed?: string
   baseUrl?: string
+  portless?: boolean
 }
 
 interface LoadResult {
@@ -89,9 +92,25 @@ export async function startCommand(options: StartOptions): Promise<void> {
     }
   }
 
-  if (options.baseUrl && services.length > 1) {
-    console.error('--base-url can only be used with a single service (--service).')
+  if (options.portless && options.baseUrl) {
+    console.error('--portless and --base-url are mutually exclusive.')
     process.exit(1)
+  }
+
+  if (options.baseUrl && services.length > 1 && !options.baseUrl.includes('{service}')) {
+    console.error('--base-url with multiple services requires a {service} placeholder, e.g. https://{service}.myproxy.test')
+    process.exit(1)
+  }
+
+  if (options.portless) {
+    await ensurePortless()
+    const aliases: PortlessAlias[] = services.map((service, i) => ({
+      name: `${service}.emulate`,
+      port: basePort + i,
+    }))
+    registerAliases(aliases)
+    const cleanup = () => removeAliases(aliases)
+    process.on('exit', cleanup)
   }
 
   const emulators: Array<{ service: ServiceName, emulator: Emulator }> = []
@@ -103,7 +122,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
       service,
       port,
       seed: seedConfig ?? undefined,
-      baseUrl: services.length === 1 ? options.baseUrl : undefined,
+      baseUrl: options.portless ? portlessBaseUrl(service) : options.baseUrl,
     })
     emulators.push({ service, emulator })
   }

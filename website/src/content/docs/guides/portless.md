@@ -20,51 +20,53 @@ npm install -g portless
 portless proxy start
 ```
 
-## Point an alias at an emulator
+## The --portless flag
 
-Start a service and register its port as an alias:
-
-```bash
-npx @pleaseai/emulate --service kakao   # listens on http://localhost:4000
-
-portless alias kakao.emulate 4000       # → https://kakao.emulate.localhost
-```
-
-Requests to `https://kakao.emulate.localhost` are now proxied to the
-emulator, HTTP/2 and TLS included.
-
-## Tell the emulator its public URL
-
-Emulators embed their base URL in the responses they generate — OAuth
-authorize redirects, issued URLs, webhook payloads. Behind a proxy the
-default `http://localhost:4000` would leak through, so override it.
-
-For a single service, use `--base-url`:
+Start emulate with portless integration and every service registers itself
+as a portless alias automatically:
 
 ```bash
-npx @pleaseai/emulate --service kakao --base-url https://kakao.emulate.localhost
+npx @pleaseai/emulate --portless
 ```
 
-For multiple services, set `baseUrl` per service in the seed config
-(`--base-url` only works with a single `--service`):
+Each service gets a named HTTPS URL:
+
+```
+kakao      https://kakao.emulate.localhost
+naver      https://naver.emulate.localhost
+supabase   https://supabase.emulate.localhost
+```
+
+If portless is not installed, emulate prompts to install it
+(`npm i -g portless`); the proxy must already be running
+(`portless proxy start`). The flag overwrites any existing aliases matching
+`<service>.emulate`, and aliases are removed automatically when emulate
+shuts down.
+
+The emulators also advertise these HTTPS URLs as their base URL, so OAuth
+redirects, issued URLs, and webhook payloads use
+`https://<service>.emulate.localhost` instead of `http://localhost:<port>`.
+
+## Custom base URLs without --portless
+
+For any other reverse proxy, use `--base-url` or the `EMULATE_BASE_URL`
+env var — both support `{service}` interpolation for multi-service runs:
+
+```bash
+npx @pleaseai/emulate --base-url "https://{service}.myproxy.test"
+```
+
+Per-service overrides in the seed config take the highest priority:
 
 ```yaml
 kakao:
   baseUrl: https://kakao.emulate.localhost
   # ...apps, users
-supabase:
-  baseUrl: https://supabase.emulate.localhost
-  # ...tables
 ```
 
-```bash
-portless alias kakao.emulate 4000
-portless alias supabase.emulate 4004
-npx @pleaseai/emulate --seed emulate.config.yaml
-```
-
-The seed `baseUrl` takes priority over the computed default; the
-`--base-url` flag beats both. The same override works programmatically:
+The full base URL priority is: seed `baseUrl` → `--base-url` flag →
+`EMULATE_BASE_URL` → `PORTLESS_URL` (set by the portless CLI wrapper) →
+`http://localhost:<port>`. The same override works programmatically:
 
 ```ts
 const emulator = await createEmulator({
@@ -74,11 +76,14 @@ const emulator = await createEmulator({
 })
 ```
 
-:::note
-The upstream vercel-labs/emulate CLI has a `--portless` flag that
-auto-registers one alias per service. This fork does not implement it —
-register aliases with the `portless` CLI as shown above.
-:::
+## Manual aliases
+
+You can also register aliases yourself instead of using `--portless`:
+
+```bash
+npx @pleaseai/emulate --service kakao --base-url https://kakao.emulate.localhost
+portless alias kakao.emulate 4000       # → https://kakao.emulate.localhost
+```
 
 ## Cleanup
 
