@@ -1,0 +1,79 @@
+website/src/content/docs/services/linear.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-96
+website/src/content/docs/services/spotify.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-71
+website/.gitignore
+  s_fe23e72629f2af::t_f24155317ab40d 1-4
+website/src/content/docs/index.mdx
+  s_fe23e72629f2af::t_2bb3da50e85fd3 1-52
+website/tsconfig.json
+  s_fe23e72629f2af::t_8cfc031820eb14 1-5
+website/src/content/docs/services/gitlab.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-53
+website/src/content/docs/services/naver.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-86
+website/wrangler.jsonc
+  s_fe23e72629f2af::t_bbff913390ed76 1-6
+website/scripts/sync-services.ts
+  s_fe23e72629f2af::t_e65f7218c56d83 1-68
+website/src/content/docs/services/x.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-73
+website/src/content/docs/guides/programmatic-api.md
+  s_fe23e72629f2af::t_3e46b13eb0bd26 1-87
+website/src/content/docs/guides/authentication.md
+  s_fe23e72629f2af::t_93ff469d335d2a 1-79
+website/src/content/docs/services/posthog.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-71
+website/README.md
+  s_fe23e72629f2af::t_f71f6dacda5e79 1-39
+website/src/content/docs/reference/architecture.md
+  s_fe23e72629f2af::t_226f6a9d6e04ab 1-76
+website/package.json
+  s_fe23e72629f2af::t_5df06fab6567ca 1-21
+.github/workflows/docs.yml
+  s_fe23e72629f2af::t_3e49fb82d5a934 1-35
+website/src/content/docs/services/asana.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-117
+website/src/content/docs/services/autumn.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-91
+website/public/favicon.svg
+  s_fe23e72629f2af::t_648e2849ceeba2 1-4
+website/src/content.config.ts
+  s_fe23e72629f2af::t_07f9f756196142 1-7
+website/src/content/docs/services/firebase.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-92
+website/src/content/docs/services/kakao.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-81
+website/src/content/docs/services/tosspayments.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-87
+website/src/content/docs/services/workos.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-70
+website/src/content/docs/services/supabase.md
+  s_fe23e72629f2af::t_2ad82a62fa7510 1-110
+website/src/content/docs/guides/getting-started.md
+  s_fe23e72629f2af::t_92cd4ed6143f90 1-104
+website/astro.config.mjs
+  s_fe23e72629f2af::t_c2aa4490d3fcd6 1-42
+website/src/content/docs/reference/conventions.md
+  s_fe23e72629f2af::t_e385c1d46888e2 1-182
+website/src/content/docs/guides/configuration.md
+  s_fe23e72629f2af::t_fff650fac84228 1-87
+website/bun.lock
+  s_fe23e72629f2af::t_546b56548cd028 1-1076
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7eadcf7599313a473931a92dca70774b8df61573",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
