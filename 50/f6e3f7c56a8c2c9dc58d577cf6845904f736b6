@@ -1,0 +1,26 @@
+.claude/skills/run-emulate/SKILL.md
+  s_034719b76a1143::t_0b5fc89fd13933 62-65
+  s_034719b76a1143::t_b06de4107e1684 40-45
+.claude/skills/run-emulate/smoke.sh
+  s_034719b76a1143::t_6dfedac5560282 60-68
+  s_034719b76a1143::t_b18c2ebb709c8a 37
+  s_034719b76a1143::t_69a122f4009116 38-41
+  s_034719b76a1143::t_8a9db763f3b151 112-116
+  s_034719b76a1143::t_923cc062c6ec93 28-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "50f6e3f7c56a8c2c9dc58d577cf6845904f736b6",
+  "prompts": {},
+  "sessions": {
+    "s_034719b76a1143": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5cf6688e-90eb-4c8a-984b-9b6d876e4dfa",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
