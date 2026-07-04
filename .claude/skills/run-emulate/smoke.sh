@@ -25,6 +25,8 @@ check() { # check <name> <expected-substring> <actual>
 
 cleanup() {
   [[ -n "${SERVER_PID:-}" ]] && kill "$SERVER_PID" 2>/dev/null
+  # Keep the workdir (seed + server.log) only when something failed, for debugging.
+  [[ $FAIL == 0 && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"
 }
 trap cleanup EXIT
 
@@ -32,8 +34,11 @@ echo "== build"
 (cd "$ROOT" && bun run build >/dev/null) || { echo "build failed"; exit 1; }
 
 echo "== seed + start (ports $BASE_PORT-$LINEAR, workdir $WORKDIR)"
-(cd "$WORKDIR" && bun "$CLI" init >/dev/null)
-(cd "$WORKDIR" && bun "$CLI" start --port "$BASE_PORT" --seed emulate.config.yaml > server.log 2>&1) &
+(cd "$WORKDIR" && bun "$CLI" init >/dev/null) || { echo "emulate init failed"; exit 1; }
+# exec so $! is the bun process itself, not a wrapper subshell — otherwise
+# cleanup kills the subshell and leaks the server, which keeps the port and
+# stale state (e.g. EMAIL_EXISTS on the firebase check) for the next run.
+(cd "$WORKDIR" && exec bun "$CLI" start --port "$BASE_PORT" --seed emulate.config.yaml > server.log 2>&1) &
 SERVER_PID=$!
 
 for i in $(seq 1 30); do
@@ -51,6 +56,15 @@ check "kakao token" '"access_token"' "$TOK"
 AT=$(echo "$TOK" | sed -E 's/.*"access_token":"([^"]+)".*/\1/')
 ME=$(curl -s -m3 "http://localhost:$KAKAO/v2/user/me" -H "Authorization: Bearer $AT")
 check "kakao /v2/user/me" '"email":"hong@example.com"' "$ME"
+
+echo "== naver oauth (authorize -> token -> /v1/nid/me)"
+NLOC=$(curl -s -m3 -o /dev/null -w '%{redirect_url}' "http://localhost:$NAVER/oauth2.0/authorize?client_id=naver_client_id_example&redirect_uri=http://localhost:3000/api/auth/callback/naver&response_type=code&state=smoke&user=naver_user_001")
+NCODE=$(echo "$NLOC" | sed -E 's/.*[?&]code=([^&]+).*/\1/')
+NTOK=$(curl -s -m3 "http://localhost:$NAVER/oauth2.0/token?grant_type=authorization_code&client_id=naver_client_id_example&client_secret=naver_client_secret_example&code=$NCODE&state=smoke")
+check "naver token" '"access_token"' "$NTOK"
+NAT=$(echo "$NTOK" | sed -E 's/.*"access_token":"([^"]+)".*/\1/')
+NME=$(curl -s -m3 "http://localhost:$NAVER/v1/nid/me" -H "Authorization: Bearer $NAT")
+check "naver /v1/nid/me" '"email":"hong@example.com"' "$NME"
 
 echo "== tosspayments (create -> confirm)"
 P=$(curl -s -m3 -X POST "http://localhost:$TOSS/internal/payments" -H 'content-type: application/json' \
@@ -95,5 +109,9 @@ PROG=$(bun "$WORKDIR/prog.ts" 2>&1)
 check "createEmulator supabase" '"title":"prog"' "$PROG"
 
 echo
-echo "passed: $PASS  failed: $FAIL  (server log: $WORKDIR/server.log)"
+if [[ $FAIL == 0 ]]; then
+  echo "passed: $PASS  failed: 0"
+else
+  echo "passed: $PASS  failed: $FAIL  (workdir kept for debugging: $WORKDIR/server.log)"
+fi
 [[ $FAIL == 0 ]]
