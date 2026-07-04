@@ -1,0 +1,24 @@
+website/package.json
+  s_fe23e72629f2af::t_98d000a00415fd 6
+.github/workflows/docs.yml
+  s_fe23e72629f2af::t_25bd21a054c971 27-30
+website/scripts/sync-services.ts
+  s_fe23e72629f2af::t_dc586e40d06c8a 54-57
+  s_fe23e72629f2af::t_3a53134aab35ae 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a7dea74023968978f3c22fb97b755dbb6fbe4cb2",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
