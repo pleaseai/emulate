@@ -6,3 +6,5 @@ dist/
 .env
 .env.*
 coverage/
+.impeccable/
+.please/state/

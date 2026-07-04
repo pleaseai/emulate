@@ -23,6 +23,12 @@ using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 | `supabase` | 4004 | GoTrue Auth (signup/token/user), PostgREST table CRUD + filters |
 | `asana` | 4005 | Workspaces, teams, projects, sections, tasks, tags, stories, webhooks (REST API v1.0) |
 | `linear` | 4006 | Linear GraphQL API (read-only): issues, projects, teams, users, orgs, labels, workflow states, Relay pagination |
+| `autumn` | 4007 | Autumn billing: customers, balances track/check, plans, billing attach, hosted checkout (autumn-js compatible) |
+| `gitlab` | 4008 | GitLab GraphQL endpoint with real-schema introspection |
+| `posthog` | 4009 | Event capture, projects/events/users read API, OAuth 2.0 with dynamic client registration |
+| `spotify` | 4010 | OAuth 2.0 client credentials token, catalog search, artists, albums, tracks |
+| `workos` | 4011 | User Management, organizations, memberships, invitations, API keys, OAuth/OIDC, Vault KV (@workos-inc/node compatible) |
+| `x` | 4012 | X API v2: OAuth 2.0 PKCE, tweets, users, timelines |
 
 ## Getting started
 
@@ -115,6 +121,12 @@ packages/
   supabase/         # @pleaseai/emulate-supabase
   asana/            # @pleaseai/emulate-asana
   linear/           # @pleaseai/emulate-linear
+  autumn/           # @pleaseai/emulate-autumn
+  gitlab/           # @pleaseai/emulate-gitlab
+  posthog/          # @pleaseai/emulate-posthog
+  spotify/          # @pleaseai/emulate-spotify
+  workos/           # @pleaseai/emulate-workos
+  x/                # @pleaseai/emulate-x
 docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators
 ```

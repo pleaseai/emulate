@@ -26,7 +26,13 @@
     "oauth",
     "testing",
     "ci",
-    "local-development"
+    "local-development",
+    "autumn",
+    "gitlab",
+    "posthog",
+    "spotify",
+    "workos",
+    "x"
   ],
   "exports": {
     ".": {
@@ -59,12 +65,18 @@
   "dependencies": {
     "@emulators/core": "^0.6.0",
     "@pleaseai/emulate-asana": "workspace:*",
+    "@pleaseai/emulate-autumn": "workspace:*",
     "@pleaseai/emulate-firebase": "workspace:*",
+    "@pleaseai/emulate-gitlab": "workspace:*",
     "@pleaseai/emulate-kakao": "workspace:*",
     "@pleaseai/emulate-linear": "workspace:*",
     "@pleaseai/emulate-naver": "workspace:*",
+    "@pleaseai/emulate-posthog": "workspace:*",
+    "@pleaseai/emulate-spotify": "workspace:*",
     "@pleaseai/emulate-supabase": "workspace:*",
     "@pleaseai/emulate-toss-payments": "workspace:*",
+    "@pleaseai/emulate-workos": "workspace:*",
+    "@pleaseai/emulate-x": "workspace:*",
     "commander": "^15",
     "picocolors": "^1.1.1",
     "yaml": "^2"
