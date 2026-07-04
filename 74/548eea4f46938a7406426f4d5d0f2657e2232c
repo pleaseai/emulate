@@ -1,0 +1,41 @@
+packages/workos/src/helpers.ts
+  s_01aae14021cdbd::t_37d970e7008038 11
+  s_01aae14021cdbd::t_d41ea02e6d27f6 17,21
+  s_01aae14021cdbd::t_a1d309f4261e91 12
+packages/posthog/src/__tests__/posthog.test.ts
+  s_01aae14021cdbd::t_198c5a6ca1996f 90-155
+packages/workos/src/keys.ts
+  s_01aae14021cdbd::t_d41ea02e6d27f6 2,35,73
+packages/spotify/src/__tests__/spotify.test.ts
+  s_01aae14021cdbd::t_fdc7975f882bbd 110-143
+sonar-project.properties
+  s_01aae14021cdbd::t_e323e5eb4f8c7a 12-14
+packages/autumn/src/__tests__/autumn.test.ts
+  s_01aae14021cdbd::t_da31e6e1f197ba 85-132,134-141,143-156,158-159
+  s_01aae14021cdbd::t_76435ae34ff44d 133,142,157
+  s_01aae14021cdbd::t_916ff73c5b9968 25-30
+packages/workos/src/__tests__/workos.test.ts
+  s_01aae14021cdbd::t_ede3358c4b4746 410-454
+packages/x/src/store.ts
+  s_01aae14021cdbd::t_d41ea02e6d27f6 3,48-49
+packages/x/src/__tests__/x.test.ts
+  s_01aae14021cdbd::t_d39e0cab47a116 5
+  s_01aae14021cdbd::t_184fc4bc4609f1 653-659
+  s_01aae14021cdbd::t_8d2a01c365541b 455-652,660-666
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "74548eea4f46938a7406426f4d5d0f2657e2232c",
+  "prompts": {},
+  "sessions": {
+    "s_01aae14021cdbd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eeb4b80d-1621-46cd-88e0-1c2257aeeaab",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
