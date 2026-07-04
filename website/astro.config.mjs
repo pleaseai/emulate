@@ -23,6 +23,7 @@ export default defineConfig({
             { label: 'Configuration', slug: 'guides/configuration' },
             { label: 'Programmatic API', slug: 'guides/programmatic-api' },
             { label: 'Authentication', slug: 'guides/authentication' },
+            { label: 'HTTPS with portless', slug: 'guides/portless' },
           ],
         },
         {

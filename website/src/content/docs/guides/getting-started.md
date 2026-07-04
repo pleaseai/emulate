@@ -102,3 +102,4 @@ To use an emulator, only the base URL your SDK talks to needs to change:
 - [Configuration](/guides/configuration/) — seed apps, users, and table data from YAML
 - [Programmatic API](/guides/programmatic-api/) — embed emulators in your test suite
 - [Authentication](/guides/authentication/) — how tokens and OAuth flows work
+- [HTTPS with portless](/guides/portless/) — trusted `https://<service>.emulate.localhost` URLs
