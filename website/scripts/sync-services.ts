@@ -41,13 +41,15 @@ for (const dir of await readdir(SKILLS)) {
   const raw = await Bun.file(join(SKILLS, dir, 'SKILL.md')).text()
 
   const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n/)
-  if (!fmMatch) throw new Error(`no frontmatter in skills/${dir}/SKILL.md`)
-  const descMatch = fmMatch[1].match(/^description:\s*(.*)$/m)
+  if (!fmMatch) {
+    throw new Error(`no frontmatter in skills/${dir}/SKILL.md`)
+  }
+  const descMatch = fmMatch[1].match(/^description: (.*)$/m)
   const description = firstSentence(descMatch?.[1] ?? '')
 
   let body = raw.slice(fmMatch[0].length).trim()
   // Drop the leading H1 — Starlight renders the frontmatter title instead.
-  body = body.replace(/^#\s+.*\n+/, '')
+  body = body.replace(/^# .*\n+/, '')
 
   const page = `---
 title: ${meta.label}

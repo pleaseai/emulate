@@ -2,7 +2,7 @@ import pleaseai from '@pleaseai/eslint-config'
 
 export default pleaseai(
   {
-    ignores: ['docs/**'],
+    ignores: ['docs/**', 'website/src/content/**', 'website/.astro/**', 'website/dist/**'],
   },
   {
     // The CLI legitimately prints to stdout.
