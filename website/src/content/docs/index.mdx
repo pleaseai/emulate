@@ -1,0 +1,52 @@
+---
+title: emulate
+description: Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.
+template: splash
+hero:
+  tagline: Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation — not mocks.
+  actions:
+    - text: Get Started
+      link: /guides/getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/pleaseai/emulate
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+## Why emulate?
+
+<CardGrid stagger>
+  <Card title="Production fidelity" icon="approve-check">
+    Response JSON field names, formats, and error shapes match the real
+    services exactly. Point your SDK at a different base URL and everything
+    else stays the same.
+  </Card>
+  <Card title="Fully stateful" icon="setting">
+    A real in-memory store with CRUD, indexing, filtering, and pagination —
+    state created by one API call is visible to the next. Not canned mocks.
+  </Card>
+  <Card title="Built for CI" icon="rocket">
+    No network, no external accounts, no flakes. Seed deterministic fixtures
+    from a YAML config and reset between tests in milliseconds.
+  </Card>
+  <Card title="Korean services + BaaS" icon="puzzle">
+    Kakao, Naver, and Toss Payments alongside Firebase, Supabase, Asana,
+    Linear, GitLab, PostHog, Spotify, WorkOS, X, and more.
+  </Card>
+</CardGrid>
+
+## Quick start
+
+```bash
+npx @pleaseai/emulate
+```
+
+Every service starts with sensible defaults — no config file needed. Ports are
+assigned sequentially from `4000` (Kakao) through `4012` (X).
+
+Built on the architecture of
+[vercel-labs/emulate](https://github.com/vercel-labs/emulate), using
+[`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
