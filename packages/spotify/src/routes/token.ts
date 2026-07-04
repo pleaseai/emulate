@@ -52,8 +52,10 @@ export function tokenRoutes({ app, store }: RouteContext): void {
       try {
         const decoded = atob(basic[1].trim())
         const sep = decoded.indexOf(':')
-        clientId = decoded.slice(0, sep)
-        clientSecret = decoded.slice(sep + 1)
+        if (sep >= 0) {
+          clientId = decoded.slice(0, sep)
+          clientSecret = decoded.slice(sep + 1)
+        }
       }
       catch {
         /* fall through to invalid_client */

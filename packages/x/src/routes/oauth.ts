@@ -300,6 +300,16 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
         400,
       )
     }
+    if ((code_challenge_method || 'S256').toUpperCase() !== 'S256') {
+      return c.html(
+        renderErrorPage(
+          'Unsupported PKCE method',
+          'code_challenge_method must be S256 for the X authorization code flow.',
+          SERVICE_LABEL,
+        ),
+        400,
+      )
+    }
     const requestedScopes = scope.split(/[\s+]+/).filter(Boolean)
     const unknownScope = requestedScopes.find(s => !X_SCOPES.includes(s as (typeof X_SCOPES)[number]))
     if (unknownScope) {
