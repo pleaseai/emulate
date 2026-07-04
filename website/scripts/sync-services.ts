@@ -2,7 +2,6 @@
  * Regenerates src/content/docs/services/*.md from ../skills/<service>/SKILL.md.
  * Run from website/: bun scripts/sync-services.ts
  */
-import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
 const ROOT = join(import.meta.dir, '..', '..')
@@ -32,13 +31,12 @@ function firstSentence(text: string): string {
   return (match ? match[0] : normalized).trim()
 }
 
-for (const dir of await readdir(SKILLS)) {
-  const meta = SERVICES[dir]
-  if (!meta) {
-    console.warn(`skip: no service mapping for skills/${dir}`)
-    continue
+for (const [dir, meta] of Object.entries(SERVICES)) {
+  const skill = Bun.file(join(SKILLS, dir, 'SKILL.md'))
+  if (!(await skill.exists())) {
+    throw new Error(`missing skills/${dir}/SKILL.md`)
   }
-  const raw = await Bun.file(join(SKILLS, dir, 'SKILL.md')).text()
+  const raw = await skill.text()
 
   const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n/)
   if (!fmMatch) {
