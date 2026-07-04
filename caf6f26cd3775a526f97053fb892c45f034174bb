@@ -1,0 +1,29 @@
+packages/@emulators/asana/src/routes/tasks.ts
+  a0928bd3d46c4edd 114-116,371-373
+packages/@emulators/asana/src/routes/users.ts
+  a0928bd3d46c4edd 36-38
+packages/@emulators/asana/src/routes/tags.ts
+  a0928bd3d46c4edd 34-36,42
+packages/@emulators/asana/src/routes/sections.ts
+  a0928bd3d46c4edd 61-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.4",
+  "base_commit_sha": "caf6f26cd3775a526f97053fb892c45f034174bb",
+  "prompts": {
+    "a0928bd3d46c4edd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ee74895e-f7a7-46f7-95cd-3bd3894798d5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Minsu Lee",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 2,
+      "accepted_lines": 17,
+      "overriden_lines": 0
+    }
+  }
+}
