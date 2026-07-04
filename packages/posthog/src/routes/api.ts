@@ -4,8 +4,9 @@ import { requireAuth } from '@emulators/core'
 import { getPostHogStore } from '../store.js'
 
 function parseProjectId(value: string): number | null {
-  const parsed = Number.parseInt(value, 10)
-  return Number.isFinite(parsed) ? parsed : null
+  // Strict full-segment integer check — parseInt would accept `1abc` or `1e2`
+  // and silently route to the wrong project.
+  return /^\d+$/.test(value) ? Number.parseInt(value, 10) : null
 }
 
 function serializeProject(project: { project_id: number, name: string, api_token: string }): Record<string, unknown> {

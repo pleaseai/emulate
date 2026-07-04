@@ -70,11 +70,56 @@ function buildSpec(baseUrl: string): Record<string, unknown> {
         post: {
           operationId: 'oauth2Token',
           summary: 'Token endpoint (authorization_code, refresh_token, client_credentials)',
+          // The token endpoint issues the tokens the global security schemes
+          // describe — client auth is HTTP Basic or body client_id, never Bearer.
+          security: [],
+          requestBody: {
+            required: true,
+            content: {
+              'application/x-www-form-urlencoded': {
+                schema: {
+                  type: 'object',
+                  required: ['grant_type'],
+                  properties: {
+                    grant_type: {
+                      type: 'string',
+                      enum: ['authorization_code', 'refresh_token', 'client_credentials'],
+                    },
+                    code: { type: 'string', description: 'Authorization code (authorization_code grant).' },
+                    code_verifier: { type: 'string', description: 'PKCE verifier (authorization_code grant).' },
+                    redirect_uri: { type: 'string', description: 'Must match the authorize request.' },
+                    client_id: { type: 'string', description: 'Public clients pass their id in the body.' },
+                    refresh_token: { type: 'string', description: 'Refresh token (refresh_token grant).' },
+                  },
+                },
+              },
+            },
+          },
           responses: { 200: ok('Token response.'), 400: ok('OAuth error.'), 401: ok('invalid_client.') },
         },
       },
       '/2/oauth2/revoke': {
-        post: { operationId: 'oauth2Revoke', summary: 'Revoke a token', responses: { 200: ok('Revoked.') } },
+        post: {
+          operationId: 'oauth2Revoke',
+          summary: 'Revoke a token',
+          security: [],
+          requestBody: {
+            required: true,
+            content: {
+              'application/x-www-form-urlencoded': {
+                schema: {
+                  type: 'object',
+                  required: ['token'],
+                  properties: {
+                    token: { type: 'string' },
+                    client_id: { type: 'string', description: 'Public clients pass their id in the body.' },
+                  },
+                },
+              },
+            },
+          },
+          responses: { 200: ok('Revoked.') },
+        },
       },
       '/2/users/me': {
         get: {

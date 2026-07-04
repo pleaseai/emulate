@@ -1,6 +1,6 @@
 import type { RouteContext } from '@emulators/core'
 import { bodyStr, constantTimeSecretEqual } from '@emulators/core'
-import { getSpotifyStore, issueToken, spotifyId } from '../store.js'
+import { getSpotifyStore, issueToken, spotifyId, TOKEN_TTL_SECONDS } from '../store.js'
 
 // Real Spotify hands you client_id/secret in its developer dashboard; the
 // emulator has no dashboard, so this is its stand-in: create an "app" and get
@@ -16,11 +16,21 @@ export function appsRoutes({ app, store, baseUrl }: RouteContext): void {
   app.post('/_emulator/apps', async (c) => {
     const body = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>)
     const client_id = bodyStr(body.client_id) || `app_${spotifyId().slice(0, 18)}`
-    const client_secret = bodyStr(body.client_secret) || spotifyId()
-    if (!ss.clients.findOneBy('client_id', client_id)) {
-      ss.clients.insert({ client_id, client_secret, name: bodyStr(body.name) || 'App' })
-    }
-    return c.json({ client_id, client_secret, token_url: `${baseUrl}/api/token`, grant_type: 'client_credentials' })
+    // For an existing client_id, return the STORED credentials — minting a new
+    // secret here would hand back credentials that fail token exchange.
+    const existing = ss.clients.findOneBy('client_id', client_id)
+    const client
+      = existing ?? ss.clients.insert({
+        client_id,
+        client_secret: bodyStr(body.client_secret) || spotifyId(),
+        name: bodyStr(body.name) || 'App',
+      })
+    return c.json({
+      client_id: client.client_id,
+      client_secret: client.client_secret,
+      token_url: `${baseUrl}/api/token`,
+      grant_type: 'client_credentials',
+    })
   })
 }
 
@@ -64,6 +74,6 @@ export function tokenRoutes({ app, store }: RouteContext): void {
 
     const token = `BQ${spotifyId()}${spotifyId()}`
     issueToken(store, token, { clientId, scopes: bodyStr(body.scope).split(' ').filter(Boolean) })
-    return c.json({ access_token: token, token_type: 'Bearer', expires_in: 3600 })
+    return c.json({ access_token: token, token_type: 'Bearer', expires_in: TOKEN_TTL_SECONDS })
   })
 }

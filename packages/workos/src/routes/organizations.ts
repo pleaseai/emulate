@@ -9,7 +9,8 @@ export function organizationRoutes(ctx: RouteContext): void {
 
   app.post('/organizations', async (c) => {
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>
-    const name = String(body.name ?? '')
+    // Strict type check — String(...) would happily accept numbers/objects.
+    const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name) {
       return workosError(c, 422, 'invalid_request', 'name is required')
     }

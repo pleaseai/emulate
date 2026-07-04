@@ -325,6 +325,17 @@ export function oauthRoutes(ctx: RouteContext): void {
     if (!verifyPkce(code, bodyStr(body.code_verifier))) {
       return c.json({ error: 'invalid_grant', error_description: 'PKCE verification failed.' }, 400)
     }
+    // Registered confidential clients (client_secret_post) must prove the
+    // secret — otherwise they are impersonable with just a leaked client_id.
+    const registeredClient = ps.oauthClients.findOneBy('client_id', code.client_id)
+    if (
+      registeredClient
+      && registeredClient.token_endpoint_auth_method === 'client_secret_post'
+      && registeredClient.client_secret
+      && bodyStr(body.client_secret) !== registeredClient.client_secret
+    ) {
+      return c.json({ error: 'invalid_client', error_description: 'Invalid client_secret.' }, 401)
+    }
 
     const user = ps.users.findOneBy('uuid', code.user_uuid)
     if (!user) {

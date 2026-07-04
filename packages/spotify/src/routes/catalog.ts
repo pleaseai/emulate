@@ -63,8 +63,15 @@ export function catalogRoutes({ app, store, baseUrl }: RouteContext): void {
     if (!authed(c)) {
       return unauthorized(c)
     }
-    const q = (c.req.query('q') ?? '').toLowerCase()
-    const types = (c.req.query('type') ?? 'artist,album,track').split(',').map(s => s.trim())
+    // Real Spotify rejects search requests missing q or type — defaulting them
+    // would hide request-construction bugs in the app under test.
+    const rawQ = c.req.query('q')
+    const rawType = c.req.query('type')
+    if (!rawQ || !rawType) {
+      return c.json({ error: { status: 400, message: `Missing required field: ${rawQ ? 'type' : 'q'}` } }, 400)
+    }
+    const q = rawQ.toLowerCase()
+    const types = rawType.split(',').map(s => s.trim())
     const m = (name: string) => (q ? name.toLowerCase().includes(q) : true)
     const out: Record<string, unknown> = {}
     if (types.includes('artist')) {

@@ -36,7 +36,10 @@ export function checkoutRoutes(ctx: RouteContext): void {
       return c.json({ message: 'customer_id is required', code: 'invalid_request' }, 400)
     }
     const store = as()
-    const sessions = store.checkouts.findBy('customer_id', customerId).filter(s => s.status !== 'settled')
+    // Only completed checkouts settle — a pending session means the browser
+    // never finished checkout, and the "webhook" must not activate it early.
+    // (/checkout/:sessionId/settle stays available as an explicit override.)
+    const sessions = store.checkouts.findBy('customer_id', customerId).filter(s => s.status === 'completed')
     for (const session of sessions) {
       settle(store, session)
     }

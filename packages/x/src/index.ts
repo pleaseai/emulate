@@ -86,7 +86,9 @@ export function seedFromConfig(store: Store, baseUrl: string, config: XSeedConfi
     if (xs.oauthClients.findOneBy('client_id', cl.client_id)) {
       continue
     }
-    const clientType: 'confidential' | 'public' = cl.client_type ?? (cl.client_secret ? 'confidential' : 'public')
+    // A confidential client without a secret would accept empty-secret Basic
+    // auth — derive the type from the presence of a secret instead.
+    const clientType: 'confidential' | 'public' = cl.client_secret ? (cl.client_type ?? 'confidential') : 'public'
     xs.oauthClients.insert({
       client_id: cl.client_id,
       client_secret: clientType === 'confidential' ? (cl.client_secret ?? null) : null,

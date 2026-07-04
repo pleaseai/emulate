@@ -1,4 +1,5 @@
 import type { RouteContext } from '@emulators/core'
+import { createHash } from 'node:crypto'
 import process from 'node:process'
 
 import { escapeHtml, renderCardPage, renderUserButton } from '@emulators/core'
@@ -252,6 +253,10 @@ export function oauthRoutes(ctx: RouteContext): void {
       if (!session || session.revoked) {
         return workosError(c, 400, 'invalid_grant', 'Refresh token is invalid.')
       }
+      // A leaked refresh token must not rotate under a different client.
+      if (String(body.client_id ?? '') !== session.client_id) {
+        return workosError(c, 400, 'invalid_grant', 'The refresh token was issued to a different client.')
+      }
       // AuthKit refresh tokens are single use: rotate on every redemption.
       ws().sessions.update(session.id, { revoked: true })
       const rotated = ws().sessions.insert({
@@ -290,6 +295,23 @@ export function oauthRoutes(ctx: RouteContext): void {
     const oauthCode = ws().oauthCodes.findOneBy('code', code)
     if (!oauthCode || oauthCode.used) {
       return workosError(c, 400, 'invalid_grant', 'The code is invalid or has been used.')
+    }
+    // A leaked code must not be redeemable outside the original auth request:
+    // the exchange is bound to the client and redirect_uri that minted it.
+    if (String(body.client_id ?? '') !== oauthCode.client_id) {
+      return workosError(c, 400, 'invalid_grant', 'The code was issued to a different client.')
+    }
+    if (String(body.redirect_uri ?? '') !== oauthCode.redirect_uri) {
+      return workosError(c, 400, 'invalid_grant', 'redirect_uri does not match the authorization request.')
+    }
+    // Enforce PKCE when the authorize request carried a code_challenge (S256,
+    // per the advertised code_challenge_methods_supported).
+    if (oauthCode.code_challenge) {
+      const verifier = String(body.code_verifier ?? '')
+      const derived = createHash('sha256').update(verifier).digest('base64url')
+      if (!verifier || derived !== oauthCode.code_challenge) {
+        return workosError(c, 400, 'invalid_grant', 'code_verifier does not match the code_challenge.')
+      }
     }
     ws().oauthCodes.update(oauthCode.id, { used: true })
     // Resource servers verify audience against THEIR WorkOS client id, not the

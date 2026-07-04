@@ -176,12 +176,17 @@ export function userManagementRoutes(ctx: RouteContext): void {
       if (!authCode || authCode.used) {
         return workosError(c, 400, 'invalid_grant', 'The code is invalid or has been used.')
       }
+      // Codes are bound to the client that initiated authorize; redeeming under
+      // a different client_id must not mint tokens for the wrong audience.
+      if (clientId !== authCode.client_id) {
+        return workosError(c, 400, 'invalid_grant', 'The code was issued to a different client.')
+      }
       ws().authCodes.update(authCode.id, { used: true })
       const user = ws().users.findOneBy('workos_id', authCode.user_id)
       if (!user) {
         return workosError(c, 400, 'invalid_grant', 'Unknown user for code.')
       }
-      return authenticationResponse(c, ws(), baseUrl, user, authCode.organization_id, clientId)
+      return authenticationResponse(c, ws(), baseUrl, user, authCode.organization_id, authCode.client_id)
     }
 
     if (grantType === 'refresh_token') {
@@ -189,6 +194,11 @@ export function userManagementRoutes(ctx: RouteContext): void {
       const session = ws().sessions.findOneBy('refresh_token', refreshToken)
       if (!session || session.revoked) {
         return workosError(c, 400, 'invalid_grant', 'Refresh token is invalid.')
+      }
+      // Refresh tokens rotate within the client they were issued to — a leaked
+      // token must not rebind the session to a different client_id/audience.
+      if (clientId !== session.client_id) {
+        return workosError(c, 400, 'invalid_grant', 'The refresh token was issued to a different client.')
       }
       const user = ws().users.findOneBy('workos_id', session.user_id)
       if (!user) {
@@ -217,7 +227,7 @@ export function userManagementRoutes(ctx: RouteContext): void {
         }
       }
       ws().sessions.update(session.id, { revoked: true })
-      return authenticationResponse(c, ws(), baseUrl, user, requestedOrg ?? null, clientId)
+      return authenticationResponse(c, ws(), baseUrl, user, requestedOrg ?? null, session.client_id)
     }
 
     return workosError(c, 400, 'unsupported_grant_type', `Unsupported grant_type: ${grantType}`)

@@ -156,9 +156,10 @@ export function autumnApiRoutes(ctx: RouteContext): void {
       })
     }
 
-    // Free or no-card plan: attach takes effect immediately, no redirect.
+    // Free or no-card plan: attach takes effect immediately, no redirect. A
+    // no-card free trial still starts as a trial — don't erase trial semantics.
     if (plan) {
-      activateSubscription(store, customer, plan, { trial: false })
+      activateSubscription(store, customer, plan, { trial: plan.free_trial != null })
     }
     return c.json({ customer_id: customerId, payment_url: null, invoice: null, required_action: null })
   })

@@ -184,11 +184,13 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
         400,
       )
     }
-    if (redirect_uri && !matchesRedirectUri(redirect_uri, client.redirect_uris)) {
+    // Require redirect_uri up front — accepting its absence here only defers
+    // the failure to the consent step's `new URL(redirect_uri)` crash path.
+    if (!redirect_uri || !matchesRedirectUri(redirect_uri, client.redirect_uris)) {
       return c.html(
         renderErrorPage(
           'Redirect URI mismatch',
-          'The redirect_uri is not registered for this application.',
+          'The redirect_uri is missing or not registered for this application.',
           SERVICE_LABEL,
         ),
         400,
@@ -273,6 +275,38 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
     const user = xs.users.findOneBy('user_id', user_id)
     if (!user) {
       return c.html(renderErrorPage('User not found', 'The selected user no longer exists.', SERVICE_LABEL), 400)
+    }
+
+    // The consent form fields are attacker-controllable (a direct POST skips
+    // /authorize entirely), so revalidate everything /authorize checked before
+    // minting a code: registered client, registered redirect_uri, known scopes.
+    const client = xs.oauthClients.findOneBy('client_id', client_id)
+    if (!client) {
+      return c.html(renderErrorPage('Application not found', 'The client_id is not registered.', SERVICE_LABEL), 400)
+    }
+    if (!redirect_uri || !matchesRedirectUri(redirect_uri, client.redirect_uris)) {
+      return c.html(
+        renderErrorPage(
+          'Redirect URI mismatch',
+          'The redirect_uri is missing or not registered for this application.',
+          SERVICE_LABEL,
+        ),
+        400,
+      )
+    }
+    if (!code_challenge) {
+      return c.html(
+        renderErrorPage('PKCE required', 'A code_challenge is required for the authorization code flow.', SERVICE_LABEL),
+        400,
+      )
+    }
+    const requestedScopes = scope.split(/[\s+]+/).filter(Boolean)
+    const unknownScope = requestedScopes.find(s => !X_SCOPES.includes(s as (typeof X_SCOPES)[number]))
+    if (unknownScope) {
+      return c.html(
+        renderErrorPage('Invalid scope', `The scope '${escapeHtml(unknownScope)}' is not supported.`, SERVICE_LABEL),
+        400,
+      )
     }
 
     const code = randomBytes(24).toString('base64url')

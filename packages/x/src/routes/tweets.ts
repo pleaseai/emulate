@@ -223,6 +223,11 @@ export function tweetsRoutes({ app, store }: RouteContext): void {
       return forbidden(c, 'You may only delete your own Tweets.')
     }
     xs.tweets.delete(tweet.id)
+    // Keep public_metrics.tweet_count consistent with tweet state.
+    const author = xs.users.findOneBy('user_id', tweet.author_id)
+    if (author) {
+      xs.users.update(author.id, { tweet_count: Math.max(0, author.tweet_count - 1) })
+    }
     return c.json({ data: { deleted: true } })
   })
 }

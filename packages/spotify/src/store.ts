@@ -30,13 +30,20 @@ export function spotifyId(): string {
 export interface IssuedToken {
   clientId: string
   scopes: string[]
+  /** Epoch millis; tokens expire to match the `expires_in` the token endpoint returns. */
+  expiresAt: number
 }
 const KEY = 'spotify.tokens'
-export function issueToken(store: Store, token: string, rec: IssuedToken): void {
+export const TOKEN_TTL_SECONDS = 3600
+export function issueToken(store: Store, token: string, rec: Omit<IssuedToken, 'expiresAt'>): void {
   const m = store.getData<Record<string, IssuedToken>>(KEY) ?? {}
-  m[token] = rec
+  m[token] = { ...rec, expiresAt: Date.now() + TOKEN_TTL_SECONDS * 1000 }
   store.setData(KEY, m)
 }
 export function lookupToken(store: Store, token: string): IssuedToken | undefined {
-  return (store.getData<Record<string, IssuedToken>>(KEY) ?? {})[token]
+  const rec = (store.getData<Record<string, IssuedToken>>(KEY) ?? {})[token]
+  if (!rec) {
+    return undefined
+  }
+  return rec.expiresAt > Date.now() ? rec : undefined
 }
