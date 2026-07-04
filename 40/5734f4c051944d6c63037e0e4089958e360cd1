@@ -1,0 +1,39 @@
+packages/emulate/src/base-url.ts
+  s_fe23e72629f2af::t_575bddf973e960 2,11-23,25-27,29,31-35
+packages/emulate/src/commands/start.ts
+  s_fe23e72629f2af::t_ccccb3e4c89c49 2,10
+  s_fe23e72629f2af::t_c5ed390042ac54 18
+  s_fe23e72629f2af::t_740fc7b56bbf25 95-96,100-115,125
+eslint.config.ts
+  s_fe23e72629f2af::t_a7a2e44075a06b 9
+website/src/content/docs/guides/portless.md
+  s_fe23e72629f2af::t_7767e3948da036 23,25-26,29-30,32-37,40-44,46-48,50,52-53,56,59,67-69,79-86
+README.md
+  s_fe23e72629f2af::t_1b394ad97594cb 51-53,56-59
+  s_fe23e72629f2af::t_9b8847591ca824 60
+packages/emulate/src/index.ts
+  s_fe23e72629f2af::t_c0cf501e22eb15 21-22
+packages/emulate/src/__tests__/base-url.test.ts
+  s_fe23e72629f2af::t_ccccb3e4c89c49 2
+  s_fe23e72629f2af::t_5cc657c7d2b046 1,3-55
+packages/emulate/src/portless.ts
+  s_fe23e72629f2af::t_d3d83aa82b8d0b 1-95
+website/src/content/docs/guides/getting-started.md
+  s_fe23e72629f2af::t_3eee9c4bdac7c1 69-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "405734f4c051944d6c63037e0e4089958e360cd1",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
