@@ -1,0 +1,21 @@
+packages/spotify/src/routes/token.ts
+  s_01aae14021cdbd::t_1b2fcba6e0c8b0 55-58
+packages/x/src/routes/oauth.ts
+  s_01aae14021cdbd::t_1b2fcba6e0c8b0 303-312
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3ddf160685b21808ec528e9833bfd226f2bb2c8c",
+  "prompts": {},
+  "sessions": {
+    "s_01aae14021cdbd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eeb4b80d-1621-46cd-88e0-1c2257aeeaab",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
