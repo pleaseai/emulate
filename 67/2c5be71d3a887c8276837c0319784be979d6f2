@@ -1,0 +1,23 @@
+packages/workos/src/routes/oauth.ts
+  s_01aae14021cdbd::t_735aaef81869cb 1,5
+  s_01aae14021cdbd::t_e8879281448533 69-85,93-95
+  s_01aae14021cdbd::t_5487c420f50cc1 170-174
+.please/state/review-threads-18.json
+  s_01aae14021cdbd::t_832c4afec527e6 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "672c5be71d3a887c8276837c0319784be979d6f2",
+  "prompts": {},
+  "sessions": {
+    "s_01aae14021cdbd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eeb4b80d-1621-46cd-88e0-1c2257aeeaab",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
