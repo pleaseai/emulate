@@ -87,6 +87,72 @@ describe('PostHog emulator OAuth discovery', () => {
     })
   })
 
+  it('serves the private API with a personal API key', async () => {
+    const auth = { headers: { Authorization: 'Bearer phx_personal' } }
+
+    // Trailing-slash canonical routes plus 307 redirects from the bare paths.
+    const redirected = await fetch(`${BASE}/api/projects`, auth)
+    expect(redirected.status).toBe(200)
+
+    const projects = (await (await fetch(`${BASE}/api/projects/`, auth)).json()) as {
+      results: Array<{ id: number, api_token: string }>
+    }
+    expect(projects.results[0].id).toBe(1)
+
+    const me = (await (await fetch(`${BASE}/api/users/@me/`, auth)).json()) as { email: string, is_staff: boolean }
+    expect(me.email).toBe('admin@example.com')
+    expect(me.is_staff).toBe(true)
+
+    const meRedirect = await fetch(`${BASE}/api/users/@me`, auth)
+    expect(meRedirect.status).toBe(200)
+  })
+
+  it('captures and lists events per project', async () => {
+    const auth = { Authorization: 'Bearer phx_personal' }
+
+    const created = await fetch(`${BASE}/api/projects/1/events/`, {
+      method: 'POST',
+      headers: { ...auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: '$pageview', distinct_id: 'user-1', properties: { path: '/home' } }),
+    })
+    expect(created.status).toBe(201)
+    const createdBody = (await created.json()) as { id: number, event: string }
+    expect(createdBody.event).toBe('$pageview')
+
+    const listed = await fetch(`${BASE}/api/projects/1/events/`, { headers: auth })
+    expect(listed.status).toBe(200)
+    const events = (await listed.json()) as { results: Array<{ event: string, distinct_id: string }> }
+    expect(events.results.some(e => e.event === '$pageview' && e.distinct_id === 'user-1')).toBe(true)
+
+    // Bare path redirects to the canonical trailing-slash route.
+    const redirected = await fetch(`${BASE}/api/projects/1/events`, { headers: auth })
+    expect(redirected.status).toBe(200)
+  })
+
+  it('validates event capture inputs', async () => {
+    const auth = { Authorization: 'Bearer phx_personal' }
+
+    const badProject = await fetch(`${BASE}/api/projects/not-a-number/events/`, { headers: auth })
+    expect(badProject.status).toBe(400)
+
+    const missingProject = await fetch(`${BASE}/api/projects/999/events/`, {
+      method: 'POST',
+      headers: { ...auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'x', distinct_id: 'y' }),
+    })
+    expect(missingProject.status).toBe(404)
+
+    const missingFields = await fetch(`${BASE}/api/projects/1/events/`, {
+      method: 'POST',
+      headers: { ...auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: '' }),
+    })
+    expect(missingFields.status).toBe(400)
+
+    const unauthenticated = await fetch(`${BASE}/api/projects/1/events/`)
+    expect(unauthenticated.status).toBe(401)
+  })
+
   it('completes authorization code flow with a loopback CIMD client and calls the API', async () => {
     const verifier = 'test-code-verifier'
     const params = new URLSearchParams({

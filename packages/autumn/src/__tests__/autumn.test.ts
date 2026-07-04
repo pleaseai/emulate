@@ -22,6 +22,12 @@ beforeAll(() => {
     plans: [
       { id: 'pro', name: 'Pro', items: [{ feature_id: 'executions', included: 1000 }] },
       { id: 'starter', name: 'Starter', items: [{ feature_id: 'executions', included: 2 }] },
+      {
+        id: 'premium',
+        name: 'Premium',
+        price: { amount: 50, interval: 'month' },
+        items: [{ feature_id: 'executions', included: 100000 }],
+      },
     ],
     customers: [
       { id: 'org_paid', subscriptions: [{ plan_id: 'pro', status: 'active' }] },
@@ -74,6 +80,81 @@ describe('autumn emulator with the real autumn-js SDK', () => {
     const check = await autumn.check({ customerId: 'org_paid', featureId: 'not-a-feature' })
     expect(check.allowed).toBe(true)
     expect(check.balance).toBeNull()
+  })
+
+  it('lists customers and events over the raw RPC surface', async () => {
+    const auth = { 'authorization': 'Bearer am_test_emulate', 'content-type': 'application/json' }
+
+    const customers = await fetch(`${BASE}/v1/customers.list`, { method: 'POST', headers: auth, body: '{}' })
+    expect(customers.status).toBe(200)
+    const list = (await customers.json()) as { list: Array<{ id: string }>, total: number }
+    expect(list.total).toBeGreaterThan(0)
+
+    const events = await fetch(`${BASE}/v1/events.list`, { method: 'POST', headers: auth, body: '{}' })
+    expect(events.status).toBe(200)
+
+    const features = await fetch(`${BASE}/v1/features.list`, { method: 'POST', headers: auth, body: '{}' })
+    expect(features.status).toBe(200)
+  })
+
+  it('updates a customer and rejects unknown ids', async () => {
+    const auth = { 'authorization': 'Bearer am_test_emulate', 'content-type': 'application/json' }
+    const updated = await fetch(`${BASE}/v1/customers.update`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ customer_id: 'org_paid', name: 'Paid Org', email: 'paid@example.com' }),
+    })
+    expect(updated.status).toBe(200)
+    expect(((await updated.json()) as { name: string }).name).toBe('Paid Org')
+
+    const missing = await fetch(`${BASE}/v1/customers.update`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ customer_id: 'org_never_seen' }),
+    })
+    expect(missing.status).toBe(404)
+  })
+
+  it('opens a customer portal link', async () => {
+    const res = await fetch(`${BASE}/v1/billing.open_customer_portal`, {
+      method: 'POST',
+      headers: { 'authorization': 'Bearer am_test_emulate', 'content-type': 'application/json' },
+      body: JSON.stringify({ customer_id: 'org_paid' }),
+    })
+    expect(res.status).toBe(200)
+    expect(((await res.json()) as { url: string }).url).toContain('/checkout/portal/org_paid')
+  })
+
+  it('renders checkout pages and settles a single session', async () => {
+    const auth = { 'authorization': 'Bearer am_test_emulate', 'content-type': 'application/json' }
+    const attach = await fetch(`${BASE}/v1/billing.attach`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ customer_id: 'org_fresh', plan_id: 'premium', success_url: `${BASE}/done` }),
+    })
+    expect(attach.status).toBe(200)
+    const { payment_url } = (await attach.json()) as { payment_url: string }
+    expect(payment_url).toContain('/checkout/cs_emulate_')
+    const sessionId = payment_url.split('/').pop()!
+
+    const page = await fetch(payment_url)
+    expect(page.status).toBe(200)
+    expect(await page.text()).toContain('Premium')
+
+    const missingPage = await fetch(`${BASE}/checkout/cs_emulate_does_not_exist`)
+    expect(missingPage.status).toBe(404)
+
+    const complete = await fetch(`${BASE}/checkout/${sessionId}/complete`, { method: 'POST', redirect: 'manual' })
+    expect(complete.status).toBe(302)
+
+    const settle = await fetch(`${BASE}/checkout/${sessionId}/settle`, { method: 'POST' })
+    expect(settle.status).toBe(200)
+
+    const settledPage = await fetch(payment_url)
+    expect(await settledPage.text()).toContain('Subscription active')
+
+    const customer = await autumn.customers.getOrCreate({ customerId: 'org_fresh' })
+    expect(customer.subscriptions?.some(s => (s.planId ?? (s as { plan_id?: string }).plan_id) === 'premium')).toBe(true)
   })
 
   // Regression for the autumn-js 0.9.0 emulator regression: autumn-js 1.2.8's

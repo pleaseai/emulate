@@ -1,4 +1,5 @@
 import type { JWTPayload } from 'jose'
+import { randomUUID } from 'node:crypto'
 import { exportJWK, generateKeyPair, jwtVerify, SignJWT } from 'jose'
 
 // One RS256 keypair per process; served from BOTH JWKS surfaces the WorkOS
@@ -31,7 +32,7 @@ export async function signAccessToken(
     .setProtectedHeader({ alg: 'RS256', kid: KID, typ: 'JWT' })
     .setIssuer(options.issuer)
     .setIssuedAt()
-    .setJti(`jti_${Math.random().toString(36).slice(2)}`)
+    .setJti(`jti_${randomUUID()}`)
     .setExpirationTime(options.expiresIn ?? '1h')
   if (options.audience) {
     jwt = jwt.setAudience(options.audience)
@@ -69,7 +70,7 @@ export async function signIdentityAssertion(
     .setIssuer(options.issuer)
     .setAudience(options.audience)
     .setIssuedAt()
-    .setJti(`idjag_${Math.random().toString(36).slice(2)}`)
+    .setJti(`idjag_${randomUUID()}`)
     .setExpirationTime(options.expiresIn ?? '5m')
     .sign(privateKey)
 }

@@ -407,6 +407,51 @@ describe('workos emulator with the real @workos-inc/node SDK', () => {
     }
   })
 
+  it('manages organizations over the REST surface', async () => {
+    const auth = { 'Authorization': 'Bearer sk_test_emulate', 'Content-Type': 'application/json' }
+
+    const created = await fetch(`${BASE}/organizations`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ name: 'Rest Org', external_id: 'ext-1' }),
+    })
+    expect(created.status).toBe(201)
+    const org = (await created.json()) as { id: string, name: string }
+    expect(org.name).toBe('Rest Org')
+
+    const invalid = await fetch(`${BASE}/organizations`, { method: 'POST', headers: auth, body: '{}' })
+    expect(invalid.status).toBe(422)
+
+    const fetched = await fetch(`${BASE}/organizations/${org.id}`, { headers: auth })
+    expect(fetched.status).toBe(200)
+
+    const renamed = await fetch(`${BASE}/organizations/${org.id}`, {
+      method: 'PUT',
+      headers: auth,
+      body: JSON.stringify({ name: 'Renamed Org' }),
+    })
+    expect(((await renamed.json()) as { name: string }).name).toBe('Renamed Org')
+
+    const roles = await fetch(`${BASE}/organizations/${org.id}/roles`, { headers: auth })
+    const rolesBody = (await roles.json()) as { data: Array<{ slug: string }> }
+    expect(rolesBody.data.map(r => r.slug)).toEqual(['admin', 'member'])
+
+    const missing = await fetch(`${BASE}/organizations/org_nope`, { headers: auth })
+    expect(missing.status).toBe(404)
+
+    const portal = await fetch(`${BASE}/portal/generate_link`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ organization: org.id, intent: 'dsync' }),
+    })
+    expect(((await portal.json()) as { link: string }).link).toContain(`/_portal/${org.id}`)
+
+    const domain = await fetch(`${BASE}/organization_domains/dom_1`, { headers: auth })
+    expect(((await domain.json()) as { state: string }).state).toBe('verified')
+    const deleted = await fetch(`${BASE}/organization_domains/dom_1`, { method: 'DELETE', headers: auth })
+    expect(deleted.status).toBe(204)
+  })
+
   it('seeds users from config', async () => {
     const code = await signInAndGetCode('seeded@example.com')
     const auth = await workos.userManagement.authenticateWithCode({

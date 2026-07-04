@@ -1,5 +1,6 @@
 import type { Collection, Store } from '@emulators/core'
 import type { XAccessToken, XAuthCode, XOAuthClient, XRefreshToken, XTweet, XUser } from './entities.js'
+import { randomBytes } from 'node:crypto'
 
 export interface XStore {
   users: Collection<XUser>
@@ -44,8 +45,8 @@ export function lookupAccessToken(store: Store, token: string): XAccessToken | u
 /** X v2 numeric snowflake-style id (a long decimal string). */
 export function xNumericId(): string {
   let s = ''
-  for (let i = 0; i < 19; i++) {
-    s += Math.floor(Math.random() * 10).toString()
+  for (const byte of randomBytes(19)) {
+    s += (byte % 10).toString()
   }
   // Avoid a leading zero so the id reads like a real snowflake.
   return s[0] === '0' ? `1${s.slice(1)}` : s

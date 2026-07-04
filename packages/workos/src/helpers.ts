@@ -1,5 +1,4 @@
 import type { Context } from '@emulators/core'
-
 import type {
   WorkosApiKey,
   WorkosInvitation,
@@ -9,15 +8,17 @@ import type {
   WorkosVaultObject,
 } from './entities.js'
 
+import { randomBytes } from 'node:crypto'
+
 let counter = 0
 /** WorkOS-shaped ids: prefix + monotonic + entropy (readable in ledgers/tests). */
 export function workosId(prefix: string): string {
   counter += 1
-  return `${prefix}_${String(counter).padStart(4, '0')}${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  return `${prefix}_${String(counter).padStart(4, '0')}${randomBytes(3).toString('hex').toUpperCase()}`
 }
 
 export function randomToken(prefix: string): string {
-  return `${prefix}_${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`
+  return `${prefix}_${randomBytes(16).toString('hex')}`
 }
 
 /** WorkOS error envelope. */

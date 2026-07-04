@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import { createHash, randomBytes } from 'node:crypto'
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { seedFromConfig, xPlugin } from '../index.js'
+import { getXStore, seedFromConfig, xPlugin } from '../index.js'
 
 const base = 'http://localhost:4000'
 
@@ -449,6 +449,218 @@ describe('X plugin integration', () => {
         headers: { Authorization: 'Bearer not-a-real-token' },
       })
       expect(badRes.status).toBe(401)
+    })
+  })
+
+  describe('tweets and users API', () => {
+    async function userToken(scope: string, userId?: string): Promise<string> {
+      const { verifier, challenge } = pkcePair()
+      const code = await getAuthCode(app, { clientId: 'x-confidential-client', challenge, scope, userId })
+      const tokenRes = await app.request(`${base}/2/oauth2/token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': basicHeader('x-confidential-client', 'x-confidential-secret'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: form({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: 'http://localhost:3000/callback',
+          code_verifier: verifier,
+        }).toString(),
+      })
+      return ((await tokenRes.json()) as { access_token: string }).access_token
+    }
+
+    it('batch-looks-up tweets, reporting missing ids as partial errors', async () => {
+      const token = await userToken('tweet.read users.read')
+      const res = await app.request(`${base}/2/tweets?ids=2000000000000000001,999`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      expect(res.status).toBe(200)
+      const body = (await res.json()) as { data: Array<{ id: string }>, errors: Array<{ resource_id: string }> }
+      expect(body.data).toHaveLength(1)
+      expect(body.data[0].id).toBe('2000000000000000001')
+      expect(body.errors[0].resource_id).toBe('999')
+    })
+
+    it('rejects a batch lookup without ids (400)', async () => {
+      const token = await userToken('tweet.read users.read')
+      const res = await app.request(`${base}/2/tweets`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      expect(res.status).toBe(400)
+    })
+
+    it('returns a user timeline with newest/oldest meta', async () => {
+      const token = await userToken('tweet.read tweet.write users.read')
+      await app.request(`${base}/2/tweets`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'Second tweet.' }),
+      })
+      const res = await app.request(`${base}/2/users/1000000000000000001/tweets`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      expect(res.status).toBe(200)
+      const body = (await res.json()) as { data: Array<{ id: string }>, meta: { result_count: number } }
+      expect(body.meta.result_count).toBe(2)
+    })
+
+    it('404s a timeline for an unknown user', async () => {
+      const token = await userToken('tweet.read users.read')
+      const res = await app.request(`${base}/2/users/424242/tweets`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      expect(res.status).toBe(404)
+    })
+
+    it('creates a reply that threads to the parent conversation', async () => {
+      const token = await userToken('tweet.read tweet.write users.read')
+      const res = await app.request(`${base}/2/tweets`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'A reply.', reply: { in_reply_to_tweet_id: '2000000000000000001' } }),
+      })
+      expect(res.status).toBe(201)
+      const { data } = (await res.json()) as { data: { id: string } }
+      const getRes = await app.request(`${base}/2/tweets/${data.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const tweet = (await getRes.json()) as { data: { conversation_id: string, in_reply_to_user_id: string } }
+      expect(tweet.data.conversation_id).toBe('2000000000000000001')
+      expect(tweet.data.in_reply_to_user_id).toBe('1000000000000000001')
+    })
+
+    it('rejects a tweet with empty text (400)', async () => {
+      const token = await userToken('tweet.read tweet.write users.read')
+      const res = await app.request(`${base}/2/tweets`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: '   ' }),
+      })
+      expect(res.status).toBe(400)
+    })
+
+    it('deletes an own tweet but refuses to delete another user\'s tweet', async () => {
+      const otherToken = await userToken('tweet.read tweet.write users.read', '1000000000000000002')
+      const forbidden = await app.request(`${base}/2/tweets/2000000000000000001`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${otherToken}` },
+      })
+      expect(forbidden.status).toBe(403)
+
+      const ownerToken = await userToken('tweet.read tweet.write users.read')
+      const deleted = await app.request(`${base}/2/tweets/2000000000000000001`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${ownerToken}` },
+      })
+      expect(deleted.status).toBe(200)
+      expect(((await deleted.json()) as { data: { deleted: boolean } }).data.deleted).toBe(true)
+
+      const gone = await app.request(`${base}/2/tweets/2000000000000000001`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${ownerToken}` },
+      })
+      expect(gone.status).toBe(404)
+    })
+
+    it('looks up a user by id and 404s an unknown id', async () => {
+      const token = await userToken('tweet.read users.read')
+      const res = await app.request(`${base}/2/users/1000000000000000002`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      expect(res.status).toBe(200)
+      expect(((await res.json()) as { data: { username: string } }).data.username).toBe('other')
+
+      const missing = await app.request(`${base}/2/users/31337`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      expect(missing.status).toBe(404)
+    })
+  })
+
+  describe('oauth surfaces', () => {
+    it('renders the authorize consent page for a valid client', async () => {
+      const { challenge } = pkcePair()
+      const params = new URLSearchParams({
+        client_id: 'x-confidential-client',
+        redirect_uri: 'http://localhost:3000/callback',
+        scope: 'tweet.read users.read',
+        state: 'abc',
+        response_type: 'code',
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+      })
+      const res = await app.request(`${base}/2/oauth2/authorize?${params}`)
+      expect(res.status).toBe(200)
+      expect(await res.text()).toContain('Confidential App')
+    })
+
+    it('rejects the authorize page for an unknown client or bad redirect_uri (400)', async () => {
+      const unknown = await app.request(`${base}/2/oauth2/authorize?client_id=nope`)
+      expect(unknown.status).toBe(400)
+
+      const badRedirect = await app.request(
+        `${base}/2/oauth2/authorize?client_id=x-confidential-client&redirect_uri=${encodeURIComponent('http://evil.example/cb')}`,
+      )
+      expect(badRedirect.status).toBe(400)
+    })
+
+    it('rejects an unsupported grant_type (400)', async () => {
+      const res = await app.request(`${base}/2/oauth2/token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': basicHeader('x-confidential-client', 'x-confidential-secret'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: form({ grant_type: 'password' }).toString(),
+      })
+      expect(res.status).toBe(400)
+    })
+
+    it('revokes an access token so it stops authenticating', async () => {
+      const tokenRes = await app.request(`${base}/2/oauth2/token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': basicHeader('x-confidential-client', 'x-confidential-secret'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: form({ grant_type: 'client_credentials' }).toString(),
+      })
+      const { access_token } = (await tokenRes.json()) as { access_token: string }
+
+      const revokeRes = await app.request(`${base}/2/oauth2/revoke`, {
+        method: 'POST',
+        headers: {
+          'Authorization': basicHeader('x-confidential-client', 'x-confidential-secret'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: form({ token: access_token }).toString(),
+      })
+      expect(revokeRes.status).toBe(200)
+      expect(((await revokeRes.json()) as { revoked: boolean }).revoked).toBe(true)
+
+      const after = await app.request(`${base}/2/users/by/username/developer`, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      })
+      expect(after.status).toBe(401)
+    })
+  })
+
+  describe('default seed', () => {
+    it('seeds demo users, clients, and tweets via plugin.seed', async () => {
+      const freshStore = new Store()
+      const webhooks = new WebhookDispatcher()
+      const tokenMap = new Map()
+      const seededApp = new Hono()
+      seededApp.use('*', authMiddleware(tokenMap))
+      xPlugin.register(seededApp as any, freshStore, webhooks, base, tokenMap)
+      xPlugin.seed?.(freshStore, base)
+      const xs = getXStore(freshStore)
+      expect(xs.users.all().length).toBeGreaterThan(0)
+      expect(xs.oauthClients.all().length).toBeGreaterThan(0)
+      expect(xs.tweets.all().length).toBeGreaterThan(0)
     })
   })
 

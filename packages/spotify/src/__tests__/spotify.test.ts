@@ -107,6 +107,40 @@ describe('spotify emulator', () => {
     expect(json.tracks.items[0].artists[0].name).toBe('Daft Punk')
   })
 
+  it('seeds demo data via plugin.seed and serves the openapi spec', async () => {
+    const store = new Store()
+    const webhooks = new WebhookDispatcher()
+    const tokenMap = new Map()
+    const seededApp = new Hono()
+    seededApp.onError(createApiErrorHandler())
+    seededApp.use('*', createErrorHandler())
+    seededApp.use('*', authMiddleware(tokenMap))
+    spotifyPlugin.register(seededApp as any, store, webhooks, base, tokenMap)
+    spotifyPlugin.seed?.(store, base)
+
+    const tokenRes = await seededApp.request(`${base}/api/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: 'demo-client-id',
+        client_secret: 'demo-client-secret',
+      }),
+    })
+    expect(tokenRes.status).toBe(200)
+    const { access_token } = (await tokenRes.json()) as { access_token: string }
+
+    const search = await seededApp.request(`${base}/v1/search?q=daft&type=artist,album,track`, {
+      headers: { authorization: `Bearer ${access_token}` },
+    })
+    expect(search.status).toBe(200)
+    const results = (await search.json()) as { artists: { items: Array<{ name: string }> } }
+    expect(results.artists.items[0].name).toBe('Daft Punk')
+
+    const spec = await seededApp.request(`${base}/openapi.json`)
+    expect(spec.status).toBe(200)
+  })
+
   it('fetches an artist and its albums', async () => {
     const token = await fetchToken()
     const auth = { headers: { authorization: `Bearer ${token}` } }
