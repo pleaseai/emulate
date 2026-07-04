@@ -51,6 +51,10 @@ for (const dir of await readdir(SKILLS)) {
   // Drop the leading H1 — Starlight renders the frontmatter title instead.
   body = body.replace(/^# .*\n+/, '')
 
+  // npm package names use the directory name under packages/, which differs
+  // from the skill/service name for tosspayments.
+  const pkg = `@pleaseai/emulate-${dir === 'tosspayments' ? 'toss-payments' : dir}`
+
   const page = `---
 title: ${meta.label}
 description: ${JSON.stringify(description)}
@@ -60,7 +64,7 @@ sidebar:
 ---
 
 :::note
-Default port **${meta.port}** · Package [\`@pleaseai/emulate-${dir === 'tosspayments' ? 'toss-payments' : dir}\`](https://www.npmjs.com/package/@pleaseai/emulate-${dir === 'tosspayments' ? 'toss-payments' : dir})
+Default port **${meta.port}** · Package [\`${pkg}\`](https://www.npmjs.com/package/${pkg})
 :::
 
 ${body}

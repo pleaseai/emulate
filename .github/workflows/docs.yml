@@ -24,6 +24,10 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - run: bun scripts/sync-services.ts
+      - name: Check generated service pages are up to date
+        run: |
+          git diff --exit-code -- src/content/docs/services \
+            || { echo "::error::services/*.md is stale — run 'bun run sync:services' in website/ and commit"; exit 1; }
       - run: bun run build
       - name: Deploy to Cloudflare Pages
         if: github.event_name != 'pull_request'
