@@ -1,0 +1,23 @@
+website/astro.config.mjs
+  s_fe23e72629f2af::t_6eaf35f3237529 26
+website/src/content/docs/guides/getting-started.md
+  s_fe23e72629f2af::t_42dbc13676045c 105
+website/src/content/docs/guides/portless.md
+  s_fe23e72629f2af::t_eabfe2a28af51b 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f9e73b14bbc56abfe2aba297f8175e8b5363b0f5",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
