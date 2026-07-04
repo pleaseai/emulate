@@ -1,8 +1,8 @@
-import type { RouteContext } from '@emulators/core'
+import type { Context, RouteContext } from '@emulators/core'
 import { createHash } from 'node:crypto'
 import process from 'node:process'
 
-import { escapeHtml, renderCardPage, renderUserButton } from '@emulators/core'
+import { escapeHtml, matchesRedirectUri, renderCardPage, renderUserButton } from '@emulators/core'
 import { randomToken, workosError, workosId } from '../helpers.js'
 import { jwksResponse, signAccessToken, signIdentityAssertion, verifyAccessToken } from '../keys.js'
 import { getWorkosStore } from '../store.js'
@@ -66,6 +66,23 @@ export function oauthRoutes(ctx: RouteContext): void {
     )
   })
 
+  // Authorize requests must come from a registered (DCR) client and target one
+  // of its registered redirect URIs — otherwise a typoed client_id or a forged
+  // redirect_uri would still complete the flow and silently mask the bug.
+  const validateAuthorizeRequest = (c: Context, clientId: string, redirectUri: string): Response | null => {
+    if (!redirectUri) {
+      return workosError(c, 422, 'invalid_request', 'redirect_uri is required')
+    }
+    const client = ws().oauthClients.findOneBy('client_id', clientId)
+    if (!client) {
+      return workosError(c, 401, 'invalid_client', 'Unknown client_id. Register the client first.')
+    }
+    if (!matchesRedirectUri(redirectUri, client.redirect_uris)) {
+      return workosError(c, 422, 'invalid_request', 'redirect_uri is not registered for this client.')
+    }
+    return null
+  }
+
   app.get('/oauth2/authorize', (c) => {
     const clientId = c.req.query('client_id') ?? ''
     const redirectUri = c.req.query('redirect_uri') ?? ''
@@ -73,8 +90,9 @@ export function oauthRoutes(ctx: RouteContext): void {
     const codeChallenge = c.req.query('code_challenge') ?? ''
     const scope = c.req.query('scope') ?? ''
     const loginHint = c.req.query('login_hint')
-    if (!redirectUri) {
-      return workosError(c, 422, 'invalid_request', 'redirect_uri is required')
+    const invalid = validateAuthorizeRequest(c, clientId, redirectUri)
+    if (invalid) {
+      return invalid
     }
 
     const issue = (email: string) => {
@@ -148,6 +166,11 @@ export function oauthRoutes(ctx: RouteContext): void {
     const redirectUri = String(form.redirect_uri ?? '')
     if (!email || !redirectUri) {
       return workosError(c, 422, 'invalid_request', 'email and redirect_uri are required')
+    }
+    // Hidden form fields are attacker-controllable — revalidate like /authorize.
+    const invalid = validateAuthorizeRequest(c, String(form.client_id ?? ''), redirectUri)
+    if (invalid) {
+      return invalid
     }
     const user = ensureUserByEmail(ws(), email)
     const activeMembership = ws()
