@@ -1,6 +1,7 @@
 // @ts-check
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
+import starlightThemeBlack from 'starlight-theme-black'
 
 export default defineConfig({
   site: 'https://emulate.pleaseai.dev',
@@ -15,6 +16,13 @@ export default defineConfig({
       editLink: {
         baseUrl: 'https://github.com/pleaseai/emulate/edit/main/website/',
       },
+      plugins: [
+        starlightThemeBlack({
+          navLinks: [{ label: 'Docs', link: '/guides/getting-started/' }],
+          footerText:
+            'Built by [PleaseAI](https://github.com/pleaseai). Based on [vercel-labs/emulate](https://github.com/vercel-labs/emulate). Licensed Apache-2.0.',
+        }),
+      ],
       sidebar: [
         {
           label: 'Guides',
