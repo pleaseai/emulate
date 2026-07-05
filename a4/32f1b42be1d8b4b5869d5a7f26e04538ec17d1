@@ -1,0 +1,24 @@
+website/astro.config.mjs
+  s_fe23e72629f2af::t_928d2711ebfc13 4
+  s_fe23e72629f2af::t_03c4d6c33be40c 19-25
+website/package.json
+  s_fe23e72629f2af::t_d3aed1eccaf5ce 17-18
+website/bun.lock
+  s_fe23e72629f2af::t_71202058b4eea8 11,127-130,577-578,831-832
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a432f1b42be1d8b4b5869d5a7f26e04538ec17d1",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
