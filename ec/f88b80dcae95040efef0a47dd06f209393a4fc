@@ -1,0 +1,28 @@
+packages/emulate/src/start-options.ts
+  s_fe23e72629f2af::t_c1ef10e0ee1993 10
+skills/linear/SKILL.md
+  s_fe23e72629f2af::t_a9bd911c61103e 33-34
+website/src/content/docs/services/linear.md
+  s_fe23e72629f2af::t_a9bd911c61103e 37-38
+packages/emulate/src/__tests__/base-url.test.ts
+  s_fe23e72629f2af::t_48863303608313 6-11,16-19,23-25
+.github/workflows/docs.yml
+  s_fe23e72629f2af::t_bbfb66b7a51aa1 11-14
+  s_fe23e72629f2af::t_dea48127245784 31-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ecf88b80dcae95040efef0a47dd06f209393a4fc",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
