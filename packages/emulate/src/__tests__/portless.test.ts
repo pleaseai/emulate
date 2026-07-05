@@ -28,7 +28,9 @@ mock.module('node:child_process', () => ({
 
 mock.module('node:readline', () => ({
   createInterface: () => ({
-    question: (_q: string, cb: (answer: string) => void) => cb(promptAnswer),
+    question: (_q: string, cb: (answer: string) => void) => {
+      cb(promptAnswer)
+    },
     close: () => {},
   }),
 }))

@@ -6,6 +6,8 @@ import { listCommand } from './commands/list.js'
 import { startCommand } from './commands/start.js'
 import { defaultBasePort } from './start-options.js'
 
+const basePort = defaultBasePort()
+
 const program = new Command()
 
 program
@@ -16,7 +18,7 @@ program
 program
   .command('start', { isDefault: true })
   .description('Start service emulators (default command)')
-  .option('-p, --port <port>', 'base port (services use port, port+1, ...; falls back to EMULATE_PORT or PORT)', v => Number.parseInt(v, 10), defaultBasePort())
+  .option('-p, --port <port>', 'base port (services use port, port+1, ...; falls back to EMULATE_PORT or PORT)', v => Number.parseInt(v, 10), basePort)
   .option('-s, --service <services>', `comma-separated services to start`)
   .option('--seed <file>', 'seed config file (yaml or json)')
   .option('--base-url <url>', 'override base URL (supports {service} interpolation)')
