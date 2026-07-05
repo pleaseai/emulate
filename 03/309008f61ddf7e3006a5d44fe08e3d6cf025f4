@@ -1,0 +1,45 @@
+website/src/content/docs/reference/conventions.md
+  s_fe23e72629f2af::t_4f55de7868aaaa 149-151,154-156,159-160,162-165,167-169
+packages/emulate/src/__tests__/base-url.test.ts
+  s_fe23e72629f2af::t_64f796a72b03e8 2,4,6-7,9-13,15-21
+  s_fe23e72629f2af::t_7b09827ff32f97 71-87
+.github/workflows/docs.yml
+  s_fe23e72629f2af::t_492434871318c9 14-17
+  s_fe23e72629f2af::t_bd75bbd389e558 31-32,34-38
+  s_fe23e72629f2af::t_f93fe2844f2ad4 44
+docs/EMULATOR-CONVENTIONS.md
+  s_fe23e72629f2af::t_4f55de7868aaaa 143-145,148-150,153-154,156-159,161-163
+skills/linear/SKILL.md
+  s_fe23e72629f2af::t_d56295a679fe5a 32-33
+packages/emulate/src/index.ts
+  s_fe23e72629f2af::t_a4a5544b6c1f83 7
+  s_fe23e72629f2af::t_d781dc1135823c 19
+website/src/content/docs/services/linear.md
+  s_fe23e72629f2af::t_54f84a04ee0415 36-37
+packages/emulate/src/start-options.ts
+  s_fe23e72629f2af::t_a80856a1f5b20c 1-31
+website/src/content/docs/services/naver.md
+  s_fe23e72629f2af::t_54f84a04ee0415 41
+skills/naver/SKILL.md
+  s_fe23e72629f2af::t_4f55de7868aaaa 37
+website/package.json
+  s_fe23e72629f2af::t_4f55de7868aaaa 12
+packages/emulate/src/commands/start.ts
+  s_fe23e72629f2af::t_d0f538fbf3d74d 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "03309008f61ddf7e3006a5d44fe08e3d6cf025f4",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
