@@ -72,9 +72,7 @@ export function buildAliases(services: readonly string[], basePort: number): Por
 export function registerAliases(aliases: PortlessAlias[]): void {
   const registered: PortlessAlias[] = []
   for (const { name, port } of aliases) {
-    const result = spawnSync('portless', ['alias', name, String(port), '--force'], {
-      stdio: 'inherit',
-    }) // NOSONAR: PATH lookup is intentional
+    const result = spawnSync('portless', ['alias', name, String(port), '--force'], { stdio: 'inherit' }) // NOSONAR: PATH lookup is intentional
     if (result.status !== 0) {
       if (registered.length > 0) {
         removeAliases(registered)
