@@ -7,7 +7,7 @@ import process from 'node:process'
 import pc from 'picocolors'
 import { parse as parseYaml } from 'yaml'
 import { createEmulator } from '../api.js'
-import { ensurePortless, portlessBaseUrl, registerAliases, removeAliases } from '../portless.js'
+import { buildAliases, ensurePortless, portlessBaseUrl, registerAliases, removeAliases } from '../portless.js'
 import { SERVICE_NAMES, SERVICE_REGISTRY } from '../registry.js'
 
 export interface StartOptions {
@@ -66,13 +66,7 @@ function inferServicesFromConfig(config: SeedConfig): ServiceName[] | null {
   return found.length > 0 ? [...found] : null
 }
 
-export async function startCommand(options: StartOptions): Promise<void> {
-  const { port: basePort } = options
-
-  const loaded = loadSeedConfig(options.seed)
-  const seedConfig = loaded?.config ?? null
-  const configSource = loaded?.source ?? null
-
+function resolveServices(options: StartOptions, seedConfig: SeedConfig | null): ServiceName[] {
   let services: ServiceName[]
   if (options.service) {
     services = options.service.split(',').map(s => s.trim()) as ServiceName[]
@@ -91,27 +85,45 @@ export async function startCommand(options: StartOptions): Promise<void> {
       process.exit(1)
     }
   }
+  return services
+}
 
+export function validateBaseUrlOptions(options: Pick<StartOptions, 'baseUrl' | 'portless'>, serviceCount: number): string | null {
   if (options.portless && options.baseUrl) {
-    console.error('--portless and --base-url are mutually exclusive.')
-    process.exit(1)
+    return '--portless and --base-url are mutually exclusive.'
   }
+  if (options.baseUrl && serviceCount > 1 && !options.baseUrl.includes('{service}')) {
+    return '--base-url with multiple services requires a {service} placeholder, e.g. https://{service}.myproxy.test'
+  }
+  return null
+}
 
-  if (options.baseUrl && services.length > 1 && !options.baseUrl.includes('{service}')) {
-    console.error('--base-url with multiple services requires a {service} placeholder, e.g. https://{service}.myproxy.test')
+async function setupPortless(services: ServiceName[], basePort: number): Promise<void> {
+  await ensurePortless()
+  const aliases: PortlessAlias[] = buildAliases(services, basePort)
+  registerAliases(aliases)
+  process.on('exit', () => {
+    removeAliases(aliases)
+  })
+}
+
+export async function startCommand(options: StartOptions): Promise<void> {
+  const { port: basePort } = options
+
+  const loaded = loadSeedConfig(options.seed)
+  const seedConfig = loaded?.config ?? null
+  const configSource = loaded?.source ?? null
+
+  const services = resolveServices(options, seedConfig)
+
+  const optionError = validateBaseUrlOptions(options, services.length)
+  if (optionError) {
+    console.error(optionError)
     process.exit(1)
   }
 
   if (options.portless) {
-    await ensurePortless()
-    const aliases: PortlessAlias[] = services.map((service, i) => ({
-      name: `${service}.emulate`,
-      port: basePort + i,
-    }))
-    registerAliases(aliases)
-    process.on('exit', () => {
-      removeAliases(aliases)
-    })
+    await setupPortless(services, basePort)
   }
 
   const emulators: Array<{ service: ServiceName, emulator: Emulator }> = []

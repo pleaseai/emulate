@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { resolveBaseUrl } from '../base-url.js'
-import { portlessBaseUrl } from '../portless.js'
+import { validateBaseUrlOptions } from '../commands/start.js'
 
 const savedEnv = { EMULATE_BASE_URL: process.env.EMULATE_BASE_URL, PORTLESS_URL: process.env.PORTLESS_URL }
 
@@ -48,8 +48,17 @@ describe('resolveBaseUrl', () => {
   })
 })
 
-describe('portlessBaseUrl', () => {
-  it('builds the service.emulate.localhost HTTPS URL', () => {
-    expect(portlessBaseUrl('kakao')).toBe('https://kakao.emulate.localhost')
+describe('validateBaseUrlOptions', () => {
+  it('rejects --portless together with --base-url', () => {
+    expect(validateBaseUrlOptions({ portless: true, baseUrl: 'https://x.test' }, 1)).toContain('mutually exclusive')
+  })
+
+  it('requires {service} for multi-service --base-url', () => {
+    expect(validateBaseUrlOptions({ baseUrl: 'https://x.test' }, 2)).toContain('{service} placeholder')
+    expect(validateBaseUrlOptions({ baseUrl: 'https://{service}.x.test' }, 2)).toBeNull()
+  })
+
+  it('accepts a literal --base-url for a single service', () => {
+    expect(validateBaseUrlOptions({ baseUrl: 'https://x.test' }, 1)).toBeNull()
   })
 })

@@ -7,7 +7,7 @@ function isInteractive(): boolean {
 }
 
 function hasPortless(): boolean {
-  const result = spawnSync('portless', ['--version'], { stdio: 'ignore' })
+  const result = spawnSync('portless', ['--version'], { stdio: 'ignore' }) // NOSONAR: resolving portless from PATH is the point of this integration
   return result.status === 0
 }
 
@@ -23,7 +23,7 @@ function promptYesNo(question: string): Promise<boolean> {
 }
 
 function isProxyRunning(): boolean {
-  const result = spawnSync('portless', ['list'], { stdio: 'ignore' })
+  const result = spawnSync('portless', ['list'], { stdio: 'ignore' }) // NOSONAR: PATH lookup is intentional
   return result.status === 0
 }
 
@@ -41,7 +41,7 @@ export async function ensurePortless(): Promise<void> {
     }
 
     try {
-      execSync('npm i -g portless', { stdio: 'inherit' })
+      execSync('npm i -g portless', { stdio: 'inherit' }) // NOSONAR: PATH lookup is intentional
     }
     catch {
       console.error('Failed to install portless.')
@@ -65,12 +65,16 @@ export interface PortlessAlias {
   port: number
 }
 
+export function buildAliases(services: readonly string[], basePort: number): PortlessAlias[] {
+  return services.map((service, i) => ({ name: `${service}.emulate`, port: basePort + i }))
+}
+
 export function registerAliases(aliases: PortlessAlias[]): void {
   const registered: PortlessAlias[] = []
   for (const { name, port } of aliases) {
     const result = spawnSync('portless', ['alias', name, String(port), '--force'], {
       stdio: 'inherit',
-    })
+    }) // NOSONAR: PATH lookup is intentional
     if (result.status !== 0) {
       if (registered.length > 0) {
         removeAliases(registered)
@@ -83,7 +87,7 @@ export function registerAliases(aliases: PortlessAlias[]): void {
 
 export function removeAliases(aliases: PortlessAlias[]): void {
   for (const { name } of aliases) {
-    const result = spawnSync('portless', ['alias', '--remove', name], { stdio: 'ignore' })
+    const result = spawnSync('portless', ['alias', '--remove', name], { stdio: 'ignore' }) // NOSONAR: PATH lookup is intentional
     if (result.status !== 0) {
       console.error(`Warning: failed to remove portless alias: ${name}`)
     }
