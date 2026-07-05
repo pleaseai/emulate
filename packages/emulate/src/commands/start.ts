@@ -9,10 +9,10 @@ import { parse as parseYaml } from 'yaml'
 import { createEmulator } from '../api.js'
 import { buildAliases, ensurePortless, portlessBaseUrl, registerAliases, removeAliases } from '../portless.js'
 import { SERVICE_NAMES, SERVICE_REGISTRY } from '../registry.js'
-import { validateBaseUrlOptions } from '../start-options.js'
+import { defaultBasePort, validateBaseUrlOptions } from '../start-options.js'
 
 export interface StartOptions {
-  port: number
+  port?: number
   service?: string
   seed?: string
   baseUrl?: string
@@ -99,7 +99,7 @@ async function setupPortless(services: ServiceName[], basePort: number): Promise
 }
 
 export async function startCommand(options: StartOptions): Promise<void> {
-  const { port: basePort } = options
+  const basePort = options.port ?? defaultBasePort()
 
   const loaded = loadSeedConfig(options.seed)
   const seedConfig = loaded?.config ?? null
