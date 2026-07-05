@@ -34,7 +34,7 @@ sequentially from the base port (naver's slot is `4001`).
   if configured).
 - Profile calls use `Authorization: Bearer <access_token>`.
 - OAuth/token errors are returned with HTTP 200 and an
-  `{ "error", "error_description" }` body (Naver convention).
+  `{"error":"...","error_description":"..."}` body (Naver convention).
 
 ## Flow
 

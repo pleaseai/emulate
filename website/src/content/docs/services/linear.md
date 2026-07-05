@@ -33,8 +33,8 @@ npx @pleaseai/emulate --service linear
 ```
 
 A single service starts on the base port (default `4000`). Use `-p <port>` to
-change it, e.g. `--service linear -p 4012`. When started alongside other
-services, ports are assigned sequentially from the base port.
+change it. When started alongside other services, ports are assigned
+sequentially from the base port (linear's slot is `4006`).
 
 Default URL (linear alone):
 

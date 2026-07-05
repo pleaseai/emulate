@@ -1,18 +1,24 @@
 import process from 'node:process'
-import { afterEach, describe, expect, it } from 'bun:test'
+import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { resolveBaseUrl } from '../base-url.js'
-import { validateBaseUrlOptions } from '../commands/start.js'
+import { defaultBasePort, validateBaseUrlOptions } from '../start-options.js'
 
-const savedEnv = { EMULATE_BASE_URL: process.env.EMULATE_BASE_URL, PORTLESS_URL: process.env.PORTLESS_URL }
+const ENV_VARS = ['EMULATE_BASE_URL', 'PORTLESS_URL', 'EMULATE_PORT', 'PORT'] as const
+const savedEnv = Object.fromEntries(ENV_VARS.map(name => [name, process.env[name]]))
 
-afterEach(() => {
-  delete process.env.EMULATE_BASE_URL
-  delete process.env.PORTLESS_URL
-  if (savedEnv.EMULATE_BASE_URL !== undefined) {
-    process.env.EMULATE_BASE_URL = savedEnv.EMULATE_BASE_URL
+// Clear before each test (not just after) so ambient shell/CI env vars
+// cannot leak into the first test case.
+beforeEach(() => {
+  for (const name of ENV_VARS) {
+    delete process.env[name]
   }
-  if (savedEnv.PORTLESS_URL !== undefined) {
-    process.env.PORTLESS_URL = savedEnv.PORTLESS_URL
+})
+
+afterAll(() => {
+  for (const name of ENV_VARS) {
+    if (savedEnv[name] !== undefined) {
+      process.env[name] = savedEnv[name]
+    }
   }
 })
 
@@ -60,5 +66,22 @@ describe('validateBaseUrlOptions', () => {
 
   it('accepts a literal --base-url for a single service', () => {
     expect(validateBaseUrlOptions({ baseUrl: 'https://x.test' }, 1)).toBeNull()
+  })
+})
+
+describe('defaultBasePort', () => {
+  it('defaults to 4000 without env vars', () => {
+    expect(defaultBasePort()).toBe(4000)
+  })
+
+  it('prefers EMULATE_PORT over PORT and ignores non-numeric values', () => {
+    process.env.PORT = '5000'
+    expect(defaultBasePort()).toBe(5000)
+
+    process.env.EMULATE_PORT = '6000'
+    expect(defaultBasePort()).toBe(6000)
+
+    process.env.EMULATE_PORT = 'not-a-port'
+    expect(defaultBasePort()).toBe(5000)
   })
 })

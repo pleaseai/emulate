@@ -9,6 +9,7 @@ import { parse as parseYaml } from 'yaml'
 import { createEmulator } from '../api.js'
 import { buildAliases, ensurePortless, portlessBaseUrl, registerAliases, removeAliases } from '../portless.js'
 import { SERVICE_NAMES, SERVICE_REGISTRY } from '../registry.js'
+import { validateBaseUrlOptions } from '../start-options.js'
 
 export interface StartOptions {
   port: number
@@ -86,16 +87,6 @@ function resolveServices(options: StartOptions, seedConfig: SeedConfig | null): 
     }
   }
   return services
-}
-
-export function validateBaseUrlOptions(options: Pick<StartOptions, 'baseUrl' | 'portless'>, serviceCount: number): string | null {
-  if (options.portless && options.baseUrl) {
-    return '--portless and --base-url are mutually exclusive.'
-  }
-  if (options.baseUrl && serviceCount > 1 && !options.baseUrl.includes('{service}')) {
-    return '--base-url with multiple services requires a {service} placeholder, e.g. https://{service}.myproxy.test'
-  }
-  return null
 }
 
 async function setupPortless(services: ServiceName[], basePort: number): Promise<void> {

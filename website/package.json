@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "sync:services": "bun scripts/sync-services.ts",
-    "deploy": "astro build && wrangler pages deploy dist"
+    "deploy": "bun scripts/sync-services.ts && astro build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.36.0",

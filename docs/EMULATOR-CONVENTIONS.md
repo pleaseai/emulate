@@ -140,27 +140,27 @@ seedFromConfig.
 Send Requests directly through `app.fetch` without binding a port:
 
 ```ts
-import { describe, it, expect, beforeEach } from "bun:test";
-import { createServer } from "@emulators/core";
-import { kakaoPlugin } from "../index.js";
+import { createServer } from '@emulators/core'
+import { describe, expect, it } from 'bun:test'
+import { kakaoPlugin } from '../index.js'
 
 function makeApp() {
-  const { app, store } = createServer(kakaoPlugin, { port: 4000 });
-  kakaoPlugin.seed?.(store, "http://localhost:4000");
-  return { app, store };
+  const { app, store } = createServer(kakaoPlugin, { port: 4000 })
+  kakaoPlugin.seed?.(store, 'http://localhost:4000')
+  return { app, store }
 }
 
-it("issues token for authorization code", async () => {
-  const { app } = makeApp();
+it('issues token for authorization code', async () => {
+  const { app } = makeApp()
   const res = await app.fetch(
-    new Request("http://localhost:4000/oauth/token", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ grant_type: "authorization_code", code, client_id }),
+    new Request('http://localhost:4000/oauth/token', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'authorization_code', code, client_id }),
     }),
-  );
-  expect(res.status).toBe(200);
-});
+  )
+  expect(res.status).toBe(200)
+})
 ```
 
 - Cover the happy path plus the main error paths (bad code/token/key, missing
