@@ -1,0 +1,37 @@
+sonar-project.properties
+  s_fe23e72629f2af::t_e4e3d84998194b 13-16
+packages/emulate/src/portless.ts
+  s_fe23e72629f2af::t_2bd9a247882ebe 75
+packages/emulate/src/__tests__/portless.test.ts
+  s_fe23e72629f2af::t_92b6b65f5d0b12 63,67-68
+  s_fe23e72629f2af::t_471f3ec554ebdd 1-2
+  s_fe23e72629f2af::t_636baa18fd33d5 91-97,100-101,103-193
+  s_fe23e72629f2af::t_571c21418a827d 11-13,20-33,36,41-43
+  s_96c11819b353df::t_13e6bbf757a42c 98-99,102
+.github/workflows/docs.yml
+  s_fe23e72629f2af::t_b46e08349bbbea 17,31-32,34-35,40,42-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "eded9559628b3daddf52eca1e7f533ea53b1102f",
+  "prompts": {},
+  "sessions": {
+    "s_96c11819b353df": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ac631b4e-de95-4de3-b8dd-4732adc98617",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    },
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
