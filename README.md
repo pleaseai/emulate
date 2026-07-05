@@ -9,6 +9,8 @@ Local drop-in replacement services for CI and no-network sandboxes.
 Fully stateful, production-fidelity API emulation for Korean services
 (Kakao, Naver, Toss Payments) and BaaS platforms (Firebase, Supabase).
 
+**Documentation: [emulate.pleaseai.dev](https://emulate.pleaseai.dev)**
+
 Built on the architecture of [vercel-labs/emulate](https://github.com/vercel-labs/emulate),
 using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 
@@ -48,7 +50,15 @@ bun packages/emulate/dist/index.js --service kakao,tosspayments
 
 # Generate a seed config file
 bun packages/emulate/dist/index.js init
+
+# Serve over HTTPS via portless (requires `portless proxy start`)
+bun packages/emulate/dist/index.js --portless
 ```
+
+With `--portless`, each service registers a [portless](https://github.com/vercel-labs/portless)
+alias and gets a trusted HTTPS URL like `https://kakao.emulate.localhost`.
+For other proxies, `--base-url` / `EMULATE_BASE_URL` support `{service}`
+interpolation (e.g. `--base-url "https://{service}.myproxy.test"`).
 
 When an `emulate.config.yaml` (or `--seed <file>`) is present, the emulators
 start pre-seeded with app keys, users, and table data. Only the services

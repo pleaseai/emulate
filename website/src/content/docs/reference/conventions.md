@@ -1,4 +1,10 @@
-# Emulator package conventions
+---
+title: Emulator Conventions
+description: Package layout and core patterns for adding a new service emulator.
+sidebar:
+  order: 2
+---
+
 
 Every service emulator follows the `@emulators/*` patterns from
 [vercel-labs/emulate](https://github.com/vercel-labs/emulate) and uses

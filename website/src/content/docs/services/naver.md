@@ -1,10 +1,14 @@
 ---
-name: naver
-description: Emulated Naver API (nid OAuth + openapi profile) for local development and testing. Use when the user needs to test Naver Login locally, run the OAuth 2.0 issue/refresh/delete flow, fetch a Naver profile (/v1/nid/me), or avoid hitting the real Naver API.
-allowed-tools: Bash(bun:*), Bash(npx @pleaseai/emulate:*), Bash(curl:*)
+title: Naver
+description: "Emulated Naver API (nid OAuth + openapi profile) for local development and testing."
+sidebar:
+  label: Naver
+  order: 2
 ---
 
-# Naver API Emulator
+:::note
+Default port **4001** · Package [`@pleaseai/emulate-naver`](https://www.npmjs.com/package/@pleaseai/emulate-naver)
+:::
 
 A stateful emulator for Naver Login (`nid`) OAuth 2.0 and the profile openapi.
 

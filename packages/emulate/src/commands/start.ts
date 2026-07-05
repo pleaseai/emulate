@@ -1,4 +1,5 @@
 import type { Emulator, SeedConfig } from '../api.js'
+import type { PortlessAlias } from '../portless.js'
 import type { ServiceName } from '../registry.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -6,13 +7,16 @@ import process from 'node:process'
 import pc from 'picocolors'
 import { parse as parseYaml } from 'yaml'
 import { createEmulator } from '../api.js'
+import { buildAliases, ensurePortless, portlessBaseUrl, registerAliases, removeAliases } from '../portless.js'
 import { SERVICE_NAMES, SERVICE_REGISTRY } from '../registry.js'
+import { defaultBasePort, validateBaseUrlOptions } from '../start-options.js'
 
 export interface StartOptions {
-  port: number
+  port?: number
   service?: string
   seed?: string
   baseUrl?: string
+  portless?: boolean
 }
 
 interface LoadResult {
@@ -63,13 +67,7 @@ function inferServicesFromConfig(config: SeedConfig): ServiceName[] | null {
   return found.length > 0 ? [...found] : null
 }
 
-export async function startCommand(options: StartOptions): Promise<void> {
-  const { port: basePort } = options
-
-  const loaded = loadSeedConfig(options.seed)
-  const seedConfig = loaded?.config ?? null
-  const configSource = loaded?.source ?? null
-
+function resolveServices(options: StartOptions, seedConfig: SeedConfig | null): ServiceName[] {
   let services: ServiceName[]
   if (options.service) {
     services = options.service.split(',').map(s => s.trim()) as ServiceName[]
@@ -88,10 +86,35 @@ export async function startCommand(options: StartOptions): Promise<void> {
       process.exit(1)
     }
   }
+  return services
+}
 
-  if (options.baseUrl && services.length > 1) {
-    console.error('--base-url can only be used with a single service (--service).')
+async function setupPortless(services: ServiceName[], basePort: number): Promise<void> {
+  await ensurePortless()
+  const aliases: PortlessAlias[] = buildAliases(services, basePort)
+  registerAliases(aliases)
+  process.on('exit', () => {
+    removeAliases(aliases)
+  })
+}
+
+export async function startCommand(options: StartOptions): Promise<void> {
+  const basePort = options.port ?? defaultBasePort()
+
+  const loaded = loadSeedConfig(options.seed)
+  const seedConfig = loaded?.config ?? null
+  const configSource = loaded?.source ?? null
+
+  const services = resolveServices(options, seedConfig)
+
+  const optionError = validateBaseUrlOptions(options, services.length)
+  if (optionError) {
+    console.error(optionError)
     process.exit(1)
+  }
+
+  if (options.portless) {
+    await setupPortless(services, basePort)
   }
 
   const emulators: Array<{ service: ServiceName, emulator: Emulator }> = []
@@ -103,7 +126,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
       service,
       port,
       seed: seedConfig ?? undefined,
-      baseUrl: services.length === 1 ? options.baseUrl : undefined,
+      baseUrl: options.portless ? portlessBaseUrl(service) : options.baseUrl,
     })
     emulators.push({ service, emulator })
   }

@@ -1,10 +1,14 @@
 ---
-name: linear
-description: Emulated Linear GraphQL API for local development and testing. Use when the user needs to test Linear API integrations locally, query issues or projects, validate GraphQL clients, or avoid hitting the real Linear API.
-allowed-tools: Bash(bun:*), Bash(npx @pleaseai/emulate:*), Bash(curl:*)
+title: Linear
+description: "Emulated Linear GraphQL API for local development and testing."
+sidebar:
+  label: Linear
+  order: 7
 ---
 
-# Linear API Emulator
+:::note
+Default port **4006** · Package [`@pleaseai/emulate-linear`](https://www.npmjs.com/package/@pleaseai/emulate-linear)
+:::
 
 Phase 1 provides a read only Linear GraphQL emulator.
 
