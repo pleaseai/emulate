@@ -1,0 +1,21 @@
+packages/emulate/src/commands/start.ts
+  s_fe23e72629f2af::t_b5855441eb7942 112-114
+packages/emulate/src/__tests__/base-url.test.ts
+  s_fe23e72629f2af::t_7f0d7bee4decd4 52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "abe5c5f4f4670ab15a22fc95643dba55585b9964",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
