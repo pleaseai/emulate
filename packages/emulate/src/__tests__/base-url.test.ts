@@ -49,7 +49,7 @@ describe('resolveBaseUrl', () => {
 })
 
 describe('portlessBaseUrl', () => {
-  it('builds the <service>.emulate.localhost HTTPS URL', () => {
+  it('builds the service.emulate.localhost HTTPS URL', () => {
     expect(portlessBaseUrl('kakao')).toBe('https://kakao.emulate.localhost')
   })
 })

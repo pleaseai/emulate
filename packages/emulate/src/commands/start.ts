@@ -109,8 +109,9 @@ export async function startCommand(options: StartOptions): Promise<void> {
       port: basePort + i,
     }))
     registerAliases(aliases)
-    const cleanup = () => removeAliases(aliases)
-    process.on('exit', cleanup)
+    process.on('exit', () => {
+      removeAliases(aliases)
+    })
   }
 
   const emulators: Array<{ service: ServiceName, emulator: Emulator }> = []
