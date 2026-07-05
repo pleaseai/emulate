@@ -7,8 +7,7 @@ export interface BaseUrlOptions {
 
 /** Base port fallback: --port flag > EMULATE_PORT > PORT > 4000. */
 export function defaultBasePort(): number {
-  for (const name of ['EMULATE_PORT', 'PORT']) {
-    const raw = process.env[name]
+  for (const raw of [process.env.EMULATE_PORT, process.env.PORT]) {
     if (raw) {
       const port = Number.parseInt(raw, 10)
       if (!Number.isNaN(port)) {

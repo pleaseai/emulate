@@ -3,21 +3,26 @@ import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { resolveBaseUrl } from '../base-url.js'
 import { defaultBasePort, validateBaseUrlOptions } from '../start-options.js'
 
-const ENV_VARS = ['EMULATE_BASE_URL', 'PORTLESS_URL', 'EMULATE_PORT', 'PORT'] as const
-const savedEnv = Object.fromEntries(ENV_VARS.map(name => [name, process.env[name]]))
+const savedEnv = {
+  EMULATE_BASE_URL: process.env.EMULATE_BASE_URL,
+  PORTLESS_URL: process.env.PORTLESS_URL,
+  EMULATE_PORT: process.env.EMULATE_PORT,
+  PORT: process.env.PORT,
+}
 
 // Clear before each test (not just after) so ambient shell/CI env vars
 // cannot leak into the first test case.
 beforeEach(() => {
-  for (const name of ENV_VARS) {
-    delete process.env[name]
-  }
+  delete process.env.EMULATE_BASE_URL
+  delete process.env.PORTLESS_URL
+  delete process.env.EMULATE_PORT
+  delete process.env.PORT
 })
 
 afterAll(() => {
-  for (const name of ENV_VARS) {
-    if (savedEnv[name] !== undefined) {
-      process.env[name] = savedEnv[name]
+  for (const [name, value] of Object.entries(savedEnv)) {
+    if (value !== undefined) {
+      Object.assign(process.env, { [name]: value })
     }
   }
 })
