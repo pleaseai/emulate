@@ -9,6 +9,8 @@ Local drop-in replacement services for CI and no-network sandboxes.
 Fully stateful, production-fidelity API emulation for Korean services
 (Kakao, Naver, Toss Payments) and BaaS platforms (Firebase, Supabase).
 
+**Documentation: [emulate.pleaseai.dev](https://emulate.pleaseai.dev)**
+
 Built on the architecture of [vercel-labs/emulate](https://github.com/vercel-labs/emulate),
 using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 

@@ -4,6 +4,8 @@ Documentation site for [pleaseai/emulate](https://github.com/pleaseai/emulate),
 built with [Astro Starlight](https://starlight.astro.build) and deployed to
 Cloudflare Pages.
 
+**Live site: <https://emulate.pleaseai.dev>**
+
 ## Development
 
 ```bash
