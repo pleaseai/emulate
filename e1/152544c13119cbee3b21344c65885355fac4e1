@@ -1,0 +1,22 @@
+packages/emulate/src/__tests__/portless.test.ts
+  s_fe23e72629f2af::t_006c7b45b65796 31-33
+packages/emulate/src/index.ts
+  s_fe23e72629f2af::t_3da1f050a9ccbb 21
+  s_fe23e72629f2af::t_d96f3db56f47db 9-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e1152544c13119cbee3b21344c65885355fac4e1",
+  "prompts": {},
+  "sessions": {
+    "s_fe23e72629f2af": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d9e56917-fc78-4597-a3d8-7909fee977fb",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
