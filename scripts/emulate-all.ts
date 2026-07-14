@@ -26,7 +26,7 @@ import type { ServicePlugin, Store, WebhookDispatcher } from '@emulators/core'
  * With an emulate.config.{yaml,yml,json} present (auto-detected), only the
  * services keyed in it start, and their `<service>:` sections seed them.
  */
-import type { Emulator, SeedConfig } from '@pleaseai/emulate'
+import type { Emulator, SeedConfig, ServiceName } from '@pleaseai/emulate'
 import { existsSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import { createServer, serve } from '@emulators/core'
@@ -92,7 +92,14 @@ function parseArgs(argv: string[]): Args {
       args.vercelPort = intFlag('--vercel-port', argv[++i])
     }
     else if (arg === '--service') {
-      args.service = argv[++i]
+      // A present-but-empty --service must not silently fall through to
+      // "start everything" — reject the malformed invocation.
+      const value = argv[++i]
+      if (value === undefined) {
+        console.error('--service requires a comma-separated list of service names')
+        process.exit(1)
+      }
+      args.service = value
     }
     else if (arg === '--config') {
       args.config = argv[++i]
@@ -103,7 +110,7 @@ function parseArgs(argv: string[]): Args {
 
 /** Base port fallback: --port > EMULATE_PORT > PORT > 4000. */
 function basePortFrom(args: Args): number {
-  if (args.port && !Number.isNaN(args.port)) {
+  if (args.port !== undefined && !Number.isNaN(args.port)) {
     return args.port
   }
   for (const raw of [process.env.EMULATE_PORT, process.env.PORT]) {
@@ -117,7 +124,7 @@ function basePortFrom(args: Args): number {
 
 /** vercel-labs base port: --vercel-port > EMULATE_VERCEL_PORT > pleaseBase + 100. */
 function vercelBaseFrom(args: Args, pleaseBase: number): number {
-  if (args.vercelPort && !Number.isNaN(args.vercelPort)) {
+  if (args.vercelPort !== undefined && !Number.isNaN(args.vercelPort)) {
     return args.vercelPort
   }
   const env = process.env.EMULATE_VERCEL_PORT ? Number.parseInt(process.env.EMULATE_VERCEL_PORT, 10) : Number.NaN
@@ -167,7 +174,7 @@ function resolveServices(args: Args, config: SeedConfig | null): string[] {
       return inferred
     }
     // Config present but no key matched a service — make the fallback visible.
-    console.error(pc.dim('  No known service keys in config — starting all services.'))
+    console.warn(pc.yellow('  ⚠ No known service keys in config — starting all services.'))
   }
   return [...SERVICE_NAMES, ...Object.keys(VERCEL_CATALOG)]
 }
@@ -209,6 +216,22 @@ async function startVercel(name: string, port: number, config: SeedConfig | null
   }
 
   const server = serve({ fetch: app.fetch, port })
+  // serve() binds the port asynchronously — an occupied port surfaces on the
+  // server's 'error' event, not as a throw. Wait for readiness so that failure
+  // rejects startVercel and reaches main()'s try/catch (which closes the
+  // services already started) instead of crashing the whole launcher.
+  await new Promise<void>((resolve, reject) => {
+    function onListening(): void {
+      server.off('error', onError)
+      resolve()
+    }
+    function onError(err: Error): void {
+      server.off('listening', onListening)
+      reject(err)
+    }
+    server.once('listening', onListening)
+    server.once('error', onError)
+  })
   return {
     name,
     origin: 'vercel-labs',
@@ -228,7 +251,7 @@ async function startVercel(name: string, port: number, config: SeedConfig | null
 }
 
 async function startPlease(name: string, port: number, config: SeedConfig | null): Promise<Running> {
-  const emulator: Emulator = await createEmulator({ service: name as never, port, seed: config ?? undefined })
+  const emulator: Emulator = await createEmulator({ service: name as ServiceName, port, seed: config ?? undefined })
   return { name, origin: 'this-repo', port, url: emulator.url, close: () => emulator.close() }
 }
 
