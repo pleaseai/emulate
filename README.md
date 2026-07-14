@@ -4,6 +4,8 @@
 [![codecov](https://codecov.io/github/pleaseai/emulate/graph/badge.svg)](https://codecov.io/github/pleaseai/emulate)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pleaseai_emulate&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pleaseai_emulate)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pleaseai_emulate&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pleaseai_emulate)
+[![npm version](https://img.shields.io/npm/v/@pleaseai/emulate.svg)](https://www.npmjs.com/package/@pleaseai/emulate)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 
 Local drop-in replacement services for CI and no-network sandboxes.
 Fully stateful, production-fidelity API emulation for Korean services
