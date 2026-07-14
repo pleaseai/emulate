@@ -214,7 +214,16 @@ async function startVercel(name: string, port: number, config: SeedConfig | null
     origin: 'vercel-labs',
     port,
     url: baseUrl,
-    close: () => new Promise((resolve, reject) => server.close(err => (err ? reject(err) : resolve()))),
+    close: () => new Promise<void>((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          reject(err instanceof Error ? err : new Error(String(err)))
+        }
+        else {
+          resolve()
+        }
+      })
+    }),
   }
 }
 
