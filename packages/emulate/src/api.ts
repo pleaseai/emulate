@@ -5,6 +5,7 @@ import { resolveBaseUrl } from './base-url.js'
 import { SERVICE_REGISTRY } from './registry.js'
 
 export type { ServiceName } from './registry.js'
+export { SERVICE_NAMES } from './registry.js'
 
 export interface SeedConfig {
   tokens?: Record<string, { login: string, scopes?: string[] }>
