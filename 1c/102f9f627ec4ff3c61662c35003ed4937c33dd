@@ -1,0 +1,21 @@
+scripts/emulate-all.ts
+  s_f6c1906c62f509::t_9eed437d688316 171-176
+  s_f6c1906c62f509::t_98f45d672116ea 284-300
+  s_f6c1906c62f509::t_ab0eebb1fc84c3 95-98,100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1c102f9f627ec4ff3c61662c35003ed4937c33dd",
+  "prompts": {},
+  "sessions": {
+    "s_f6c1906c62f509": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07071c68-5e8b-43d4-bfda-f01af62b00fe",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
