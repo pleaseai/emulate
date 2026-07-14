@@ -1,0 +1,31 @@
+scripts/emulate-all.ts
+  s_bed79893cd0abb::t_32bee5f4b9559b 76-85,89,92
+  s_bed79893cd0abb::t_92dc649986ac95 161-162,169-170
+  s_bed79893cd0abb::t_d5a20086e88875 194,197-199,201,206-208,260
+  s_bed79893cd0abb::t_8a063b49a30fd8 2
+  s_bc2fc647eb3091::t_f3e761fc46e5c0 258-259,261-264,270,273,279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "307656edb58bbfe5621db4d4fbfbdac041194bdf",
+  "prompts": {},
+  "sessions": {
+    "s_bc2fc647eb3091": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1b398429-e112-427e-b79d-8f4f614355bd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    },
+    "s_bed79893cd0abb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e0139e-b406-455b-b525-46b44d200b6a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
