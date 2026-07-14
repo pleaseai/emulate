@@ -1,0 +1,45 @@
+packages/emulate/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 66
+packages/kakao/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/toss-payments/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/x/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/naver/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/supabase/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/spotify/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/linear/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/workos/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/asana/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/posthog/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/gitlab/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/autumn/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+packages/firebase/package.json
+  s_bed79893cd0abb::t_486e50f493ef5b 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1116c2007db4a69dec95ab503cd97b30e7d4423c",
+  "prompts": {},
+  "sessions": {
+    "s_bed79893cd0abb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0e0139e-b406-455b-b525-46b44d200b6a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
