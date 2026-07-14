@@ -92,10 +92,12 @@ function parseArgs(argv: string[]): Args {
       args.vercelPort = intFlag('--vercel-port', argv[++i])
     }
     else if (arg === '--service') {
-      // A present-but-empty --service must not silently fall through to
-      // "start everything" — reject the malformed invocation.
+      // A missing or empty --service value must not silently fall through to
+      // "start everything" — reject the malformed invocation. A value made only
+      // of separators (e.g. ",") is caught later in resolveServices once it
+      // resolves to an empty name list.
       const value = argv[++i]
-      if (value === undefined) {
+      if (!value) {
         console.error('--service requires a comma-separated list of service names')
         process.exit(1)
       }
@@ -166,7 +168,12 @@ function loadConfig(explicit?: string): { config: SeedConfig, source: string } |
 function resolveServices(args: Args, config: SeedConfig | null): string[] {
   if (args.service) {
     // Dedupe: two identical names would map to the same port and crash on bind.
-    return [...new Set(args.service.split(',').map(s => s.trim()).filter(Boolean))]
+    const names = [...new Set(args.service.split(',').map(s => s.trim()).filter(Boolean))]
+    if (names.length === 0) {
+      console.error('--service did not list any service names (check for stray commas)')
+      process.exit(1)
+    }
+    return names
   }
   if (config) {
     const inferred = Object.keys(config).filter(k => PLEASE_SET.has(k) || VERCEL_SET.has(k))
@@ -272,9 +279,25 @@ async function main(): Promise<void> {
     }
   }
 
-  // Guard the two ranges against overlap, but only when both are actually in use.
   const usesPlease = services.some(n => PLEASE_SET.has(n))
   const usesVercel = services.some(n => VERCEL_SET.has(n))
+
+  // A base port of 0 (Bun would bind a random port, so the printed localhost:0
+  // URLs and seeded endpoints are wrong) or one so high the range spills past
+  // 65535 is unusable. Reject it for whichever range is in use — this covers
+  // both --port/--vercel-port and the EMULATE_*_PORT env fallbacks.
+  const MAX_PORT = 65535
+  for (const [flag, base, span, inUse] of [
+    ['--port', pleaseBase, PLEASE_ORDER.length, usesPlease],
+    ['--vercel-port', vercelBase, VERCEL_ORDER.length, usesVercel],
+  ] as const) {
+    if (inUse && (base < 1 || base + span - 1 > MAX_PORT)) {
+      console.error(`${flag} base ${base} is out of range — it must be ≥ 1 and leave room for ${span} consecutive ports at or below ${MAX_PORT}.`)
+      process.exit(1)
+    }
+  }
+
+  // Guard the two ranges against overlap, but only when both are actually in use.
   if (usesPlease && usesVercel
     && pleaseBase < vercelBase + VERCEL_ORDER.length
     && vercelBase < pleaseBase + PLEASE_ORDER.length) {
