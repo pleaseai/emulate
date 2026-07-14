@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.0](https://github.com/pleaseai/emulate/compare/emulate-v0.2.0...emulate-v0.3.0) (2026-07-14)
+
+
+### Features
+
+* run this repo and vercel-labs emulators together via a single-process launcher ([#24](https://github.com/pleaseai/emulate/issues/24)) ([22cd1a8](https://github.com/pleaseai/emulate/commit/22cd1a81fbe6a599a8d9ce9303ccc00edc85f8ec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @pleaseai/emulate-asana bumped to 0.3.0
+    * @pleaseai/emulate-autumn bumped to 0.3.0
+    * @pleaseai/emulate-firebase bumped to 0.3.0
+    * @pleaseai/emulate-gitlab bumped to 0.3.0
+    * @pleaseai/emulate-kakao bumped to 0.3.0
+    * @pleaseai/emulate-linear bumped to 0.3.0
+    * @pleaseai/emulate-naver bumped to 0.3.0
+    * @pleaseai/emulate-posthog bumped to 0.3.0
+    * @pleaseai/emulate-spotify bumped to 0.3.0
+    * @pleaseai/emulate-supabase bumped to 0.3.0
+    * @pleaseai/emulate-toss-payments bumped to 0.3.0
+    * @pleaseai/emulate-workos bumped to 0.3.0
+    * @pleaseai/emulate-x bumped to 0.3.0
+
 ## [0.2.0](https://github.com/pleaseai/emulate/compare/emulate-v0.1.0...emulate-v0.2.0) (2026-07-05)
 
 
