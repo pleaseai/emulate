@@ -1,0 +1,19 @@
+scripts/emulate-all.ts
+  s_bc2fc647eb3091::t_cf32e188cccc41 217-226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "56bc327fcf8a8eae8c89efdd7b4e19a30b74b1d3",
+  "prompts": {},
+  "sessions": {
+    "s_bc2fc647eb3091": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1b398429-e112-427e-b79d-8f4f614355bd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Minsu Lee <minsu.lee@pleaseai.dev>"
+    }
+  }
+}
