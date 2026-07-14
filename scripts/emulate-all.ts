@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import type { ServicePlugin, Store } from '@emulators/core'
+import type { ServicePlugin, Store, WebhookDispatcher } from '@emulators/core'
 /**
  * Single-process launcher that runs THIS repo's emulators and the upstream
  * vercel-labs `@emulators/*` emulators together — one command, one process.
@@ -73,13 +73,23 @@ interface Args {
 
 function parseArgs(argv: string[]): Args {
   const args: Args = {}
+  // A present-but-non-numeric port flag is a user error, not something to
+  // silently drop back to the default — fail loudly.
+  const intFlag = (flag: string, raw: string | undefined): number => {
+    const value = raw === undefined ? Number.NaN : Number.parseInt(raw, 10)
+    if (Number.isNaN(value)) {
+      console.error(`${flag} requires a numeric value (got: ${raw ?? '<missing>'})`)
+      process.exit(1)
+    }
+    return value
+  }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '--port') {
-      args.port = Number.parseInt(argv[++i], 10)
+      args.port = intFlag('--port', argv[++i])
     }
     else if (arg === '--vercel-port') {
-      args.vercelPort = Number.parseInt(argv[++i], 10)
+      args.vercelPort = intFlag('--vercel-port', argv[++i])
     }
     else if (arg === '--service') {
       args.service = argv[++i]
@@ -148,13 +158,16 @@ function loadConfig(explicit?: string): { config: SeedConfig, source: string } |
 
 function resolveServices(args: Args, config: SeedConfig | null): string[] {
   if (args.service) {
-    return args.service.split(',').map(s => s.trim()).filter(Boolean)
+    // Dedupe: two identical names would map to the same port and crash on bind.
+    return [...new Set(args.service.split(',').map(s => s.trim()).filter(Boolean))]
   }
   if (config) {
     const inferred = Object.keys(config).filter(k => PLEASE_SET.has(k) || VERCEL_SET.has(k))
     if (inferred.length > 0) {
       return inferred
     }
+    // Config present but no key matched a service — make the fallback visible.
+    console.error(pc.dim('  No known service keys in config — starting all services.'))
   }
   return [...SERVICE_NAMES, ...Object.keys(VERCEL_CATALOG)]
 }
@@ -178,16 +191,21 @@ async function startVercel(name: string, port: number, config: SeedConfig | null
   const { pkg } = VERCEL_CATALOG[name]
   const mod = await import(pkg) as {
     default: ServicePlugin
-    seedFromConfig?: (store: Store, baseUrl: string, svcConfig: unknown) => void
+    seedFromConfig?: (store: Store, baseUrl: string, svcConfig: unknown, webhooks?: WebhookDispatcher) => void
   }
   const plugin = mod.default
+  if (!plugin) {
+    throw new Error(`${pkg} has no default export (expected a ServicePlugin)`)
+  }
   const baseUrl = `http://localhost:${port}`
-  const { app, store } = createServer(plugin, { port, baseUrl, tokens: buildTokens(config ?? undefined) })
+  const { app, store, webhooks } = createServer(plugin, { port, baseUrl, tokens: buildTokens(config ?? undefined) })
 
   plugin.seed?.(store, baseUrl)
   const svcConfig = config?.[name]
   if (svcConfig && mod.seedFromConfig) {
-    mod.seedFromConfig(store, baseUrl, svcConfig)
+    // Thread the dispatcher through — some services (e.g. stripe) register
+    // webhook subscriptions from config only when it is provided.
+    mod.seedFromConfig(store, baseUrl, svcConfig, webhooks)
   }
 
   const server = serve({ fetch: app.fetch, port })
@@ -237,20 +255,28 @@ async function main(): Promise<void> {
   const shutdown = async (code = 0): Promise<void> => {
     console.log()
     console.log(pc.dim('  Shutting down...'))
-    await Promise.all(running.map(r => r.close().catch(() => {})))
+    const results = await Promise.allSettled(running.map(r => r.close()))
+    for (let i = 0; i < results.length; i++) {
+      const res = results[i]
+      if (res.status === 'rejected') {
+        console.error(pc.dim(`  Failed to close ${running[i].name}: ${res.reason instanceof Error ? res.reason.message : res.reason}`))
+      }
+    }
     process.exit(code)
   }
   process.on('SIGINT', () => void shutdown(0))
   process.on('SIGTERM', () => void shutdown(0))
 
+  let starting = ''
   try {
     for (const name of services) {
+      starting = name
       const port = portFor(name, pleaseBase, vercelBase)
       running.push(PLEASE_SET.has(name) ? await startPlease(name, port, config) : await startVercel(name, port, config))
     }
   }
   catch (err) {
-    console.error(`\n  Failed to start: ${err instanceof Error ? err.message : err}`)
+    console.error(`\n  Failed to start ${starting}: ${err instanceof Error ? err.stack ?? err.message : err}`)
     await shutdown(1)
     return
   }
