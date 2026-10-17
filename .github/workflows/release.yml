@@ -41,6 +41,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
 
       # Installs the tool versions pinned in mise.toml (bun + node, which
       # provides the npm CLI used to publish).
@@ -58,6 +60,9 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish released packages
+        # bash runs with pipefail, so a failed jq fails the step instead of
+        # publishing nothing
+        shell: bash
         env:
           # release-please emits the dirs it released as a JSON array, e.g.
           # ["packages/asana","packages/emulate"].

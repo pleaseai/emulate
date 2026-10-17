@@ -2,14 +2,6 @@
   "version": 1,
   "entries": [
     {
-      "file": ".github/workflows/ci.yml",
-      "rule": "artipacked",
-      "fingerprint": "0bb1f2e035729a9e",
-      "context": "cf0bf2cf2bdf8c27",
-      "occurrence": 0,
-      "message": "actions/checkout leaves the GITHUB_TOKEN in the git config of the workspace, where a later step such as an artifact upload can publish it. set \"persist-credentials: false\" under \"with:\" unless a later step needs to push"
-    },
-    {
       "file": ".github/workflows/docs.yml",
       "rule": "missing-timeout",
       "fingerprint": "79654f519f51860e",
@@ -43,14 +35,6 @@
     },
     {
       "file": ".github/workflows/release.yml",
-      "rule": "artipacked",
-      "fingerprint": "f9e5010b18619d50",
-      "context": "3a4db40f904b31ca",
-      "occurrence": 0,
-      "message": "actions/checkout leaves the GITHUB_TOKEN in the git config of the workspace, where a later step such as an artifact upload can publish it. set \"persist-credentials: false\" under \"with:\" unless a later step needs to push"
-    },
-    {
-      "file": ".github/workflows/release.yml",
       "rule": "cache-poisoning",
       "fingerprint": "8815bdc959c7f784",
       "context": "61701195e817d614",
@@ -64,14 +48,6 @@
       "context": "a3ce268b0a161d73",
       "occurrence": 0,
       "message": "command \"npm install\" installs a package outside of a lock file: its version and its dependencies are resolved anew on every run. add the package to package.json and commit the package-lock.json and install with `npm ci`"
-    },
-    {
-      "file": ".github/workflows/release.yml",
-      "rule": "pipeline-without-pipefail",
-      "fingerprint": "e7560a1d506997b6",
-      "context": "a5ddf012aaa3b207",
-      "occurrence": 0,
-      "message": "failure of \"jq\" is hidden in the pipeline \"echo \\\"$PATHS_RELEASED\\\" | jq -r '.[]' | while read -r pkg; do...\" because the default shell runs \"bash -e {0}\" without pipefail. add \"set -o pipefail\" before the pipeline or use \"shell: bash\", which runs with pipefail"
     }
   ]
 }

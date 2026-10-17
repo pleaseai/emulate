@@ -23,6 +23,7 @@ jobs:
         with:
           # Full history for accurate SonarQube blame/new-code detection
           fetch-depth: 0
+          persist-credentials: false
 
       # Fails when a `uses:` ref has no entry in .github/workflows/actions.lock
       - name: Verify workflow lockfile coverage
