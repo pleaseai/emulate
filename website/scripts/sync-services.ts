@@ -1,5 +1,5 @@
 /**
- * Regenerates src/content/docs/services/*.md from ../skills/<service>/SKILL.md.
+ * Regenerates src/content/docs/services/*.mdx from ../skills/<service>/SKILL.md.
  * Run from website/: bun scripts/sync-services.ts
  */
 import { join } from 'node:path'
@@ -46,7 +46,7 @@ for (const [dir, meta] of Object.entries(SERVICES)) {
   const description = firstSentence(descMatch?.[1] ?? '')
 
   let body = raw.slice(fmMatch[0].length).trim()
-  // Drop the leading H1 — Starlight renders the frontmatter title instead.
+  // Drop the leading H1 — the layout renders the frontmatter title instead.
   body = body.replace(/^# .*\n+/, '')
 
   // npm package names use the directory name under packages/, which differs
@@ -67,6 +67,6 @@ Default port **${meta.port}** · Package [\`${pkg}\`](https://www.npmjs.com/pack
 
 ${body}
 `
-  await Bun.write(join(OUT, `${dir}.md`), page)
-  console.log(`wrote services/${dir}.md`)
+  await Bun.write(join(OUT, `${dir}.mdx`), page)
+  console.log(`wrote services/${dir}.mdx`)
 }
