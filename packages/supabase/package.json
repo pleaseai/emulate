@@ -28,7 +28,7 @@
     "dev": "tsup --watch",
     "test": "bun test",
     "clean": "rm -rf dist .turbo",
-    "type-check": "tsgo --noEmit"
+    "type-check": "bun check"
   },
   "dependencies": {
     "@emulators/core": "^0.12.2"
