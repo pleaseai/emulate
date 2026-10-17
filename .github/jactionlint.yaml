@@ -1,0 +1,3 @@
+# Findings that predate jactionlint are recorded in jactionlint-baseline.json;
+# only new findings fail CI. Pay the baseline down over time.
+baseline: auto
