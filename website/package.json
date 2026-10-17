@@ -12,12 +12,15 @@
     "deploy": "bun scripts/sync-services.ts && astro build && wrangler pages deploy dist"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.36.0",
-    "astro": "^5.6.0",
-    "sharp": "^0.34.0",
-    "starlight-theme-black": "^0.6.0"
+    "@astrojs/starlight": "^0.42.6",
+    "astro": "^7.4.0",
+    "sharp": "^0.35.5",
+    "starlight-theme-black": "^0.7.1"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.5"
   }
 }
