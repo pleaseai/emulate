@@ -63,7 +63,7 @@
     "type-check": "tsgo --noEmit"
   },
   "dependencies": {
-    "@emulators/core": "^0.9.0",
+    "@emulators/core": "^0.12.2",
     "@pleaseai/emulate-asana": "workspace:*",
     "@pleaseai/emulate-autumn": "workspace:*",
     "@pleaseai/emulate-firebase": "workspace:*",
@@ -82,7 +82,7 @@
     "yaml": "^2"
   },
   "devDependencies": {
-    "tsup": "^8",
+    "tsup": "^9",
     "typescript": "^6"
   }
 }
