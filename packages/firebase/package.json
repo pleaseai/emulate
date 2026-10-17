@@ -34,7 +34,7 @@
     "@emulators/core": "^0.12.2"
   },
   "devDependencies": {
-    "tsup": "^8",
+    "tsup": "^9",
     "typescript": "^6"
   }
 }
