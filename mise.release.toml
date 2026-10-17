@@ -1,0 +1,5 @@
+# Release-only overrides, loaded with MISE_ENV=release by the npm publish job.
+# Node 24 bundles npm >= 11.5.1, which npm Trusted Publishing (OIDC) requires;
+# the node 22 used for development bundles npm 10.x.
+[tools]
+node = "24"
