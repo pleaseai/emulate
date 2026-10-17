@@ -21,7 +21,7 @@
     "@emulators/apple": "0.9.0",
     "@emulators/aws": "0.9.0",
     "@emulators/clerk": "0.9.0",
-    "@emulators/core": "0.9.0",
+    "@emulators/core": "0.10.0",
     "@emulators/github": "0.9.0",
     "@emulators/google": "0.9.0",
     "@emulators/microsoft": "0.9.0",
