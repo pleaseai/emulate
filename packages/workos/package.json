@@ -32,10 +32,10 @@
   },
   "dependencies": {
     "@emulators/core": "^0.12.2",
-    "jose": "^6"
+    "jose": "^6.2.12"
   },
   "devDependencies": {
-    "@workos-inc/node": "^8.13.0",
+    "@workos-inc/node": "^11.0.0",
     "tsup": "^9",
     "typescript": "^6"
   }

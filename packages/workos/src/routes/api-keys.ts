@@ -7,7 +7,7 @@ export function apiKeyRoutes(ctx: RouteContext): void {
   const { app, store } = ctx
   const ws = () => getWorkosStore(store)
 
-  // The SDK's apiKeys.validateApiKey → POST /api_keys/validations
+  // The SDK's apiKeys.createValidation → POST /api_keys/validations
   app.post('/api_keys/validations', async (c) => {
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>
     const value = String(body.value ?? '')
