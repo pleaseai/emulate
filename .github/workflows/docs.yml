@@ -59,7 +59,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           workingDirectory: website
-          command: pages deploy dist --project-name=emulate-docs --branch=${{ github.head_ref || github.ref_name }}
+          command: pages deploy dist --project-name=emulate --branch=${{ github.head_ref || github.ref_name }}
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request' && steps.deploy.outcome == 'success'
         uses: actions/github-script@v9.0.0
