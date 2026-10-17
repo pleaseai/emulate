@@ -32,7 +32,7 @@
     "@emulators/stripe": "0.12.2",
     "@emulators/vercel": "0.12.2",
     "@pleaseai/emulate": "workspace:*",
-    "@pleaseai/eslint-config": "^0.0.4",
+    "@pleaseai/eslint-config": "^0.1.0",
     "@types/bun": "^1.4.3",
     "@typescript/native-preview": "7.0.0-dev.20260604.1",
     "emulate": "0.12.2",
