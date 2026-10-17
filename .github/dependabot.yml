@@ -7,6 +7,8 @@ updates:
       interval: weekly
       day: monday
       timezone: Asia/Seoul
+    cooldown:
+      default-days: 7
     groups:
       dev-dependencies:
         dependency-type: development
@@ -20,6 +22,8 @@ updates:
       interval: weekly
       day: monday
       timezone: Asia/Seoul
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns:
