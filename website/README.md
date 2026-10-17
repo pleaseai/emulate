@@ -31,7 +31,7 @@ bun run build      # static output in dist/
 bun run preview    # serve the build locally
 ```
 
-Deployment targets a Cloudflare Pages project named `emulate-docs`:
+Deployment targets a Cloudflare Pages project named `emulate`:
 
 - **CI**: `.github/workflows/docs.yml` builds and deploys on pushes to `main`
   that touch `website/`, `skills/`, or `docs/`. Requires the
