@@ -1,6 +1,6 @@
 [tools]
 # Primary runtime / package manager
-bun = "1.3.14"
+bun = "1.4.3"
 # The published CLI targets node (#!/usr/bin/env node)
 node = "22"
 
