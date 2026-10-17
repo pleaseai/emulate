@@ -1,7 +1,7 @@
 {
   "name": "@pleaseai/emulate",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Local drop-in replacement services for CI and no-network sandboxes — Korean services (Kakao, Naver, Toss Payments) and BaaS (Firebase, Supabase)",
   "license": "Apache-2.0",
   "repository": {
@@ -63,7 +63,7 @@
     "type-check": "tsgo --noEmit"
   },
   "dependencies": {
-    "@emulators/core": "^0.10.0",
+    "@emulators/core": "^0.9.0",
     "@pleaseai/emulate-asana": "workspace:*",
     "@pleaseai/emulate-autumn": "workspace:*",
     "@pleaseai/emulate-firebase": "workspace:*",
