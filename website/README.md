@@ -27,7 +27,7 @@ bun run sync:services
 The sidebar is built from the directory tree; each page's `sidebar.order`
 frontmatter sets its position. Everything else under `src/` (layouts,
 components, routes, styles) was scaffolded by Nimbus and can be edited freely. See
-`AGENT.md` for Nimbus-specific guidance, and run `bunx nimbus-docs outdated`
+`AGENT.md` for Nimbus-specific guidance, and run `bunx @cloudflare/nimbus-docs outdated`
 to see upstream template changes when upgrading `@cloudflare/nimbus-docs`.
 
 ## Checks
