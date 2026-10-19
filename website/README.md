@@ -1,8 +1,8 @@
 # emulate docs
 
 Documentation site for [pleaseai/emulate](https://github.com/pleaseai/emulate),
-built with [Astro Starlight](https://starlight.astro.build) and deployed to
-Cloudflare Pages.
+built with [Nimbus](https://nimbus-docs.com) (Cloudflare's docs framework on
+Astro) and deployed to Cloudflare Pages.
 
 **Live site: <https://emulate.pleaseai.dev>**
 
@@ -17,17 +17,30 @@ bun run dev        # http://localhost:4321
 ## Content sources
 
 - `src/content/docs/guides/` and `reference/` — hand-written pages
-- `src/content/docs/services/*.md` — **generated** from `../skills/<service>/SKILL.md`.
+- `src/content/docs/services/*.mdx` — **generated** from `../skills/<service>/SKILL.md`.
   Do not edit them directly; update the skill and regenerate:
 
 ```bash
 bun run sync:services
 ```
 
+The sidebar is built from the directory tree; each page's `sidebar.order`
+frontmatter sets its position. Everything else under `src/` (layouts,
+components, routes, styles) was scaffolded by Nimbus and can be edited freely. See
+`AGENT.md` for Nimbus-specific guidance, and run `bunx @cloudflare/nimbus-docs outdated`
+to see upstream template changes when upgrading `@cloudflare/nimbus-docs`.
+
+## Checks
+
+```bash
+bun run typecheck  # astro check
+bun run lint:docs  # nimbus-docs authoring lint
+```
+
 ## Build & deploy
 
 ```bash
-bun run build      # static output in dist/
+bun run build      # static output in dist/, including llms.txt and .md versions
 bun run preview    # serve the build locally
 ```
 

@@ -1,0 +1,94 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { Card } from "../components/ui/card";
+import { CardGrid } from "../components/ui/card-grid";
+import { Code } from "../components/ui/code";
+import { LinkButton } from "../components/ui/link-button";
+import { config } from "virtual:nimbus/config";
+import { getIndexedEntries, withBase } from "@cloudflare/nimbus-docs/runtime";
+
+// Link through the page's entry so the href follows the site's `trailingSlash`.
+const entries = await getIndexedEntries();
+const gettingStarted = entries.find(
+  (e) => e.collection === "docs" && e.entry.id === "guides/getting-started",
+);
+const gettingStartedHref = withBase(
+  gettingStarted?.url ?? "/guides/getting-started/",
+  import.meta.env.BASE_URL,
+);
+
+const features = [
+  {
+    title: "Production fidelity",
+    icon: "ph:seal-check",
+    body: "Response JSON field names, formats, and error shapes match the real services exactly. Point your SDK at a different base URL and everything else stays the same.",
+  },
+  {
+    title: "Fully stateful",
+    icon: "ph:database",
+    body: "A real in-memory store with CRUD, indexing, filtering, and pagination — state created by one API call is visible to the next. Not canned mocks.",
+  },
+  {
+    title: "Built for CI",
+    icon: "ph:rocket-launch",
+    body: "No network, no external accounts, no flakes. Seed deterministic fixtures from a YAML config and reset between tests in milliseconds.",
+  },
+  {
+    title: "Korean services + popular APIs",
+    icon: "ph:puzzle-piece",
+    body: "Kakao, Naver, and Toss Payments alongside Firebase, Supabase, Asana, Linear, GitLab, PostHog, Spotify, WorkOS, X, and more.",
+  },
+];
+---
+
+<BaseLayout title={config.title} description={config.description}>
+  <div class="flex flex-col min-h-screen">
+    <Header />
+    <main id="main-content" tabindex="-1" class="flex-1 mx-auto max-w-3xl w-full px-6 py-24">
+      <h1
+        class="text-foreground leading-tight"
+        style="font-size: var(--nb-h1-size); font-weight: var(--nb-h1-weight); letter-spacing: var(--nb-h1-tracking);"
+      >
+        {config.title}
+      </h1>
+      <p class="mt-2 text-[1.0625rem] text-muted-foreground leading-relaxed">
+        Local drop-in replacement services for CI and no-network sandboxes. Fully
+        stateful, production-fidelity API emulation — not mocks.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <LinkButton href={gettingStartedHref} icon>Get Started</LinkButton>
+        <LinkButton href="https://github.com/pleaseai/emulate" variant="secondary">
+          View on GitHub
+        </LinkButton>
+      </div>
+
+      <h2 class="mt-16 text-xl font-semibold text-foreground">Why emulate?</h2>
+      <CardGrid class="mt-4">
+        {features.map((feature) => (
+          <Card title={feature.title} icon={feature.icon}>
+            <p class="m-0">{feature.body}</p>
+          </Card>
+        ))}
+      </CardGrid>
+
+      <h2 class="mt-16 text-xl font-semibold text-foreground">Quick start</h2>
+      <div class="mt-4">
+        <Code code="npx @pleaseai/emulate" lang="bash" />
+      </div>
+      <p class="mt-4 text-muted-foreground leading-relaxed">
+        Every service starts with sensible defaults — no config file needed. Ports
+        are assigned sequentially from <code>4000</code> (Kakao) through
+        <code>4012</code> (X).
+      </p>
+    </main>
+    <footer class="border-t border-border">
+      <p class="mx-auto max-w-3xl px-6 py-6 text-sm text-muted-foreground">
+        Built by <a href="https://github.com/pleaseai">PleaseAI</a>. Based on
+        <a href="https://github.com/vercel-labs/emulate">vercel-labs/emulate</a>,
+        using <a href="https://www.npmjs.com/package/@emulators/core"><code>@emulators/core</code></a>.
+        Licensed Apache-2.0.
+      </p>
+    </footer>
+  </div>
+</BaseLayout>
