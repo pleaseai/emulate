@@ -83,6 +83,6 @@
   },
   "devDependencies": {
     "tsup": "^9",
-    "typescript": "^6"
+    "typescript": "^7"
   }
 }
