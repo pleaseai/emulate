@@ -46,7 +46,7 @@ jobs:
       # generates a provenance attestation automatically on trusted publishes.
       id-token: write
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -54,7 +54,7 @@ jobs:
       # (bun + node, which provides the npm CLI used to publish). No tool
       # cache: this job publishes to npm, so a poisoned cache entry could end
       # up in the published packages.
-      - uses: jdx/mise-action@v4.2.1
+      - uses: jdx/mise-action@v5.1.2
         with:
           cache: false
 
