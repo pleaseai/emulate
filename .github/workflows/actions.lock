@@ -4,24 +4,24 @@
 version: 'v0.0.3'
 workflows:
     '.github/workflows/ci.yml':
-        - 'actions/checkout@v7.0.0'
-        - 'codecov/codecov-action@v7.0.0'
+        - 'actions/checkout@v7.0.1'
+        - 'codecov/codecov-action@v7.1.1'
         - 'jdx/jactionlint@v2.2.0'
-        - 'jdx/mise-action@v4.2.1'
-        - 'sonarsource/sonarqube-scan-action@v8.2.1'
+        - 'jdx/mise-action@v5.1.2'
+        - 'sonarsource/sonarqube-scan-action@v8.3.0'
     '.github/workflows/docs.yml':
-        - 'actions/checkout@v7.0.0'
+        - 'actions/checkout@v7.0.1'
         - 'actions/github-script@v9.0.0'
-        - 'cloudflare/wrangler-action@v4.0.0'
-        - 'jdx/mise-action@v4.2.1'
+        - 'cloudflare/wrangler-action@v4.1.3'
+        - 'jdx/mise-action@v5.1.2'
     '.github/workflows/release.yml':
-        - 'actions/checkout@v7.0.0'
+        - 'actions/checkout@v7.0.1'
         - 'googleapis/release-please-action@v5.0.0'
-        - 'jdx/mise-action@v4.2.1'
+        - 'jdx/mise-action@v5.1.2'
 dependencies:
-    'actions/checkout@v7.0.0':
-        ref: 'v7.0.0'
-        commit: 'sha1-9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0'
+    'actions/checkout@v7.0.1':
+        ref: 'v7.0.1'
+        commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
     'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd':
@@ -34,14 +34,14 @@ dependencies:
         commit: 'sha1-3a2844b7e9c422d3c10d287c895573f7108da1b3'
         owner_id: 44036562
         repo_id: 205262760
-    'cloudflare/wrangler-action@v4.0.0':
-        ref: 'v4.0.0'
-        commit: 'sha1-ebbaa1584979971c8614a24965b4405ff95890e0'
+    'cloudflare/wrangler-action@v4.1.3':
+        ref: 'v4.1.3'
+        commit: 'sha1-953926a2e2182532811c01a25e53647d93bf07c0'
         owner_id: 314135
         repo_id: 213471363
-    'codecov/codecov-action@v7.0.0':
-        ref: 'v7.0.0'
-        commit: 'sha1-fb8b3582c8e4def4969c97caa2f19720cb33a72f'
+    'codecov/codecov-action@v7.1.1':
+        ref: 'v7.1.1'
+        commit: 'sha1-303a32d7a59b442fa8d48b6a1cc6825c09c847a5'
         owner_id: 8226205
         repo_id: 200299178
         uses:
@@ -63,13 +63,13 @@ dependencies:
         repo_id: 1404951382
         uses:
             - 'github/codeql-action@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2'
-    'jdx/mise-action@v4.2.1':
-        ref: 'v4.2.1'
-        commit: 'sha1-dad1bfd3df957f44999b559dd69dc1671cb4e9ea'
+    'jdx/mise-action@v5.1.2':
+        ref: 'v5.1.2'
+        commit: 'sha1-08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8'
         owner_id: 216188
         repo_id: 738284564
-    'sonarsource/sonarqube-scan-action@v8.2.1':
-        ref: 'v8.2.1'
-        commit: 'sha1-22918119ff8e1ca75a623e15c8296b6ea4fbe28f'
+    'sonarsource/sonarqube-scan-action@v8.3.0':
+        ref: 'v8.3.0'
+        commit: 'sha1-d209202bc7d53ff1cc128f7f907dac145c9d6ae9'
         owner_id: 545988
         repo_id: 366408409
