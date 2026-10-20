@@ -36,6 +36,6 @@
   "devDependencies": {
     "autumn-js": "1.5.8",
     "tsup": "^9",
-    "typescript": "^6"
+    "typescript": "^7"
   }
 }
