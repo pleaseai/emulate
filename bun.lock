@@ -99,7 +99,7 @@
       "version": "0.3.0",
       "dependencies": {
         "@emulators/core": "^0.12.2",
-        "graphql": "^16.13.2",
+        "graphql": "^17.0.2",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -122,7 +122,7 @@
       "version": "0.3.0",
       "dependencies": {
         "@emulators/core": "^0.12.2",
-        "graphql": "^16.13.2",
+        "graphql": "^17.0.2",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -738,7 +738,7 @@
 
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
 
-    "graphql": ["graphql@16.14.2", "", {}, "sha512-Chq1s4CY7jmh8gO2qvLIJyfCDIN+EHLFW/9iShnp1z8FjBQMoodWP1kDC36VAMXXIvAjj4ARa7ntfAV2BrjsbA=="],
+    "graphql": ["graphql@17.0.2", "", {}, "sha512-FRWbddMxfkjiB7z+aQDWIR+E34xo9I8c9mtK2RPv8PmMzKRvrdsreHL/Ui/TmwHJfhHChEtsFPyMHKI+xuarQQ=="],
 
     "hashery": ["hashery@1.5.1", "", { "dependencies": { "hookified": "^1.15.0" } }, "sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ=="],
 
