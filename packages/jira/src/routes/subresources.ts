@@ -54,8 +54,6 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
     }
   }
 
-  // Comments
-
   app.post(
     `${API_V}/comment/list`,
     handle(
@@ -162,8 +160,6 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
     ),
   )
 
-  // Watchers
-
   app.get(
     `${API_V}/issue/:key/watchers`,
     handle(
@@ -221,8 +217,6 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
       { scopes: WRITE },
     ),
   )
-
-  // Worklogs
 
   const requireWorklog = (r: JiraRequest, issue: JiraIssue): JiraWorklog => {
     const worklog = r.js.worklogs.get(Number(r.c.req.param('id')))
@@ -314,8 +308,6 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
       { scopes: WRITE },
     ),
   )
-
-  // Issue links
 
   app.post(
     `${API_V}/issueLink`,

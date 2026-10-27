@@ -6,7 +6,6 @@ export type JiraBoardType = 'scrum' | 'kanban'
 export type JiraSprintState = 'future' | 'active' | 'closed'
 export type JiraCustomFieldType = 'string' | 'number' | 'date' | 'datetime' | 'option' | 'array' | 'user' | 'sprint'
 
-/** Atlassian Document Format node. Kept loose because ADF is an open tree. */
 export interface AdfNode {
   type: string
   version?: number

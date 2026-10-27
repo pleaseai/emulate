@@ -154,7 +154,6 @@ describe('Jira issue sub-resources', () => {
       })
       expect(link.status).toBe(201)
 
-      // outwardIssue is the source: the blocker blocks EMU-1, so EMU-1 "is blocked by" it.
       const inward = (await api(t.app, '/rest/api/3/issue/EMU-1')).json.fields.issuelinks
       expect(inward).toHaveLength(1)
       expect(inward[0].type.name).toBe('Blocks')
@@ -201,7 +200,6 @@ describe('Jira issue sub-resources', () => {
           update: { issuelinks: [{ add: { type: { name: 'Blocks' }, outwardIssue: { key: other.json.key } } }] },
         },
       })
-      // EMU-1 now shows the other issue as outwardIssue, which reads "EMU-1 blocks <other>".
       const search = async (jql: string) =>
         (await api(t.app, '/rest/api/3/search/jql', { method: 'POST', body: { jql } })).json.issues.map(
           (i: any) => i.key,

@@ -24,7 +24,6 @@ export interface IssueEventOptions {
   comments?: JiraComment[]
 }
 
-/** Webhook payloads use the REST API v2 representation at the site URL. */
 function payloadFmt(actor: Actor): Fmt {
   return { js: actor.js, baseUrl: actor.baseUrl, siteUrl: actor.baseUrl, version: '2', user: actor.user }
 }
@@ -131,12 +130,10 @@ export async function emitCommentEvent(
   })
 }
 
-/** Sends the issue and comment events for the result of an edit or transition. */
 export async function emitEditEvents(actor: Actor, result: EditIssueResult): Promise<void> {
   for (const comment of result.comments) {
     await emitCommentEvent(actor, 'comment_created', result.issue, comment)
   }
-  // Like Jira, one edit sends one jira:issue_updated, carrying both the changelog and the new comment.
   if (result.changelog || result.comments.length > 0) {
     await emitIssueEvent(actor, 'jira:issue_updated', result.issue, {
       changelog: result.changelog,
@@ -145,7 +142,6 @@ export async function emitEditEvents(actor: Actor, result: EditIssueResult): Pro
   }
 }
 
-/** Admin webhooks each get their own request. Dynamic webhooks are grouped per app URL with matchedWebhookIds. */
 async function deliverAll(actor: Actor, webhooks: JiraWebhook[], event: string, payload: Record<string, unknown>) {
   const admin = webhooks.filter(webhook => webhook.kind === 'admin')
   for (const webhook of admin) {

@@ -13,7 +13,6 @@ import { insertFrom } from './store.js'
 export interface PendingLink {
   typeId: number
   otherId: number
-  /** True for `outwardIssue`, which makes the edited issue the source ("this issue blocks the other"). */
   issueIsSource: boolean
 }
 
@@ -22,7 +21,6 @@ export interface UpdateSideEffects {
   links: PendingLink[]
 }
 
-/** Applies `update` operations (`set`, `add`, `remove`, `edit`). Comment and link additions are returned for the caller. */
 export function applyUpdateOps(
   actor: Actor,
   draft: JiraIssue,

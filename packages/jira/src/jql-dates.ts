@@ -11,11 +11,6 @@ const FUNCTION_UNITS: Record<'day' | 'week' | 'month' | 'year', string> = {
   year: 'y',
 }
 
-/**
- * Shifts a date by a Jira period such as `-1d`, `+2w`, `-1M`, `1y`, or `-1w 2d`. Units are
- * y (years), M (months), w (weeks), d (days), h (hours), and m (minutes). A bare number uses
- * `defaultUnit`, which date functions set to their own unit. Returns null for invalid input.
- */
 function shiftDate(base: Date, value: string, defaultUnit?: string): Date | null {
   const trimmed = value.replace(/\s+/g, '')
   const match = /^([+-]?)((?:\d+[yMwdhm])+|\d+)$/.exec(trimmed)

@@ -79,11 +79,6 @@ export function getJiraStore(store: Store): JiraStore {
   }
 }
 
-/**
- * Jira uses numeric string IDs that start at 10000 for most resources.
- * Inserting with an explicit ID moves the collection's auto ID forward, so
- * every later insert continues from there.
- */
 export function insertFrom<T extends Entity>(collection: Collection<T>, base: number, data: InsertInput<T>): T {
   if (data.id != null) {
     return collection.insert(data)

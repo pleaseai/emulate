@@ -246,7 +246,6 @@ describe('Atlassian OAuth 2.0 (3LO) and the API gateway', () => {
     })
     expect(write.status).toBe(401)
 
-    // API tokens carry the user's full permissions and are not scope limited.
     expect(
       (await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { fields: { summary: 'ok' } } })).status,
     ).toBe(204)

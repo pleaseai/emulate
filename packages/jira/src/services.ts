@@ -16,15 +16,11 @@ export interface CreateProjectInput {
   description?: string
   lead?: string | null
   project_type_key?: JiraProject['project_type_key']
-  /** Status names in workflow order. Defaults to To Do, In Progress, Done. */
   statuses?: string[]
-  /** Issue type names. Defaults to every issue type. */
   issue_types?: string[]
-  /** Software projects get a scrum board unless this is false. */
   board?: boolean | { name?: string, type?: JiraBoardType }
 }
 
-/** Creates a project with its workflow statuses, issue types, and (for software projects) a board. */
 export function createProject(js: JiraStore, input: CreateProjectInput): JiraProject {
   const byName = <T extends { id: number, name: string }>(items: T[], names: string[]) =>
     names
@@ -51,12 +47,10 @@ export function createProject(js: JiraStore, input: CreateProjectInput): JiraPro
   return project
 }
 
-/** Bumps an issue's `updated` timestamp after a change to something that hangs off it. */
 export function touchIssue(js: JiraStore, issueId: number): void {
   js.issues.update(issueId, {})
 }
 
-/** Removes an issue and everything that hangs off it. Subtasks are removed too. */
 export function deleteIssueRecord(js: JiraStore, issue: JiraIssue): void {
   for (const child of js.issues.findBy('parent_id', issue.id)) {
     if (js.issueTypes.get(child.issue_type_id)?.subtask) {
@@ -102,7 +96,6 @@ export function deleteProjectRecord(js: JiraStore, project: JiraProject): void {
   js.projects.delete(project.id)
 }
 
-/** Removes a component and drops it from every issue that uses it. */
 export function deleteComponentRecord(js: JiraStore, component: JiraComponent): void {
   for (const issue of js.issues.findBy('project_id', component.project_id)) {
     if (issue.component_ids.includes(component.id)) {
@@ -112,7 +105,6 @@ export function deleteComponentRecord(js: JiraStore, component: JiraComponent): 
   js.components.delete(component.id)
 }
 
-/** Removes a version and drops it from every issue's fix versions. */
 export function deleteVersionRecord(js: JiraStore, version: JiraVersion): void {
   for (const issue of js.issues.findBy('project_id', version.project_id)) {
     if (issue.fix_version_ids.includes(version.id)) {
@@ -122,7 +114,6 @@ export function deleteVersionRecord(js: JiraStore, version: JiraVersion): void {
   js.versions.delete(version.id)
 }
 
-/** Removes a sprint and detaches it from every issue, current or past. */
 export function deleteSprintRecord(js: JiraStore, sprint: JiraSprint): void {
   for (const issue of js.issues.all()) {
     if (issue.sprint_id === sprint.id || issue.closed_sprint_ids.includes(sprint.id)) {

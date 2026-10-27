@@ -77,7 +77,6 @@ function decodeToken(token: string): number {
     }
   }
   catch {
-    // fall through
   }
   throw new JiraError(400, ['The provided next page token is invalid or expired.'])
 }

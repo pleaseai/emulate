@@ -12,7 +12,6 @@ export function secretToken(prefix: string): string {
   return `${prefix}_${randomBytes(24).toString('base64url')}`
 }
 
-/** Jira timestamps look like 2026-09-30T19:41:49.123+0000. */
 export function jiraTime(iso: string | null | undefined): string | null {
   if (!iso) {
     return null

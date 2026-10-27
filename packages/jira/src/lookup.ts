@@ -8,7 +8,6 @@ const asId = (ref: string | number) => (/^\d+$/.test(String(ref)) ? Number(ref) 
 
 type Ref = string | number | undefined | null
 
-/** Looks an entity up by numeric id, or else by a case-insensitive name. */
 function findByIdOrName<T extends Entity>(collection: Collection<T>, ref: Ref, names: (item: T) => string[]) {
   if (ref === undefined || ref === null || ref === '') {
     return undefined
@@ -20,7 +19,6 @@ function findByIdOrName<T extends Entity>(collection: Collection<T>, ref: Ref, n
   return collection.all().find(item => names(item).some(name => eqi(name, String(ref))))
 }
 
-/** Project keys are stored uppercase, so key lookups use the index. */
 export function findProject(js: JiraStore, ref: Ref) {
   if (ref === undefined || ref === null || ref === '') {
     return undefined
@@ -37,7 +35,6 @@ export function requireProject(js: JiraStore, ref: string) {
   return project
 }
 
-/** Issue keys inherit the uppercase project key, so key lookups use the index. */
 export function findIssue(js: JiraStore, ref: Ref) {
   if (ref === undefined || ref === null || ref === '') {
     return undefined

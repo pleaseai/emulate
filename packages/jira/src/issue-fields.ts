@@ -100,7 +100,6 @@ export function validateParent(js: JiraStore, draft: JiraIssue, parentId: number
   }
 }
 
-/** Applies one `fields` entry to a draft issue, validating the value. */
 export function setField(actor: Actor, draft: JiraIssue, field: string, value: unknown, mode: 'create' | 'edit'): void {
   const js = actor.js
   switch (field) {

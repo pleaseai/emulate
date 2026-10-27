@@ -24,7 +24,6 @@ function sprintName(value: unknown): string {
   return name
 }
 
-/** Reads an optional sprint date (an ISO 8601 date-time) and stores it normalized. */
 function sprintDate(field: string, value: unknown): string | null {
   if (value === undefined || value === null || value === '') {
     return null
@@ -83,7 +82,6 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
   const sprintFieldId = (r: JiraRequest) =>
     r.js.customFields.all().find(field => field.type === 'sprint')?.field_id ?? 'customfield_10020'
 
-  /** Filters issues by an optional `jql` param, then pages and formats them the Agile way. */
   const issuePage = (r: JiraRequest, candidates: JiraIssue[]) => {
     let issues = candidates
     const jql = r.c.req.query('jql')
@@ -111,7 +109,6 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
     }
   }
 
-  /** Moves issues into a sprint (or the backlog when sprintId is null) through the normal edit path. */
   const moveIssues = async (r: JiraRequest, refs: unknown, sprintId: number | null) => {
     if (!Array.isArray(refs) || refs.length === 0) {
       throw new JiraError(400, ['At least one issue must be specified.'])
@@ -131,10 +128,7 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
     }
   }
 
-  // Jira Cloud serves the Agile API under both prefixes.
   for (const P of PREFIXES) {
-    // Boards
-
     app.get(
       `${P}/board`,
       handle(
@@ -293,8 +287,6 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
       ),
     )
 
-    // Sprints
-
     app.post(
       `${P}/sprint`,
       handle(
@@ -428,8 +420,6 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
     app.post(`${P}/backlog/issue`, moveToBacklog)
     app.post(`${P}/backlog/:boardId/issue`, moveToBacklog)
 
-    // Issues and epics
-
     app.get(
       `${P}/issue/:key`,
       handle(
@@ -457,10 +447,6 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
   }
 }
 
-/**
- * Completed issues stay in the closed sprint. Everything else goes back to the backlog through the normal
- * edit path, so the move is recorded in the changelog and sent to webhooks.
- */
 async function closeSprintIssues(r: JiraRequest, sprint: JiraSprint): Promise<void> {
   for (const issue of r.js.issues.findBy('sprint_id', sprint.id)) {
     if (r.js.statuses.get(issue.status_id)?.category === 'done') {

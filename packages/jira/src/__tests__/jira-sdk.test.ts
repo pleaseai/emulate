@@ -4,10 +4,6 @@ import { createAgileClient, createCloudClient } from 'jira.js'
 import { DEFAULT_ADMIN_EMAIL, DEFAULT_API_TOKEN, DEFAULT_CLOUD_ID, getJiraStore } from '../index.js'
 import { adf, startJiraTestEmulator } from './helpers.js'
 
-/**
- * Drives the emulator through jira.js over a real local server with `onSchemaMismatch: "throw"`,
- * so every response is validated against the client's Jira Cloud schemas.
- */
 describe('jira.js conformance', () => {
   const originalFetch = globalThis.fetch
   let t: JiraTestEmulator

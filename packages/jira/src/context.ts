@@ -6,7 +6,6 @@ import { getJiraStore } from './store.js'
 
 export const GATEWAY_HEADER = 'x-emulate-jira-cloud-id'
 
-/** Route prefix for the platform REST API, matching both v2 and v3. */
 export const API_V = '/rest/api/:v{[23]}'
 
 export const READ = ['read:jira-work']
@@ -35,26 +34,20 @@ export interface JiraRequest {
   store: Store
   js: JiraStore
   version: '2' | '3'
-  /** Root used for `self` links: the base URL, or the api.atlassian.com style gateway prefix. */
   siteUrl: string
   baseUrl: string
   user: JiraUser
-  /** OAuth scopes granted to the token, or null for API tokens with the user's full permissions. */
   scopes: string[] | null
-  /** OAuth client that owns the access token, when the request used OAuth. */
   clientId: string | null
 }
 
-/** Request for an endpoint that also serves anonymous callers, so there may be no user. */
 export interface PublicJiraRequest extends Omit<JiraRequest, 'user' | 'scopes'> {
   user: JiraUser | null
   scopes: string[] | null
 }
 
 export interface HandlerOptions {
-  /** Defaults to true. When false, anonymous requests are allowed and the handler gets a `PublicJiraRequest`. */
   auth?: boolean
-  /** OAuth scopes required when strict scope checking is enabled. Any one of them is enough. */
   scopes?: string[]
 }
 
@@ -99,7 +92,6 @@ export function makeHandler(store: Store, baseUrl: string) {
         if (opts.auth === false) {
           return await (fn as PublicJiraHandler)({ ...request, user: user ?? null })
         }
-        // Authenticated routes threw above when there was no user.
         return await (fn as JiraHandler)({ ...request, user: user! })
       }
       catch (err) {
@@ -119,7 +111,6 @@ interface AuthResult {
   clientId: string | null
 }
 
-/** Returns the authenticated user, undefined when no credentials were sent, or throws 401 for bad credentials. */
 export function authenticate(c: Context<AppEnv>, js: JiraStore): AuthResult | undefined {
   const header = c.req.header('Authorization')
   if (!header) {
@@ -205,7 +196,6 @@ export interface PageParams {
   maxResults: number
 }
 
-/** Reads `startAt` and `maxResults` query params. `maxResults` defaults to `defaultMax` and is capped at `cap`. */
 export function pageParams(c: Context<AppEnv>, defaultMax: number, cap?: number): PageParams {
   return {
     startAt: intParam(c.req.query('startAt'), 0),
@@ -213,7 +203,6 @@ export function pageParams(c: Context<AppEnv>, defaultMax: number, cap?: number)
   }
 }
 
-/** Splits `a,b` query values and repeated `?x=a&x=b` params into one list. */
 export function listParam(c: Context<AppEnv>, name: string): string[] {
   return (c.req.queries(name) ?? [])
     .flatMap(value => value.split(','))

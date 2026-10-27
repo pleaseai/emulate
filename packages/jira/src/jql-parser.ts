@@ -5,8 +5,6 @@ export class JqlError extends Error {
   }
 }
 
-// Tokens
-
 type TokenType = 'word' | 'string' | 'op' | 'lparen' | 'rparen' | 'comma' | 'eof'
 
 interface Token {
@@ -84,8 +82,6 @@ function tokenize(input: string): Token[] {
   tokens.push({ type: 'eof', value: '', pos: input.length })
   return tokens
 }
-
-// AST
 
 export type Operand
   = | { kind: 'value', value: string }

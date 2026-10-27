@@ -110,7 +110,6 @@ function compileClause(node: Extract<JqlNode, { type: 'clause' }>, ctx: EvalCont
     return issue => handler.get(issue, ctx).length > 0 && !matchesAny(issue)
   }
 
-  // Ordering comparisons
   if (!['date', 'number', 'priority', 'key'].includes(handler.kind)) {
     throw new JqlError(`The operator '${node.op}' is not supported by the '${node.field}' field.`)
   }
@@ -120,7 +119,6 @@ function compileClause(node: Extract<JqlNode, { type: 'clause' }>, ctx: EvalCont
   const target = values[0]
   const cmp = (value: Scalar): number => {
     if (handler.kind === 'priority') {
-      // Lower priority ids are more urgent, so "priority > Medium" means Highest and High.
       return Number(target) - Number(value)
     }
     if (handler.kind === 'key') {
@@ -132,7 +130,6 @@ function compileClause(node: Extract<JqlNode, { type: 'clause' }>, ctx: EvalCont
       return issue.number - other.number
     }
     if (handler.kind === 'date' && dayPrecision && (op === '<=' || op === '>')) {
-      // A bare date covers the whole day, so "<= 2026-10-15" includes that day.
       return Number(value) - (Number(target) + DAY - 1)
     }
     return Number(value) - Number(target)
@@ -203,10 +200,6 @@ function sortIssues(issues: JiraIssue[], orderBy: OrderBy[], ctx: EvalContext): 
   return keyed.map(entry => entry.issue)
 }
 
-/**
- * Compiles JQL into a predicate for testing single issues, such as webhook filters. Unknown fields and values
- * (including ORDER BY fields) throw JqlError up front. ORDER BY itself is ignored.
- */
 export function compileJql(
   js: JiraStore,
   jql: string,
@@ -221,7 +214,6 @@ export function compileJql(
   return query.where ? compile(query.where, ctx) : () => true
 }
 
-/** Runs a JQL query against the store. Throws JqlError for invalid queries. */
 export function searchIssues(js: JiraStore, jql: string, user: JiraUser, now = new Date()): JiraIssue[] {
   const query = parseJql(jql)
   return runQuery(js, query, user, now)
@@ -230,6 +222,5 @@ export function searchIssues(js: JiraStore, jql: string, user: JiraUser, now = n
 export function runQuery(js: JiraStore, query: JqlQuery, user: JiraUser, now = new Date()): JiraIssue[] {
   const ctx: EvalContext = { js, user, now }
   const predicate = query.where ? compile(query.where, ctx) : () => true
-  // Resolving the sort handlers inside sortIssues also rejects unknown ORDER BY fields when nothing matches.
   return sortIssues(js.issues.all().filter(predicate), query.orderBy, ctx)
 }

@@ -110,7 +110,6 @@ export function allFields(js: JiraStore): FieldDef[] {
   return [...SYSTEM_FIELDS, ...js.customFields.all().map(customFieldDef)]
 }
 
-/** Resolves a field by id (`summary`, `customfield_10020`), display name, or JQL clause name (`cf[10020]`). */
 export function findField(js: JiraStore, ref: string): FieldDef | undefined {
   const lower = ref.toLowerCase()
   return allFields(js).find(

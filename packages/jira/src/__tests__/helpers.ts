@@ -37,10 +37,6 @@ export interface JiraTestEmulator extends JiraTestApp {
   close: () => Promise<void>
 }
 
-/**
- * Serves the emulator on a random local port behind the same core middleware as `createServer`,
- * so SDK tests exercise the full HTTP stack.
- */
 export async function startJiraTestEmulator(): Promise<JiraTestEmulator> {
   const store = new Store()
   const webhooks = new WebhookDispatcher()

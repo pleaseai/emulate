@@ -16,17 +16,13 @@ export interface EvalContext {
 
 export type FieldKind = 'ref' | 'text' | 'date' | 'number' | 'priority' | 'key'
 
-/** Returned by `resolve` for literals such as `Unresolved` that mean "the field is empty". */
 export const MATCHES_EMPTY = Symbol('matches empty')
 
 export interface FieldHandler {
   name: string
   kind: FieldKind
-  /** Current values of the field for an issue. Empty array means the field is empty. */
   get: (issue: JiraIssue, ctx: EvalContext) => Scalar[]
-  /** Maps a literal from the query to comparable values. Throws for unknown values. */
   resolve?: (value: string, ctx: EvalContext) => Scalar[] | typeof MATCHES_EMPTY
-  /** ORDER BY key. Defaults to the first value from `get`, lowercased. */
   sort?: (issue: JiraIssue, ctx: EvalContext) => Scalar | null
 }
 
@@ -142,10 +138,6 @@ const sprintField: FieldHandler = {
   ),
 }
 
-/**
- * JQL behavior for each searchable system field, keyed by the field id in `SYSTEM_FIELDS`. Clause names
- * (`type` for `issuetype`, `due` for `duedate`, ...) come from `SYSTEM_FIELDS`, plus the extra `aliases` below.
- */
 const SYSTEM_JQL: Record<string, FieldHandler & { aliases?: string[] }> = {
   project: {
     name: 'project',
@@ -212,7 +204,6 @@ const SYSTEM_JQL: Record<string, FieldHandler & { aliases?: string[] }> = {
       ctx => ctx.js.priorities.all(),
       p => [p.name],
     ),
-    // Priorities are only seeded, in order from Highest to Lowest, so a lower id is more urgent.
     sort: issue => (issue.priority_id ? -issue.priority_id : null),
   },
   issuetype: {
@@ -280,7 +271,6 @@ const SYSTEM_JQL: Record<string, FieldHandler & { aliases?: string[] }> = {
   sprint: { ...sprintField, aliases: ['sprint'] },
 }
 
-/** Clause name (lowercased) to handler, built once from `SYSTEM_FIELDS` clause names and `SYSTEM_JQL` aliases. */
 const SYSTEM_CLAUSES = new Map<string, FieldHandler>()
 for (const field of SYSTEM_FIELDS) {
   const handler = SYSTEM_JQL[field.id]
@@ -297,7 +287,6 @@ for (const handler of Object.values(SYSTEM_JQL)) {
   }
 }
 
-/** ORDER BY Rank is accepted and falls back to creation order, as the emulator has no rank field. */
 const rankSort: FieldHandler = {
   name: 'rank',
   kind: 'number',

@@ -9,7 +9,6 @@ export function isAdfDoc(value: unknown): value is AdfNode {
   return doc.type === 'doc' && doc.version === 1 && Array.isArray(doc.content)
 }
 
-/** Plain text (one paragraph per line) to an ADF document. */
 export function textToAdf(text: string): AdfNode {
   return {
     type: 'doc',
@@ -39,7 +38,6 @@ function inlineText(node: AdfNode): string {
   }
 }
 
-/** Flattens an ADF document to plain text, one line per paragraph, heading, or code block. */
 export function adfToText(node: AdfNode | null | undefined): string {
   if (!node) {
     return ''
@@ -62,7 +60,6 @@ export function adfToText(node: AdfNode | null | undefined): string {
   return lines.join('\n')
 }
 
-/** Minimal HTML rendering used for `renderedFields`. */
 export function adfToHtml(node: AdfNode | null | undefined): string {
   if (!node) {
     return ''

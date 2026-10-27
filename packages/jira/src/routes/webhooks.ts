@@ -12,7 +12,6 @@ const W = '/rest/webhooks/1.0/webhook'
 const DYNAMIC_TTL_MS = 30 * 24 * 3600 * 1000
 const FILTER_KEY = 'issue-related-events-section'
 
-/** Returns an error message for an invalid JQL filter, or null. Compiling it catches unknown values too. */
 function jqlProblem(r: JiraRequest, jql: string | null): string | null {
   if (!jql?.trim()) {
     return null
@@ -146,8 +145,6 @@ export function webhookRoutes({ app, store, baseUrl }: RouteContext): void {
       return r.c.body(null, 204)
     }),
   )
-
-  // Dynamic webhooks for OAuth 2.0 and Connect apps
 
   const requireApp = (r: JiraRequest): string => {
     if (!r.clientId) {

@@ -119,7 +119,6 @@ export interface EditIssueResult {
   comments: JiraComment[]
 }
 
-/** Edits an issue from `fields` and `update`, then records a changelog entry for what changed. */
 export function editIssue(
   actor: Actor,
   issue: JiraIssue,
@@ -180,16 +179,12 @@ export function transitionIssue(
   })
 }
 
-/** A field recorded in the changelog when an edit changes it. */
 interface TrackedField {
   field: string
   fieldId: string
   fieldtype?: 'jira' | 'custom'
-  /** Raw value reported as `from` and `to`. */
   id?: (issue: JiraIssue) => string | null
-  /** Display value reported as `fromString` and `toString`. */
   text: (issue: JiraIssue) => string | null
-  /** Decides whether the field changed. Defaults to comparing `id` and `text`. */
   compare?: (issue: JiraIssue) => string
 }
 
@@ -293,7 +288,6 @@ function trackedFields(js: JiraStore): TrackedField[] {
   return [...system, ...custom]
 }
 
-/** Builds Jira style changelog items for every tracked field that differs between two issue states. */
 export function diffIssues(js: JiraStore, before: JiraIssue, after: JiraIssue): JiraChangelogItem[] {
   const items: JiraChangelogItem[] = []
   for (const tracked of trackedFields(js)) {
@@ -315,7 +309,6 @@ export function diffIssues(js: JiraStore, before: JiraIssue, after: JiraIssue): 
   return items
 }
 
-/** Actor used when seeding data outside of a request. */
 export function systemActor(store: Store, js: JiraStore, baseUrl: string, user: JiraUser): Actor {
   return { store, js, baseUrl, siteUrl: baseUrl, version: '3', user }
 }

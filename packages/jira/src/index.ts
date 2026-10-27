@@ -19,7 +19,6 @@ export { getJiraStore, type JiraStore } from './store.js'
 export const jiraPlugin: ServicePlugin = {
   name: 'jira',
   register(app: Hono<AppEnv>, store: Store, webhooks: WebhookDispatcher, baseUrl: string, tokenMap?: TokenMap): void {
-    // api.atlassian.com style gateway: /ex/jira/{cloudId}/rest/... serves the same API as /rest/...
     app.use('/ex/jira/:cloudId/:rest{.*}', async (c) => {
       const cloud = c.req.param('cloudId')
       if (!getJiraStore(store).sites.findOneBy('cloud_id', cloud)) {

@@ -19,7 +19,6 @@ import { insertFrom } from '../store.js'
 
 const PROJECT_KEY = /^[A-Z][A-Z0-9_]{1,9}$/
 
-/** Jira lets site admins and the project lead administer a project's components and versions. */
 function requireProjectAdmin(r: JiraRequest, projectId: number) {
   const project = r.js.projects.get(projectId)
   if (r.user.admin || (project && project.lead_account_id === r.user.account_id)) {
@@ -28,7 +27,6 @@ function requireProjectAdmin(r: JiraRequest, projectId: number) {
   throw new JiraError(403, ['You do not have permission to administer this project.'])
 }
 
-/** Rejects a component or version name already used by another item in the same project. */
 function requireUniqueName(
   items: Array<{ id: number, name: string }>,
   name: string,
@@ -40,7 +38,6 @@ function requireUniqueName(
   }
 }
 
-/** Reads an optional `yyyy-MM-dd` date from a request body. */
 function dateField(field: string, value: unknown): string | null {
   if (value === undefined || value === null || value === '') {
     return null

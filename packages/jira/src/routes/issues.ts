@@ -45,7 +45,6 @@ export function readIssueOptions(r: JiraRequest, defaultAll = true) {
 export function issueRoutes({ app, store, baseUrl }: RouteContext): void {
   const handle = makeHandler(store, baseUrl)
 
-  // Static paths first so they win over /issue/:key.
   app.get(
     `${API_V}/issue/createmeta/:project/issuetypes`,
     handle(

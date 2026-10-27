@@ -105,10 +105,8 @@ export function formatChangelog(r: Fmt, entry: JiraChangelog) {
   }
 }
 
-/** Jira's default time tracking units, largest first: a week is 5 days and a day is 8 hours. */
 const DURATION_UNITS = { w: 5 * 8 * 3600, d: 8 * 3600, h: 3600, m: 60 }
 
-/** Formats seconds as Jira does, such as `1w 2d 3h 30m`. */
 export function formatDuration(seconds: number): string {
   const parts: string[] = []
   let remaining = seconds
@@ -122,7 +120,6 @@ export function formatDuration(seconds: number): string {
   return parts.join(' ') || '0m'
 }
 
-/** Parses Jira durations such as `1w 2d 3h 30m`. A bare number means minutes. */
 export function parseDuration(value: string): number | null {
   const trimmed = value.trim()
   if (/^\d+$/.test(trimmed)) {
@@ -140,7 +137,6 @@ export function parseDuration(value: string): number | null {
   return total > 0 ? Math.round(total) : null
 }
 
-/** Transition IDs are derived from the status position in the project workflow (11, 21, 31, ...). */
 export function issueTransitions(r: Fmt, issue: JiraIssue) {
   const project = r.js.projects.get(issue.project_id)
   if (!project) {
@@ -171,7 +167,6 @@ export interface FieldSelection {
   exclude: Set<string>
 }
 
-/** Parses Jira's `fields` parameter: `*all`, `*navigable`, `summary,status`, `-comment`. */
 export function parseFieldSelection(values: string[], defaultAll: boolean): FieldSelection {
   const include = new Set<string>()
   const exclude = new Set<string>()
@@ -201,7 +196,6 @@ export interface IssueFormatOptions {
   expand?: string[]
 }
 
-/** Formats an issue's links from its own side: each entry names the other issue after its role. */
 function formatIssueLinks(r: Fmt, issue: JiraIssue) {
   const js = r.js
   return [...js.issueLinks.findBy('inward_issue_id', issue.id), ...js.issueLinks.findBy('outward_issue_id', issue.id)]
@@ -229,10 +223,6 @@ function formatIssueLinks(r: Fmt, issue: JiraIssue) {
     })
 }
 
-/**
- * Getters for every field of an issue, in Jira's response order. They are lazy so a request for a few
- * fields (search with `fields=key,summary`) does not load comments, worklogs, and links for every issue.
- */
 export function issueFieldGetters(r: Fmt, issue: JiraIssue): Record<string, () => unknown> {
   const js = r.js
   const worklogs = () => js.worklogs.findBy('issue_id', issue.id).sort((a, b) => a.id - b.id)

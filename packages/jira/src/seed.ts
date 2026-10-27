@@ -395,7 +395,6 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
       ...(issueCfg.due_date ? { duedate: issueCfg.due_date } : {}),
       ...(issueCfg.components ? { components: issueCfg.components.map(name => ({ name })) } : {}),
       ...(issueCfg.fix_versions ? { fixVersions: issueCfg.fix_versions.map(name => ({ name })) } : {}),
-      // Closed sprints cannot take new issues, so they are recorded as sprint history below.
       ...(sprint && sprintField && sprint.state !== 'closed' ? { [sprintField]: sprint.id } : {}),
       ...(issueCfg.custom_fields ?? {}),
     }

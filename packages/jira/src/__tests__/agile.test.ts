@@ -102,7 +102,6 @@ describe('Jira Agile API', () => {
     expect(closed.json.state).toBe('closed')
     expect(closed.json.completeDate).toBeTruthy()
 
-    // Completed issues stay in the closed sprint; open issues go back to the backlog.
     const backlog = await api(t.app, `${A}/board/1/backlog`)
     expect(backlog.json.issues.map((i: any) => i.key)).toEqual(['EMU-3'])
     const changelog = await api(t.app, '/rest/api/3/issue/EMU-3/changelog')
