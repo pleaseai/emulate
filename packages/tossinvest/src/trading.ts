@@ -62,7 +62,7 @@ export interface PlaceRequest {
   requestKey: string | null
 }
 
-export type PlaceError = 'insufficient-buying-power' | 'insufficient-sellable-quantity'
+export type PlaceError = 'insufficient-buying-power' | 'insufficient-sellable-quantity' | 'invalid-quantity'
 
 function isMarketable(side: OrderSide, limit: number, price: number): boolean {
   return side === 'BUY' ? limit >= price : limit <= price
@@ -83,6 +83,10 @@ export function placeOrder(
   const currency = currencyOf(stock.market)
   const refPrice = req.orderType === 'LIMIT' && req.price !== null ? req.price : stock.price
   const qty = req.quantity ?? round((req.orderAmount ?? 0) / stock.price, 6)
+
+  if (qty <= 0) {
+    return { error: 'invalid-quantity' }
+  }
 
   const freed = extra.replaces?.reserved ?? 0
   if (req.side === 'BUY') {

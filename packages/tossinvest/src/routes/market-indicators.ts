@@ -129,7 +129,7 @@ export function marketIndicatorRoutes({ app }: RouteContext): void {
       return invalid(c, { field: 'before', format: 'date-time' })
     }
     // Indicator minute bars are stamped with the bar start time.
-    const { bars, nextBefore } = candlePage(indicatorCandleSpec(symbol), interval, count, before, Date.now(), m =>
+    const { bars, nextBefore } = candlePage(indicatorCandleSpec(symbol), interval, count, before !== undefined && interval === '1m' ? before + 60_000 : before, Date.now(), m =>
       isoWithOffset((m - 1) * 60_000, 540))
     return ok(c, {
       candles: bars.map(b => ({

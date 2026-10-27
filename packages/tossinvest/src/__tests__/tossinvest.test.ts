@@ -326,6 +326,24 @@ describe('tossinvest emulator: trading', () => {
     expect(closed.json.result.conditionalOrders.find((co: { conditionalOrderId: string }) => co.conditionalOrderId === delId).first.status).toBe('CANCELED')
   })
 
+  it('pages 1m indicator candles via nextBefore without gaps', async () => {
+    const token = await fetchToken()
+    const symbol = 'KOSPI'
+    const first = await api(token, `/api/v1/market-indicators/${symbol}/candles?interval=1m&count=3`)
+    expect(first.res.status).toBe(200)
+    const { candles, nextBefore } = first.json.result
+    const second = await api(token, `/api/v1/market-indicators/${symbol}/candles?interval=1m&count=3&before=${encodeURIComponent(nextBefore)}`)
+    expect(second.res.status).toBe(200)
+    const lastFirst = Date.parse(candles[candles.length - 1].timestamp)
+    expect(Date.parse(second.json.result.candles[0].timestamp)).toBe(lastFirst - 60_000)
+  })
+
+  it('rejects amount orders that round down to zero shares', async () => {
+    const token = await fetchToken()
+    const tiny = await order(token, { symbol: 'AAPL', side: 'BUY', orderType: 'MARKET', orderAmount: '0.000001' })
+    expect(tiny.res.status).toBe(400)
+  })
+
   it('seeds demo data via plugin.seed', async () => {
     const store = new Store()
     const seededApp = new Hono()

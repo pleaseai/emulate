@@ -21,7 +21,7 @@ import { decodeCursor, encodeCursor, fail, intQuery, invalid, MSG_INVALID_FIELD,
 import { countryOf, formatPrice } from '../market.js'
 import { getTossinvestStore, newConditionalOrderId } from '../store.js'
 import { dateToDayIdx, kstDayIdx, kstIso } from '../time.js'
-import { checkOrderValue, checkPrice, readJson } from './order.js'
+import { checkOrderValue, checkPrice, IDEMPOTENCY_WINDOW_MS, readJson } from './order.js'
 
 const TYPES: readonly ConditionalType[] = ['SINGLE', 'OCO', 'OTO']
 const ID_RE = /^[\w-]{1,64}$/
@@ -34,6 +34,11 @@ interface ParsedConditional {
   expireDate: string
   first: ConditionalLeg
   second: ConditionalLeg | null
+}
+
+function requestKeyOf(stock: TossStock, p: ParsedConditional): string {
+  const leg = (l: ConditionalLeg | null) => l && [l.orderSide, l.triggerPrice, l.orderPrice]
+  return JSON.stringify([stock.symbol, p.type, p.quantity, p.orderType, p.expireDate, leg(p.first), leg(p.second)])
 }
 
 function parseLeg(c: Ctx, stock: TossStock, raw: unknown, name: 'first' | 'second', orderType: OrderType): ConditionalLeg | Response {
@@ -149,10 +154,13 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
     return co && !co.replaced && co.account_seq === account.account_seq ? co : notFound(c)
   }
   const insert = (account: TossAccount, stock: TossStock, p: ParsedConditional, clientOrderId: string | null) => {
+    const now = Date.now()
     const co = ts.conditionalOrders.insert({
       conditional_order_id: newConditionalOrderId(),
       account_seq: account.account_seq,
       client_order_id: clientOrderId,
+      request_key: requestKeyOf(stock, p),
+      created_ms: now,
       symbol: stock.symbol,
       market: countryOf(stock.market),
       type: p.type,
@@ -161,7 +169,7 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
       expire_date: p.expireDate,
       first: p.first,
       second: p.second,
-      created_kst: kstIso(Date.now()),
+      created_kst: kstIso(now),
       replaced: false,
     })
     evaluateConditionalOrders(store, stock)
@@ -188,17 +196,19 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
     if (clientOrderId !== null && !/^[\w-]{1,36}$/.test(clientOrderId)) {
       return invalid(c, { field: 'clientOrderId', maxLength: 36, pattern: '^[a-zA-Z0-9\\-_]+$' })
     }
-    if (clientOrderId !== null) {
-      const prior = ts.conditionalOrders
-        .findBy('account_seq', account.account_seq)
-        .find(co => co.client_order_id === clientOrderId && !co.replaced)
-      if (prior) {
-        return ok(c, { conditionalOrderId: prior.conditional_order_id, clientOrderId })
-      }
-    }
     const parsed = parseConditional(c, store, stock, body)
     if (parsed instanceof Response) {
       return parsed
+    }
+    if (clientOrderId !== null) {
+      const prior = ts.conditionalOrders
+        .findBy('account_seq', account.account_seq)
+        .find(co => co.client_order_id === clientOrderId && !co.replaced && Date.now() - co.created_ms < IDEMPOTENCY_WINDOW_MS)
+      if (prior) {
+        return prior.request_key === requestKeyOf(stock, parsed)
+          ? ok(c, { conditionalOrderId: prior.conditional_order_id, clientOrderId })
+          : fail(c, 422, 'idempotency-key-conflict', '동일한 clientOrderId 로 다른 내용의 주문을 요청할 수 없습니다.')
+      }
     }
     const co = insert(account, stock, parsed, clientOrderId)
     return ok(c, { conditionalOrderId: co.conditional_order_id, clientOrderId })

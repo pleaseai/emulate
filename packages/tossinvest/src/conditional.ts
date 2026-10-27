@@ -113,7 +113,7 @@ function fire(store: Store, co: TossConditionalOrder, leg: ConditionalLeg, stock
     reserved: 0,
   })
   leg.triggeredOrderId = rejected.order_id
-  leg.status = 'COMPLETED'
+  leg.status = 'ORDERED'
 }
 
 function syncLegs(store: Store, co: TossConditionalOrder, first: ConditionalLeg, second: ConditionalLeg | null, stock: TossStock): void {

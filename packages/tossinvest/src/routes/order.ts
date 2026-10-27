@@ -2,7 +2,7 @@ import type { RouteContext, Store } from '@emulators/core'
 import type { OrderSide, OrderType, TimeInForce, TossOrder, TossStock } from '../entities.js'
 import type { Ctx } from '../helpers.js'
 import type { PlaceError } from '../trading.js'
-import { fail, fmt, invalid, MSG_INVALID, MSG_INVALID_FIELD, ok, requireAccount } from '../helpers.js'
+import { fail, fmt, invalid, MSG_INVALID, MSG_INVALID_FIELD, ok, requireAccount, round } from '../helpers.js'
 import { countryOf, currencyOf, tickSize, toKrw } from '../market.js'
 import { getTossinvestStore, newOrderId } from '../store.js'
 import { kstIso } from '../time.js'
@@ -12,7 +12,7 @@ const DECIMAL_RE = /^\d+(?:\.\d+)?$/
 const CLIENT_ORDER_ID_RE = /^[\w-]{1,36}$/
 const HIGH_VALUE_KRW = 100_000_000
 const MAX_ORDER_KRW = 3_000_000_000
-const IDEMPOTENCY_WINDOW_MS = 10 * 60_000
+export const IDEMPOTENCY_WINDOW_MS = 10 * 60_000
 
 export type Body = Record<string, unknown>
 
@@ -27,6 +27,9 @@ export async function readJson(c: Ctx): Promise<Body | Response> {
 const str = (v: unknown): string | undefined => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : undefined)
 
 export function placeError(c: Ctx, err: PlaceError): Response {
+  if (err === 'invalid-quantity') {
+    return invalid(c, { field: 'orderAmount' }, MSG_INVALID)
+  }
   return err === 'insufficient-buying-power'
     ? fail(c, 422, 'insufficient-buying-power', '주문 가능 금액이 부족합니다.')
     : fail(c, 422, 'insufficient-sellable-quantity', '매도 가능 수량이 부족합니다.')
@@ -44,7 +47,7 @@ export function checkPrice(c: Ctx, stock: TossStock, raw: string, field = 'price
   const value = Number(raw)
   if (countryOf(stock.market) === 'US') {
     const dp = value < 1 ? 4 : 2
-    return Math.trunc(value * 10 ** dp) / 10 ** dp
+    return Math.trunc(round(value * 10 ** dp, 6)) / 10 ** dp
   }
   const tick = tickSize(stock, value)
   if (!Number.isInteger(value) || value % tick !== 0) {

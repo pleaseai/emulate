@@ -56,7 +56,8 @@ export function tickSize(stock: TossStock, price: number): number {
 
 export function roundToTick(stock: TossStock, price: number): number {
   if (countryOf(stock.market) === 'US') {
-    return Math.round(price * 100) / 100
+    const dp = price < 1 ? 4 : 2
+    return Math.round(price * 10 ** dp) / 10 ** dp
   }
   const tick = tickSize(stock, price)
   return Math.max(tick, Math.round(price / tick) * tick)

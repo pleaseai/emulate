@@ -144,6 +144,8 @@ export interface TossConditionalOrder extends Entity {
   conditional_order_id: string
   account_seq: number
   client_order_id: string | null
+  request_key: string | null
+  created_ms: number
   symbol: string
   market: MarketCountry
   type: ConditionalType
