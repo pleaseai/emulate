@@ -120,6 +120,23 @@ describe('tossinvest emulator: auth', () => {
     expect(res.status).toBe(200)
   })
 
+  it('form-urldecodes Basic client credentials', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, { clients: [{ client_id: 'enc-client', client_secret: 'p+ss%w:rd 1' }] })
+    const basic = (secret: string) => app.request(`${base}/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'authorization': `Basic ${btoa(`enc-client:${secret}`)}`,
+      },
+      body: new URLSearchParams({ grant_type: 'client_credentials' }),
+    })
+    expect((await basic('p%2Bss%25w%3Ard+1')).status).toBe(200)
+    expect((await basic('p%2Bss%25w%3Ard%201')).status).toBe(200)
+    expect((await basic('p+ss%w:rd 1')).status).toBe(400)
+  })
+
   it('revokes the previous token when a new one is issued', async () => {
     const first = await fetchToken()
     const second = await fetchToken()

@@ -3,6 +3,11 @@ import { Buffer } from 'node:buffer'
 import { bodyStr, constantTimeSecretEqual } from '@emulators/core'
 import { getTossinvestStore, issueToken, randomId, TOKEN_TTL_SECONDS } from '../store.js'
 
+/** application/x-www-form-urlencoded decoding; throws URIError on a bad `%` escape. */
+function formUrlDecode(value: string): string {
+  return decodeURIComponent(value.replace(/\+/g, ' '))
+}
+
 export function appsRoutes({ app, store, baseUrl }: RouteContext): void {
   const ts = getTossinvestStore(store)
   app.get('/_emulator/apps', c =>
@@ -46,15 +51,22 @@ export function tokenRoutes({ app, store }: RouteContext): void {
       const m = /^Basic\s+([A-Z0-9+/=]+)\s*$/i.exec(auth)
       const decoded = m ? Buffer.from(m[1], 'base64').toString() : ''
       const sep = decoded.indexOf(':')
+      const malformed = () => oauthError(
+        400,
+        'invalid_request',
+        'Malformed client authentication: check Authorization header or client_id/client_secret/code_verifier parameters',
+      )
       if (sep < 0) {
-        return oauthError(
-          400,
-          'invalid_request',
-          'Malformed client authentication: check Authorization header or client_id/client_secret/code_verifier parameters',
-        )
+        return malformed()
       }
-      clientId = decoded.slice(0, sep)
-      clientSecret = decoded.slice(sep + 1)
+      // RFC 6749 §2.3.1: both halves are form-urlencoded before base64 encoding.
+      try {
+        clientId = formUrlDecode(decoded.slice(0, sep))
+        clientSecret = formUrlDecode(decoded.slice(sep + 1))
+      }
+      catch {
+        return malformed()
+      }
     }
 
     const grantType = bodyStr(body.grant_type)
