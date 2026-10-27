@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/pleaseai/emulate/compare/emulate-spotify-v0.3.0...emulate-spotify-v0.3.1) (2026-10-27)
+
+
+### Miscellaneous Chores
+
+* release 0.3.1 ([#47](https://github.com/pleaseai/emulate/issues/47)) ([2f67f8f](https://github.com/pleaseai/emulate/commit/2f67f8f37d435154ba75f43e807788010cf004b3))
+
 ## [0.3.0](https://github.com/pleaseai/emulate/compare/emulate-spotify-v0.2.0...emulate-spotify-v0.3.0) (2026-10-17)
 
 
