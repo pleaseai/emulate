@@ -2,6 +2,7 @@ import type { JiraStore } from '../index.js'
 import type { JiraTestApp } from './helpers.js'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { DEFAULT_DEV_EMAIL, getJiraStore } from '../index.js'
+import { callFunction } from '../jql-dates.js'
 import { JqlError, parseJql, searchIssues } from '../jql.js'
 import { adf, api, createJiraTestApp } from './helpers.js'
 
@@ -283,5 +284,24 @@ describe('search endpoints', () => {
     const res = await api(t.app, '/rest/api/3/issue/picker?query=thr')
     expect(res.status).toBe(200)
     expect(res.json.sections[0].issues.map((i: any) => i.key)).toEqual(['EMU-4'])
+  })
+})
+
+describe('JQL date functions', () => {
+  const at = (iso: string, fn: string, arg?: string) =>
+    new Date(callFunction({ name: fn, args: arg === undefined ? [] : [arg] }, { now: new Date(iso) } as any)[0] as number).toISOString()
+
+  it('applies calendar offsets before computing period endings', () => {
+    expect(at('2026-10-15T12:00:00Z', 'endOfMonth', '-1')).toBe('2026-09-30T23:59:59.999Z')
+    expect(at('2026-10-31T12:00:00Z', 'endOfMonth', '-1')).toBe('2026-09-30T23:59:59.999Z')
+    expect(at('2028-01-31T12:00:00Z', 'endOfMonth', '+1')).toBe('2028-02-29T23:59:59.999Z')
+    expect(at('2027-02-10T12:00:00Z', 'endOfYear', '-1')).toBe('2026-12-31T23:59:59.999Z')
+    expect(at('2027-03-10T12:00:00Z', 'startOfMonth', '-1')).toBe('2027-02-01T00:00:00.000Z')
+  })
+
+  it('applies hour and minute offsets after the period boundary', () => {
+    expect(at('2026-10-15T12:00:00Z', 'startOfDay', '+1h')).toBe('2026-10-15T01:00:00.000Z')
+    expect(at('2026-10-15T12:00:00Z', 'endOfDay', '-30m')).toBe('2026-10-15T23:29:59.999Z')
+    expect(at('2026-10-15T12:00:00Z', 'startOfMonth', '-1M2h')).toBe('2026-08-31T22:00:00.000Z')
   })
 })

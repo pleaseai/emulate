@@ -412,5 +412,70 @@ describe('Jira issues', () => {
       expect(issue.fields.resolution).toBeNull()
       expect(issue.fields.resolutiondate).toBeNull()
     })
+
+    it('rejects empty comments supplied through update operations', async () => {
+      for (const comment of [{ add: {} }, { add: { body: null } }]) {
+        const edit = await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { update: { comment: [comment] } } })
+        expect(edit.status).toBe(400)
+        const bad = await api(t.app, '/rest/api/3/issue', {
+          method: 'POST',
+          body: {
+            fields: { project: { key: 'EMU' }, issuetype: { name: 'Task' }, summary: 'x' },
+            update: { comment: [comment] },
+          },
+        })
+        expect(bad.status).toBe(400)
+      }
+      const issue = (await api(t.app, '/rest/api/3/issue/EMU-1')).json
+      expect(issue.fields.comment.comments.every((c: any) => c.body)).toBe(true)
+    })
+
+    it('keeps an explicit null resolution set through update operations on a done transition', async () => {
+      const done = (await api(t.app, '/rest/api/3/issue/EMU-1/transitions')).json.transitions.find(
+        (tr: any) => tr.name === 'Done',
+      )
+      const move = await api(t.app, '/rest/api/3/issue/EMU-1/transitions', {
+        method: 'POST',
+        body: { transition: { id: done.id }, update: { resolution: [{ set: null }] } },
+      })
+      expect(move.status).toBe(204)
+      const issue = (await api(t.app, '/rest/api/3/issue/EMU-1')).json
+      expect(issue.fields.resolution).toBeNull()
+      expect(issue.fields.resolutiondate).toBeNull()
+    })
+
+    it('rejects issue type changes that invalidate existing children', async () => {
+      const task = (await createIssue(t, { summary: 'Parent task' })).json
+      const sub = await createIssue(t, { summary: 'Child', issuetype: { name: 'Subtask' }, parent: { key: task.key } })
+      expect(sub.status).toBe(201)
+      const res = await api(t.app, `/rest/api/3/issue/${task.key}`, {
+        method: 'PUT',
+        body: { fields: { issuetype: { name: 'Epic' } } },
+      })
+      expect(res.status).toBe(400)
+      expect(res.json.errors.issuetype).toBeTruthy()
+      const after = (await api(t.app, `/rest/api/3/issue/${task.key}`)).json
+      expect(after.fields.issuetype.name).toBe('Task')
+    })
+
+    it('rejects malformed nested ADF on write', async () => {
+      const bad = { type: 'doc', version: 1, content: [null] }
+      const res = await createIssue(t, { summary: 'Bad ADF', description: bad })
+      expect(res.status).toBe(400)
+      const edit = await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { fields: { description: bad } } })
+      expect(edit.status).toBe(400)
+      const typeless = await createIssue(t, { summary: 'Bad ADF', description: { type: 'doc', version: 1, content: [{ text: 'x' }] } })
+      expect(typeless.status).toBe(400)
+      expect((await api(t.app, '/rest/api/2/issue/EMU-1')).status).toBe(200)
+    })
+
+    it('rejects non-object JSON bodies with 400 but keeps string watcher bodies', async () => {
+      for (const raw of ['null', '5', '[]', '"x"']) {
+        const res = await api(t.app, '/rest/api/3/search/jql', { method: 'POST', body: raw })
+        expect(res.status).toBe(400)
+      }
+      const watch = await api(t.app, '/rest/api/3/issue/EMU-1/watchers', { method: 'POST', body: JSON.stringify(devId) })
+      expect(watch.status).toBe(204)
+    })
   })
 })

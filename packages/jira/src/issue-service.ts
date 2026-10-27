@@ -87,13 +87,33 @@ export function createIssue(
     draft.resolution_date = draft.resolution_id ? now : null
   }
 
-  const comments = effects.comments.map(raw => readBody(actor, 'comment', raw)!)
+  const comments = readPendingComments(actor, effects.comments)
   const number = project.issue_sequence + 1
   js.projects.update(project.id, { issue_sequence: number })
   const { id: _id, created_at: _c, updated_at: _u, ...data } = draft
   const issue = insertFrom(js.issues, 10000, { ...data, key: `${project.key}-${number}`, number })
   applyLinks(js, issue, effects.links)
   return { issue, comments: comments.map(body => addComment(actor, issue, body)) }
+}
+
+function readPendingComments(actor: Actor, raws: unknown[]): AdfNode[] {
+  return raws.map((raw) => {
+    const doc = readBody(actor, 'comment', raw)
+    if (!doc) {
+      throw fieldError('comment', 'Comment body can not be empty!')
+    }
+    return doc
+  })
+}
+
+function validateChildren(js: JiraStore, issue: JiraIssue, draft: JiraIssue): void {
+  const type = js.issueTypes.get(draft.issue_type_id)
+  for (const child of js.issues.findBy('parent_id', issue.id)) {
+    const childType = js.issueTypes.get(child.issue_type_id)
+    if (!type || !childType || type.hierarchy_level !== childType.hierarchy_level + 1) {
+      throw fieldError('issuetype', `Child issue ${child.key} would not belong to an appropriate hierarchy level.`)
+    }
+  }
 }
 
 function hasSetOp(update: Record<string, unknown> | undefined, field: string): boolean {
@@ -134,7 +154,10 @@ export function editIssue(
   if (draft.parent_id !== issue.parent_id || draft.issue_type_id !== issue.issue_type_id) {
     validateParent(actor.js, draft, draft.parent_id)
   }
-  const comments = effects.comments.map(raw => readBody(actor, 'comment', raw)!)
+  if (draft.issue_type_id !== issue.issue_type_id) {
+    validateChildren(actor.js, issue, draft)
+  }
+  const comments = readPendingComments(actor, effects.comments)
 
   const items = diffIssues(actor.js, issue, draft)
   let updated = issue
@@ -161,7 +184,7 @@ export function transitionIssue(
   }
   const target = transition.status
   const fields = { ...(body.fields ?? {}) }
-  const explicitResolution = 'resolution' in fields
+  const explicitResolution = 'resolution' in fields || hasSetOp(body.update, 'resolution')
   return editIssue(actor, issue, { fields, update: body.update }, (draft) => {
     draft.status_id = target.id
     draft.status_changed_at = new Date().toISOString()

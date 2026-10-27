@@ -10,6 +10,7 @@ import {
   pageParams,
   READ,
   readJson,
+  readJsonValue,
   WRITE,
 } from '../context.js'
 import { formatUser, restUrl } from '../formatters.js'
@@ -184,7 +185,7 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
     handle(
       async (r) => {
         const issue = requireIssue(r.js, r.c.req.param('key'))
-        const body = await readJson(r.c)
+        const body = await readJsonValue(r.c)
         const ref = typeof body === 'string' ? body : r.user.account_id
         const user = findUser(r.js, ref)
         if (!user) {

@@ -6,7 +6,21 @@ export function isAdfDoc(value: unknown): value is AdfNode {
     return false
   }
   const doc = value as AdfNode
-  return doc.type === 'doc' && doc.version === 1 && Array.isArray(doc.content)
+  return doc.type === 'doc' && doc.version === 1 && Array.isArray(doc.content) && doc.content.every(isAdfNode)
+}
+
+function isAdfNode(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+  const node = value as AdfNode
+  if (typeof node.type !== 'string') {
+    return false
+  }
+  if (node.text !== undefined && typeof node.text !== 'string') {
+    return false
+  }
+  return node.content === undefined || (Array.isArray(node.content) && node.content.every(isAdfNode))
 }
 
 export function textToAdf(text: string): AdfNode {

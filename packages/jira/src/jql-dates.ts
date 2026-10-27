@@ -11,7 +11,17 @@ const FUNCTION_UNITS: Record<'day' | 'week' | 'month' | 'year', string> = {
   year: 'y',
 }
 
-function shiftDate(base: Date, value: string, defaultUnit?: string): Date | null {
+const CALENDAR_UNITS = new Set(['y', 'M', 'w', 'd'])
+
+function addCalendarMonths(date: Date, months: number): void {
+  const day = date.getUTCDate()
+  date.setUTCDate(1)
+  date.setUTCMonth(date.getUTCMonth() + months)
+  const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate()
+  date.setUTCDate(Math.min(day, lastDay))
+}
+
+function shiftDate(base: Date, value: string, defaultUnit?: string, include: (unit: string) => boolean = () => true): Date | null {
   const trimmed = value.replace(/\s+/g, '')
   const match = /^([+-]?)((?:\d+[yMwdhm])+|\d+)$/.exec(trimmed)
   if (!match) {
@@ -30,11 +40,14 @@ function shiftDate(base: Date, value: string, defaultUnit?: string): Date | null
   for (const part of parts) {
     const amount = sign * Number(part.slice(0, -1))
     const unit = part.slice(-1)
+    if (!include(unit)) {
+      continue
+    }
     if (unit === 'y') {
-      date.setUTCFullYear(date.getUTCFullYear() + amount)
+      addCalendarMonths(date, amount * 12)
     }
     else if (unit === 'M') {
-      date.setUTCMonth(date.getUTCMonth() + amount)
+      addCalendarMonths(date, amount)
     }
     else if (unit === 'w') {
       date.setTime(date.getTime() + amount * 7 * DAY)
@@ -52,11 +65,11 @@ function shiftDate(base: Date, value: string, defaultUnit?: string): Date | null
   return date
 }
 
-function applyOffset(base: Date, offset: string | undefined, defaultUnit: string): Date {
+function applyOffset(base: Date, offset: string | undefined, defaultUnit: string, include?: (unit: string) => boolean): Date {
   if (!offset) {
     return base
   }
-  const shifted = shiftDate(base, offset, defaultUnit)
+  const shifted = shiftDate(base, offset, defaultUnit, include)
   if (!shifted) {
     throw new JqlError(`Invalid date offset '${offset}'.`)
   }
@@ -101,8 +114,9 @@ export function callFunction(fn: { name: string, args: string[] }, ctx: EvalCont
   const dateFn = /^(start|end)of(day|week|month|year)$/.exec(name)
   if (dateFn) {
     const unit = dateFn[2] as 'day' | 'week' | 'month' | 'year'
-    const base = dateFn[1] === 'start' ? startOf(unit, ctx.now) : endOf(unit, ctx.now)
-    return [applyOffset(base, fn.args[0], FUNCTION_UNITS[unit]).getTime()]
+    const reference = applyOffset(ctx.now, fn.args[0], FUNCTION_UNITS[unit], u => CALENDAR_UNITS.has(u))
+    const boundary = dateFn[1] === 'start' ? startOf(unit, reference) : endOf(unit, reference)
+    return [applyOffset(boundary, fn.args[0], FUNCTION_UNITS[unit], u => !CALENDAR_UNITS.has(u)).getTime()]
   }
   switch (name) {
     case 'currentuser':

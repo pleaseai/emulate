@@ -167,6 +167,14 @@ export function authenticate(c: Context<AppEnv>, js: JiraStore): AuthResult | un
 }
 
 export async function readJson(c: Context<AppEnv>): Promise<any> {
+  const body = await readJsonValue(c)
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    throw new JiraError(400, ['Request body must be a JSON object.'])
+  }
+  return body
+}
+
+export async function readJsonValue(c: Context<AppEnv>): Promise<any> {
   const text = await c.req.text()
   if (!text.trim()) {
     return {}

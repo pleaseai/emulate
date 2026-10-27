@@ -204,3 +204,27 @@ describe('inspector and browse pages', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 })
+
+describe('seedFromConfig default users', () => {
+  it('applies configured account ids and time zones to default users and migrates references', async () => {
+    const t = createJiraTestApp()
+    const js = getJiraStore(t.store)
+    const before = js.users.findOneBy('email', 'admin@jira.local')!.account_id
+    seedFromConfig(t.store, jiraTestBaseUrl, {
+      users: [{ email: 'admin@jira.local', account_id: 'custom-admin', time_zone: 'Asia/Seoul' }],
+    })
+    const admin = js.users.findOneBy('email', 'admin@jira.local')!
+    expect(admin.account_id).toBe('custom-admin')
+    expect(admin.time_zone).toBe('Asia/Seoul')
+    expect(js.users.findOneBy('account_id', before)).toBeUndefined()
+    expect(js.apiTokens.findOneBy('token', 'jira_test_token')!.account_id).toBe('custom-admin')
+    const issue = js.issues.all()[0]
+    expect(issue.reporter_id).toBe('custom-admin')
+    expect(issue.creator_id).toBe('custom-admin')
+    expect(issue.watcher_ids).toContain('custom-admin')
+    expect(js.comments.all()[0].author_id).toBe('custom-admin')
+    expect(js.projects.findOneBy('key', 'EMU')!.lead_account_id).toBe('custom-admin')
+    const res = await api(t.app, '/rest/api/3/myself')
+    expect(res.json.accountId).toBe('custom-admin')
+  })
+})

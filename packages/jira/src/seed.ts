@@ -1,16 +1,17 @@
 import type { Store } from '@emulators/core'
-import type { JiraProject, JiraStatusCategory, JiraUser } from './entities.js'
+import type { JiraProject, JiraStatusCategory } from './entities.js'
 import type { JiraSeedConfig } from './seed-config.js'
 import type { CreateProjectInput } from './services.js'
 import { textToAdf } from './adf.js'
-import { accountId } from './ids.js'
 import { addComment, createIssue, createLink, systemActor } from './issue-service.js'
 import { findComponent, findIssue, findIssueType, findProject, findStatus, findUser, findVersion } from './lookup.js'
+import { ensureApiToken, ensureUser, updateUser } from './seed-users.js'
 import { createProject } from './services.js'
 import { getJiraStore, insertFrom } from './store.js'
 import { WEBHOOK_EVENTS } from './webhooks.js'
 
 export type { JiraSeedConfig } from './seed-config.js'
+export { ensureApiToken, ensureUser } from './seed-users.js'
 
 export const DEFAULT_CLOUD_ID = '11111111-2222-4333-8444-555555555555'
 export const DEFAULT_ADMIN_EMAIL = 'admin@jira.local'
@@ -162,44 +163,6 @@ export function seedDefaults(store: Store, baseUrl: string): void {
   }
 }
 
-export function ensureUser(
-  store: Store,
-  input: {
-    email: string
-    display_name?: string
-    account_id?: string
-    admin?: boolean
-    active?: boolean
-    account_type?: 'atlassian' | 'app' | 'customer'
-    time_zone?: string
-  },
-) {
-  const js = getJiraStore(store)
-  const existing = js.users.all().find(user => user.email.toLowerCase() === input.email.toLowerCase())
-  if (existing) {
-    return existing
-  }
-  return js.users.insert({
-    account_id: input.account_id ?? accountId(),
-    email: input.email,
-    display_name: input.display_name ?? input.email.split('@')[0],
-    active: input.active ?? true,
-    account_type: input.account_type ?? 'atlassian',
-    time_zone: input.time_zone ?? 'Etc/UTC',
-    locale: 'en_US',
-    admin: input.admin ?? false,
-  })
-}
-
-export function ensureApiToken(store: Store, account: string, token: string, label = 'emulate') {
-  const js = getJiraStore(store)
-  const existing = js.apiTokens.findOneBy('token', token)
-  if (existing) {
-    return js.apiTokens.update(existing.id, { account_id: account })!
-  }
-  return js.apiTokens.insert({ token, account_id: account, label })
-}
-
 export function ensureStatus(store: Store, name: string, category: JiraStatusCategory, description = '') {
   const js = getJiraStore(store)
   const existing = js.statuses.all().find(status => status.name.toLowerCase() === name.toLowerCase())
@@ -281,20 +244,7 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
   }
 
   for (const userCfg of config.users ?? []) {
-    const user = ensureUser(store, userCfg)
-    const patch: Partial<JiraUser> = {}
-    if (userCfg.display_name) {
-      patch.display_name = userCfg.display_name
-    }
-    if (userCfg.admin !== undefined) {
-      patch.admin = userCfg.admin
-    }
-    if (userCfg.active !== undefined) {
-      patch.active = userCfg.active
-    }
-    if (Object.keys(patch).length > 0) {
-      js.users.update(user.id, patch)
-    }
+    const user = updateUser(store, ensureUser(store, userCfg), userCfg)
     if (userCfg.api_token) {
       ensureApiToken(store, user.account_id, userCfg.api_token)
     }
