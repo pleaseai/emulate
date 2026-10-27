@@ -32,7 +32,8 @@
     "posthog",
     "spotify",
     "workos",
-    "x"
+    "x",
+    "jira"
   ],
   "exports": {
     ".": {
@@ -68,6 +69,7 @@
     "@pleaseai/emulate-autumn": "workspace:*",
     "@pleaseai/emulate-firebase": "workspace:*",
     "@pleaseai/emulate-gitlab": "workspace:*",
+    "@pleaseai/emulate-jira": "workspace:*",
     "@pleaseai/emulate-kakao": "workspace:*",
     "@pleaseai/emulate-linear": "workspace:*",
     "@pleaseai/emulate-naver": "workspace:*",

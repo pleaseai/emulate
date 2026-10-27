@@ -6,7 +6,7 @@ sidebar:
 ---
 
 Local drop-in replacement for Kakao, Naver, Toss Payments, Firebase, Supabase,
-Asana, Linear, Autumn, GitLab, PostHog, Spotify, WorkOS, and X APIs. Built for
+Asana, Linear, Autumn, GitLab, PostHog, Spotify, WorkOS, X, and Jira APIs. Built for
 CI and no-network sandboxes. Fully stateful, production-fidelity API
 emulation. Not mocks.
 
@@ -33,6 +33,7 @@ All services start with sensible defaults — no config file needed:
 | [Spotify](/services/spotify/) | 4010 | OAuth client credentials, catalog search, artists, albums, tracks |
 | [WorkOS](/services/workos/) | 4011 | User Management, organizations, OAuth/OIDC, Vault KV |
 | [X](/services/x/) | 4012 | X API v2: OAuth 2.0 PKCE, tweets, users, timelines |
+| [Jira](/services/jira/) | 4013 | Jira Cloud REST API v2/v3, JQL search, Agile boards and sprints, webhooks, OAuth 2.0 (3LO) |
 
 ## CLI
 

@@ -2,7 +2,7 @@
 name: run-emulate
 description: >-
   Build, run, smoke-test, and drive the emulate CLI — local HTTP emulators for
-  Kakao, Naver, Toss Payments, Firebase, Supabase, Asana, and Linear. Use when
+  Kakao, Naver, Toss Payments, Firebase, Supabase, Asana, Linear, and Jira. Use when
   asked to run/start the emulators, verify a change against the live servers,
   exercise an OAuth/payment flow with curl, or run the smoke driver.
 ---

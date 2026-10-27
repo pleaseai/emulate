@@ -33,6 +33,7 @@ using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 | `spotify` | 4010 | OAuth 2.0 client credentials token, catalog search, artists, albums, tracks |
 | `workos` | 4011 | User Management, organizations, memberships, invitations, API keys, OAuth/OIDC, Vault KV (@workos-inc/node compatible) |
 | `x` | 4012 | X API v2: OAuth 2.0 PKCE, tweets, users, timelines |
+| `jira` | 4013 | Jira Cloud REST API v2/v3, JQL search, issues, transitions, comments, Agile boards and sprints, webhooks, OAuth 2.0 (3LO) (jira.js compatible) |
 
 ## Getting started
 
@@ -139,6 +140,7 @@ packages/
   spotify/          # @pleaseai/emulate-spotify
   workos/           # @pleaseai/emulate-workos
   x/                # @pleaseai/emulate-x
+  jira/             # @pleaseai/emulate-jira
 docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators
 ```

@@ -32,7 +32,7 @@ curl http://localhost:4005/api/1.0/users/me \
 
 ## OAuth 2.0 flows
 
-Kakao, Naver, PostHog, Spotify, WorkOS, and X implement real OAuth flows.
+Kakao, Naver, PostHog, Spotify, WorkOS, X, and Jira implement real OAuth flows.
 Access tokens issued by `/oauth/token`-style endpoints are stored in the
 service's store and validated by lookup on subsequent API calls.
 
@@ -67,6 +67,7 @@ curl -i "http://localhost:4000/oauth/authorize?client_id=kakao_rest_api_key_exam
 | Spotify | Client credentials grant → Bearer token |
 | WorkOS | API key Bearer auth + OAuth/OIDC user flows |
 | X | OAuth 2.0 PKCE → Bearer token |
+| Jira | `Authorization: Basic base64("<email>:<api_token>")`, Bearer API token, or Atlassian OAuth 2.0 (3LO) |
 
 See each [service page](/services/kakao/) for the exact endpoints and
 example curl flows.
