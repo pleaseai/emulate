@@ -1,5 +1,5 @@
 import type { RouteContext, Store } from '@emulators/core'
-import type { OrderSide, OrderType, TimeInForce, TossOrder, TossStock } from '../entities.js'
+import type { ConditionalLeg, OrderSide, OrderType, TimeInForce, TossOrder, TossStock } from '../entities.js'
 import type { Ctx } from '../helpers.js'
 import type { PlaceError } from '../trading.js'
 import { fail, fmt, invalid, MSG_INVALID, MSG_INVALID_FIELD, ok, requireAccount, round } from '../helpers.js'
@@ -40,14 +40,22 @@ export function placeError(c: Ctx, err: PlaceError): Response {
  * whole won on the KRX tick ladder; US prices are truncated to 2 (or 4, under
  * $1) decimals, as documented.
  */
-export function checkPrice(c: Ctx, stock: TossStock, raw: string, field = 'price'): number | Response {
+export function checkPrice(c: Ctx, stock: TossStock, raw: string, field = 'price', strict = false): number | Response {
+  const badPrice = () => invalid(c, { field, format: 'decimal', pattern: '^\\d+(\\.\\d+)?$' })
   if (!DECIMAL_RE.test(raw) || Number(raw) <= 0) {
-    return invalid(c, { field, format: 'decimal', pattern: '^\\d+(\\.\\d+)?$' })
+    return badPrice()
   }
   const value = Number(raw)
   if (countryOf(stock.market) === 'US') {
     const dp = value < 1 ? 4 : 2
-    return Math.trunc(round(value * 10 ** dp, 6)) / 10 ** dp
+    const truncated = Math.trunc(round(value * 10 ** dp, 6)) / 10 ** dp
+    if (truncated <= 0) {
+      return badPrice()
+    }
+    if (strict && truncated !== round(value, 6)) {
+      return invalid(c, { field, tickSize: String(10 ** -dp) }, '주문 가격이 호가 단위에 맞지 않습니다.')
+    }
+    return truncated
   }
   const tick = tickSize(stock, value)
   if (!Number.isInteger(value) || value % tick !== 0) {
@@ -98,14 +106,16 @@ export function orderRoutes({ app, store }: RouteContext): void {
   const ts = getTossinvestStore(store)
 
   app.post('/api/v1/orders', async (c) => {
-    const account = requireAccount(c, store)
-    if (account instanceof Response) {
-      return account
+    const resolved = requireAccount(c, store)
+    if (resolved instanceof Response) {
+      return resolved
     }
     const body = await readJson(c)
     if (body instanceof Response) {
       return body
     }
+    // Re-read after the await: an overlapping request may have changed the balance.
+    const account = ts.accounts.findOneBy('account_seq', resolved.account_seq) ?? resolved
 
     const clientOrderId = str(body.clientOrderId) ?? null
     if (clientOrderId !== null && !CLIENT_ORDER_ID_RE.test(clientOrderId)) {
@@ -235,14 +245,16 @@ export function orderRoutes({ app, store }: RouteContext): void {
   })
 
   app.post('/api/v1/orders/:orderId/modify', async (c) => {
-    const account = requireAccount(c, store)
-    if (account instanceof Response) {
-      return account
+    const resolved = requireAccount(c, store)
+    if (resolved instanceof Response) {
+      return resolved
     }
     const body = await readJson(c)
     if (body instanceof Response) {
       return body
     }
+    // Re-read after the await: an overlapping request may have changed the balance.
+    const account = ts.accounts.findOneBy('account_seq', resolved.account_seq) ?? resolved
     const order = findOrder(store, account.account_seq, c.req.param('orderId'))
     if (!order) {
       return orderNotFound(c)
@@ -309,6 +321,15 @@ export function orderRoutes({ app, store }: RouteContext): void {
       return placeError(c, res.error)
     }
     ts.orders.update(order.id, { status: 'REPLACED', reserved: 0 })
+    // Conditional legs track the live replacement order, not the replaced one.
+    for (const co of ts.conditionalOrders.all()) {
+      const relink = (leg: ConditionalLeg | null) => (leg?.triggeredOrderId === order.order_id ? { ...leg, triggeredOrderId: res.order.order_id } : leg)
+      const first = relink(co.first)!
+      const second = relink(co.second)
+      if (first !== co.first || second !== co.second) {
+        ts.conditionalOrders.update(co.id, { first, second })
+      }
+    }
     return ok(c, { orderId: res.order.order_id })
   })
 

@@ -17,7 +17,7 @@ import {
   isOpenGroup,
   refreshConditionalOrders,
 } from '../conditional.js'
-import { decodeCursor, encodeCursor, fail, intQuery, invalid, MSG_INVALID_FIELD, ok, requireAccount, stockNotFound } from '../helpers.js'
+import { decodeCursor, encodeCursor, fail, fmt, intQuery, invalid, MSG_INVALID_FIELD, ok, requireAccount, stockNotFound } from '../helpers.js'
 import { countryOf, formatPrice } from '../market.js'
 import { getTossinvestStore, newConditionalOrderId } from '../store.js'
 import { dateToDayIdx, kstDayIdx, kstIso } from '../time.js'
@@ -58,7 +58,7 @@ function parseLeg(c: Ctx, stock: TossStock, raw: unknown, name: 'first' | 'secon
     if (leg.orderPrice === undefined || leg.orderPrice === null) {
       return invalid(c, { field: `${name}.orderPrice` }, MSG_INVALID_FIELD)
     }
-    const checked = checkPrice(c, stock, String(leg.orderPrice), `${name}.orderPrice`)
+    const checked = checkPrice(c, stock, String(leg.orderPrice), `${name}.orderPrice`, true)
     if (checked instanceof Response) {
       return checked
     }
@@ -71,7 +71,7 @@ function parseLeg(c: Ctx, stock: TossStock, raw: unknown, name: 'first' | 'secon
     type: 'STOP',
     status: 'WATCHING',
     orderSide: leg.orderSide,
-    triggerPrice: formatPrice(stock, Number(trigger)),
+    triggerPrice: fmt(Number(trigger), Math.min(trigger.split('.')[1]?.length ?? 0, 8)),
     orderPrice,
     triggeredOrderId: null,
     direction: directionFor(Number(trigger), stock.price),

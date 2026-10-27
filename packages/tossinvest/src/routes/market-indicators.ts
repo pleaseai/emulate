@@ -10,6 +10,7 @@ import {
   kstDayIdx,
   kstIso,
   localMidnightMs,
+  parseDateTime,
   prevBusinessDay,
 } from '../time.js'
 import { parseSymbols } from './market-data.js'
@@ -124,8 +125,8 @@ export function marketIndicatorRoutes({ app }: RouteContext): void {
       return count
     }
     const beforeRaw = c.req.query('before')
-    const before = beforeRaw ? Date.parse(beforeRaw.trim().replace(' ', '+')) : undefined
-    if (before !== undefined && Number.isNaN(before)) {
+    const before = beforeRaw ? parseDateTime(beforeRaw) : undefined
+    if (beforeRaw && before === undefined) {
       return invalid(c, { field: 'before', format: 'date-time' })
     }
     // Indicator minute bars are stamped with the bar start time.
