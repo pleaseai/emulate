@@ -71,6 +71,10 @@ export function businessDayOnOrBefore(dayIdx: number): number {
   return isBusinessDay(dayIdx) ? dayIdx : prevBusinessDay(dayIdx)
 }
 
+export function businessDayOnOrAfter(dayIdx: number): number {
+  return isBusinessDay(dayIdx) ? dayIdx : nextBusinessDay(dayIdx)
+}
+
 export function addBusinessDays(dayIdx: number, n: number): number {
   let d = dayIdx
   for (let i = 0; i < n; i++) {

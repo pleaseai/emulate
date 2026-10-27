@@ -1,5 +1,5 @@
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it, setSystemTime } from 'bun:test'
 import { seedFromConfig, tossinvestPlugin } from '../index.js'
 import { parseDateTime } from '../time.js'
 
@@ -380,6 +380,24 @@ describe('tossinvest emulator: trading', () => {
     const token = await fetchToken()
     const tiny = await order(token, { symbol: 'AAPL', side: 'BUY', orderType: 'MARKET', orderAmount: '0.000001' })
     expect(tiny.res.status).toBe(400)
+  })
+
+  it('counts settlement days from the next business day for weekend fills', async () => {
+    const settlementAt = async (iso: string, symbol: string) => {
+      setSystemTime(new Date(iso))
+      const token = await fetchToken()
+      const placed = await order(token, { symbol, side: 'BUY', orderType: 'MARKET', quantity: '1' })
+      const detail = await api(token, `/api/v1/orders/${placed.json.result.orderId}`)
+      return detail.json.result.execution.settlementDate
+    }
+    try {
+      expect(await settlementAt('2026-10-30T03:00:00Z', '005930')).toBe('2026-11-03') // Fri KST, T+2
+      expect(await settlementAt('2026-10-31T03:00:00Z', '005930')).toBe('2026-11-04') // Sat KST → Mon, T+2
+      expect(await settlementAt('2026-10-31T16:00:00Z', 'AAPL')).toBe('2026-11-03') // Sat New York → Mon, T+1
+    }
+    finally {
+      setSystemTime()
+    }
   })
 
   it('seeds demo data via plugin.seed', async () => {

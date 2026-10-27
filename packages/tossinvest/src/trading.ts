@@ -10,7 +10,7 @@ import type {
 import { floorIgnoringFloatError, fmt, round } from './helpers.js'
 import { countryOf, currencyOf, formatPrice, localDayIdx } from './market.js'
 import { getTossinvestStore, newOrderId } from './store.js'
-import { addBusinessDays, dayIdxToDate, kstIso } from './time.js'
+import { addBusinessDays, businessDayOnOrAfter, dayIdxToDate, kstIso } from './time.js'
 
 export const KR_SELL_TAX_RATE = 0.0015
 
@@ -205,7 +205,7 @@ export function fillOrder(store: Store, order: TossOrder, stock: TossStock, pric
     commission: fmt(commission, dp),
     tax: fmt(tax, dp),
     filled_at: kstIso(now),
-    settlement_date: dayIdxToDate(addBusinessDays(localDayIdx(countryOf(stock.market), now), settleDays)),
+    settlement_date: dayIdxToDate(addBusinessDays(businessDayOnOrAfter(localDayIdx(countryOf(stock.market), now)), settleDays)),
   })
 }
 
