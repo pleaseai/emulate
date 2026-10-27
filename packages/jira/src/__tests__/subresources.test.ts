@@ -68,14 +68,27 @@ describe('Jira issue sub-resources', () => {
     })
 
     it('fetches comments across issues by id list', async () => {
+      const other = await api(t.app, '/rest/api/3/issue', {
+        method: 'POST',
+        body: { fields: { project: { key: 'EMU' }, issuetype: { name: 'Task' }, summary: 'Second' } },
+      })
+      expect(other.status).toBe(201)
       const a = await api(t.app, '/rest/api/3/issue/EMU-1/comment', { method: 'POST', body: { body: adf('a') } })
-      const b = await api(t.app, '/rest/api/3/issue/EMU-2/comment', { method: 'POST', body: { body: adf('b') } })
+      const b = await api(t.app, `/rest/api/3/issue/${other.json.key}/comment`, { method: 'POST', body: { body: adf('b') } })
+      expect(a.status).toBe(201)
+      expect(b.status).toBe(201)
+      expect(typeof a.json.id).toBe('string')
+      expect(typeof b.json.id).toBe('string')
+      expect(a.json.id).not.toBe(b.json.id)
       const res = await api(t.app, '/rest/api/3/comment/list', {
         method: 'POST',
         body: { ids: [Number(a.json.id), Number(b.json.id)] },
       })
       expect(res.status).toBe(200)
-      expect(res.json.values.map((c: any) => c.id).sort()).toEqual([a.json.id, b.json.id].sort())
+      const ids = res.json.values.map((c: any) => c.id)
+      expect(ids).toHaveLength(2)
+      expect(ids).toContain(a.json.id)
+      expect(ids).toContain(b.json.id)
     })
   })
 

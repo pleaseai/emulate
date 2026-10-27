@@ -138,7 +138,15 @@ export function inspectorRoutes({ app, store }: RouteContext): void {
         escapeHtml(sprint.name),
         escapeHtml(sprint.state),
         escapeHtml(js().boards.get(sprint.board_id)?.name ?? ''),
-        escapeHtml(String(js().issues.findBy('sprint_id', sprint.id).length)),
+        escapeHtml(
+          String(
+            js()
+              .issues
+              .all()
+              .filter(issue => issue.sprint_id === sprint.id || issue.closed_sprint_ids.includes(sprint.id))
+              .length,
+          ),
+        ),
         escapeHtml(sprint.goal),
       ])
     return (

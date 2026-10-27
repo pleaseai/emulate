@@ -285,13 +285,14 @@ function setCustomField(actor: Actor, draft: JiraIssue, field: string, value: un
       stored = value
       break
     case 'option': {
-      const ref = (value ?? {}) as { id?: unknown, value?: string }
-      const option = typeof value === 'string'
-        ? value
-        : ref.id !== undefined
-          ? def.options.find(o => String(customOptionId(def, o)) === String(ref.id))
-          : ref.value
-      if (!option || (def.options.length > 0 && !def.options.includes(option))) {
+      const ref = (value ?? {}) as { id?: unknown, value?: unknown }
+      const named = typeof value === 'string' ? value : typeof ref.value === 'string' ? ref.value : undefined
+      const option = ref.id === undefined || typeof value === 'string'
+        ? named
+        : [...def.options, ...(named !== undefined ? [named] : [])].find(
+            candidate => String(customOptionId(def, candidate)) === String(ref.id),
+          )
+      if (!option || (named !== undefined && option !== named) || (def.options.length > 0 && !def.options.includes(option))) {
         throw invalid()
       }
       stored = option

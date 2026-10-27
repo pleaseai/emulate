@@ -157,6 +157,32 @@ describe('seedFromConfig', () => {
       body: { fields: { customfield_10050: { id: '1' } } },
     })
     expect(unknown.status).toBe(400)
+    const mismatched = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10050: { id: blue.id, value: 'Red' } } },
+    })
+    expect(mismatched.status).toBe(400)
+  })
+
+  it('round-trips read option values on fields without configured options', async () => {
+    seedFromConfig(t.store, jiraTestBaseUrl, { custom_fields: [{ id: 'customfield_10070', name: 'Free', type: 'option' }] })
+    const set = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10070: 'Anything' } },
+    })
+    expect(set.status).toBe(204)
+    const read = (await api(t.app, '/rest/api/3/issue/WEB-1')).json.fields.customfield_10070
+    expect(read.value).toBe('Anything')
+    const roundTrip = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10070: { id: read.id, value: read.value } } },
+    })
+    expect(roundTrip.status).toBe(204)
+    const bare = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10070: { id: read.id } } },
+    })
+    expect(bare.status).toBe(400)
   })
 
   it('rejects non-string elements in custom array fields', async () => {
@@ -215,6 +241,16 @@ describe('inspector and browse pages', () => {
     expect(auth).toContain('jira_example_client_id')
     expect(auth).not.toContain('jira_test_token')
     expect(auth).not.toContain('example_client_secret')
+  })
+
+  it('counts closed-sprint history in the inspector sprint issue count', async () => {
+    const js = getJiraStore(t.store)
+    const sprint = js.sprints.all()[0]
+    const issue = js.issues.findOneBy('key', 'EMU-1')!
+    js.issues.update(issue.id, { sprint_id: null, closed_sprint_ids: [sprint.id] })
+    const html = await (await t.app.request(`${jiraTestBaseUrl}/?tab=boards`)).text()
+    const row = html.slice(html.indexOf(`<td>${sprint.name}</td>`))
+    expect(row.slice(0, row.indexOf('</tr>'))).toContain('<td>1</td>')
   })
 
   it('escapes user content in the inspector', async () => {
