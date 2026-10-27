@@ -141,7 +141,7 @@ export function authenticate(c: Context<AppEnv>, js: JiraStore): AuthResult | un
   const bearer = /^Bearer\s+(\S+)\s*$/i.exec(header)
   if (bearer) {
     const value = bearer[1].trim()
-    const apiToken = js.apiTokens.findOneBy('token', value)
+    const apiToken = js.apiTokens.findBy('token', value).at(-1)
     if (apiToken) {
       const user = js.users.findOneBy('account_id', apiToken.account_id)
       if (user?.active) {

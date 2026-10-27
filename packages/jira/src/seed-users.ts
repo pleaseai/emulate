@@ -34,11 +34,8 @@ export function ensureUser(
 
 export function ensureApiToken(store: Store, account: string, token: string, label = 'emulate') {
   const js = getJiraStore(store)
-  const existing = js.apiTokens.findOneBy('token', token)
-  if (existing) {
-    return js.apiTokens.update(existing.id, { account_id: account })!
-  }
-  return js.apiTokens.insert({ token, account_id: account, label })
+  const existing = js.apiTokens.findBy('token', token).find(t => t.account_id === account)
+  return existing ?? js.apiTokens.insert({ token, account_id: account, label })
 }
 
 export interface UserSeedInput {
