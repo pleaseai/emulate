@@ -29,10 +29,12 @@ export function sectorDepth(store: Store, sector: TossSector): number {
 function sectorSymbolsDeep(store: Store, sector: TossSector): Set<string> {
   const sectors = getTossinvestStore(store).sectors.all()
   const out = new Set<string>(sector.symbols)
+  const visited = new Set<string>([sector.sector_id])
   const queue = [sector.sector_id]
   while (queue.length) {
     const id = queue.shift()!
-    for (const child of sectors.filter(s => s.parent_sector_id === id)) {
+    for (const child of sectors.filter(s => s.parent_sector_id === id && !visited.has(s.sector_id))) {
+      visited.add(child.sector_id)
       child.symbols.forEach(sym => out.add(sym))
       queue.push(child.sector_id)
     }

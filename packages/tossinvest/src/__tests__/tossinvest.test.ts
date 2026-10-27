@@ -35,7 +35,7 @@ function createTestApp() {
     ],
   })
 
-  return { app }
+  return { app, store }
 }
 
 let app: ReturnType<typeof createTestApp>['app']
@@ -213,6 +213,18 @@ describe('tossinvest emulator: envelope and market data', () => {
     expect(stocks.json.result.stocks.map((s: { symbol: string }) => s.symbol)).toEqual(['005930'])
     const missing = await api(token, '/api/v1/sectors/999?marketCountry=KR')
     expect((missing.json as ApiError).error.code).toBe('sector-not-found')
+  })
+
+  it('serves sector members when seeded parents form a cycle', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, { sectors: [{ sector_id: '10', name: 'IT 하드웨어', parent_sector_id: '100' }] })
+    const token = await fetchToken()
+    const stocks = await api(token, '/api/v1/sectors/10/stocks?marketCountry=KR')
+    expect(stocks.res.status).toBe(200)
+    expect(stocks.json.result.stocks.map((s: { symbol: string }) => s.symbol)).toEqual(['005930'])
+    const rankings = await api(token, '/api/v1/sectors/rankings?type=TOP_GAINERS&marketCountry=KR&duration=1d')
+    expect(rankings.res.status).toBe(200)
   })
 })
 
