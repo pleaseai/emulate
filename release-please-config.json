@@ -12,6 +12,7 @@
     "packages/emulate": {},
     "packages/firebase": {},
     "packages/gitlab": {},
+    "packages/jira": {},
     "packages/kakao": {},
     "packages/linear": {},
     "packages/naver": {},

@@ -23,6 +23,7 @@ const SERVICES: Record<string, { label: string, port: number, order: number }> =
   spotify: { label: 'Spotify', port: 4010, order: 11 },
   workos: { label: 'WorkOS', port: 4011, order: 12 },
   x: { label: 'X (Twitter)', port: 4012, order: 13 },
+  jira: { label: 'Jira', port: 4013, order: 14 },
 }
 
 function firstSentence(text: string): string {

@@ -14,7 +14,7 @@ import type { ServicePlugin, Store, WebhookDispatcher } from '@emulators/core'
  * from its position in the selection), and the two projects live in separate
  * ranges so selecting a subset never renumbers anything and the ranges can't
  * overlap:
- *   - this repo:   base 4000  (kakao 4000, naver 4001, … x 4012)
+ *   - this repo:   base 4000  (kakao 4000, naver 4001, … x 4012, jira 4013)
  *   - vercel-labs: base 4100  (vercel 4100, github 4101, … mongoatlas 4111)
  *
  *   bun run emulate:all                            # every service, both ranges

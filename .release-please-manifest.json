@@ -4,6 +4,7 @@
   "packages/emulate": "0.3.1",
   "packages/firebase": "0.3.1",
   "packages/gitlab": "0.3.1",
+  "packages/jira": "0.3.0",
   "packages/kakao": "0.3.1",
   "packages/linear": "0.3.1",
   "packages/naver": "0.3.1",
