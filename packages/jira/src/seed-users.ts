@@ -1,5 +1,5 @@
 import type { Store } from '@emulators/core'
-import type { JiraUser } from './entities.js'
+import type { JiraApiToken, JiraUser } from './entities.js'
 import { accountId } from './ids.js'
 import { getJiraStore } from './store.js'
 
@@ -34,8 +34,19 @@ export function ensureUser(
 
 export function ensureApiToken(store: Store, account: string, token: string, label = 'emulate') {
   const js = getJiraStore(store)
-  const existing = js.apiTokens.findBy('token', token).find(t => t.account_id === account)
-  return existing ?? js.apiTokens.insert({ token, account_id: account, label })
+  const owners = js.apiTokens.findBy('token', token)
+  const existing = owners.find(t => t.account_id === account)
+  if (existing && existing === latestOwner(owners)) {
+    return existing
+  }
+  if (existing) {
+    js.apiTokens.delete(existing.id)
+  }
+  return js.apiTokens.insert({ token, account_id: account, label: existing?.label ?? label })
+}
+
+export function latestOwner(owners: JiraApiToken[]): JiraApiToken | undefined {
+  return owners.reduce<JiraApiToken | undefined>((latest, t) => (!latest || t.id > latest.id ? t : latest), undefined)
 }
 
 export interface UserSeedInput {

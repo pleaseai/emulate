@@ -356,6 +356,33 @@ describe('seedFromConfig default users', () => {
     expect(bearer.json.emailAddress).toBe('admin@example.com')
   })
 
+  it('resolves a shared Bearer token to the owner seeded last', async () => {
+    const t = createJiraTestApp()
+    seedFromConfig(t.store, jiraTestBaseUrl, {
+      users: [
+        { email: 'admin@example.com', admin: true, api_token: 'jira_test_token' },
+        { email: 'admin@jira.local', admin: true, api_token: 'jira_test_token' },
+      ],
+    })
+    expect(getJiraStore(t.store).apiTokens.findBy('token', 'jira_test_token')).toHaveLength(2)
+    const bearer = await api(t.app, '/rest/api/3/myself', { auth: 'Bearer jira_test_token' })
+    expect(bearer.json.emailAddress).toBe('admin@jira.local')
+    const basic = await api(t.app, '/rest/api/3/myself', { auth: basicAuth('admin@example.com', 'jira_test_token') })
+    expect(basic.status).toBe(200)
+  })
+
+  it('keeps the Bearer owner when another owner of the token migrates its account id', async () => {
+    const t = createJiraTestApp()
+    seedFromConfig(t.store, jiraTestBaseUrl, {
+      users: [
+        { email: 'admin@example.com', admin: true, api_token: 'jira_test_token' },
+        { email: 'admin@jira.local', account_id: 'custom-admin' },
+      ],
+    })
+    const bearer = await api(t.app, '/rest/api/3/myself', { auth: 'Bearer jira_test_token' })
+    expect(bearer.json.emailAddress).toBe('admin@example.com')
+  })
+
   it('applies configured account ids and time zones to default users and migrates references', async () => {
     const t = createJiraTestApp()
     const js = getJiraStore(t.store)

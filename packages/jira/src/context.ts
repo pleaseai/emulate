@@ -2,6 +2,7 @@ import type { AppEnv, Context, Store } from '@emulators/core'
 import type { JiraUser } from './entities.js'
 import type { JiraStore } from './store.js'
 import { Buffer } from 'node:buffer'
+import { latestOwner } from './seed-users.js'
 import { getJiraStore } from './store.js'
 
 export const GATEWAY_HEADER = 'x-emulate-jira-cloud-id'
@@ -141,7 +142,7 @@ export function authenticate(c: Context<AppEnv>, js: JiraStore): AuthResult | un
   const bearer = /^Bearer\s+(\S+)\s*$/i.exec(header)
   if (bearer) {
     const value = bearer[1].trim()
-    const apiToken = js.apiTokens.findBy('token', value).at(-1)
+    const apiToken = latestOwner(js.apiTokens.findBy('token', value))
     if (apiToken) {
       const user = js.users.findOneBy('account_id', apiToken.account_id)
       if (user?.active) {
