@@ -19,6 +19,7 @@
     "packages/spotify": {},
     "packages/supabase": {},
     "packages/toss-payments": {},
+    "packages/tossinvest": {},
     "packages/workos": {},
     "packages/x": {}
   }

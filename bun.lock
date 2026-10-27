@@ -72,6 +72,7 @@
         "@pleaseai/emulate-spotify": "workspace:*",
         "@pleaseai/emulate-supabase": "workspace:*",
         "@pleaseai/emulate-toss-payments": "workspace:*",
+        "@pleaseai/emulate-tossinvest": "workspace:*",
         "@pleaseai/emulate-workos": "workspace:*",
         "@pleaseai/emulate-x": "workspace:*",
         "commander": "^15",
@@ -175,6 +176,17 @@
     },
     "packages/toss-payments": {
       "name": "@pleaseai/emulate-toss-payments",
+      "version": "0.3.0",
+      "dependencies": {
+        "@emulators/core": "^0.12.2",
+      },
+      "devDependencies": {
+        "tsup": "^9",
+        "typescript": "^6",
+      },
+    },
+    "packages/tossinvest": {
+      "name": "@pleaseai/emulate-tossinvest",
       "version": "0.3.0",
       "dependencies": {
         "@emulators/core": "^0.12.2",
@@ -393,6 +405,8 @@
     "@pleaseai/emulate-supabase": ["@pleaseai/emulate-supabase@workspace:packages/supabase"],
 
     "@pleaseai/emulate-toss-payments": ["@pleaseai/emulate-toss-payments@workspace:packages/toss-payments"],
+
+    "@pleaseai/emulate-tossinvest": ["@pleaseai/emulate-tossinvest@workspace:packages/tossinvest"],
 
     "@pleaseai/emulate-workos": ["@pleaseai/emulate-workos@workspace:packages/workos"],
 

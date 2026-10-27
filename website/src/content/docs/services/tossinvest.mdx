@@ -1,0 +1,103 @@
+---
+title: Toss Invest
+description: "Emulated Toss Invest (토스증권) Open API for local development and testing."
+sidebar:
+  label: Toss Invest
+  order: 14
+---
+
+:::note
+Default port **4013** · Package [`@pleaseai/emulate-tossinvest`](https://www.npmjs.com/package/@pleaseai/emulate-tossinvest)
+:::
+
+Emulates all 40 operations of the Toss Invest Open API. Accounts, holdings,
+orders, and conditional orders are stateful; market and reference data are
+generated deterministically from the seeded prices.
+
+Included now:
+
+- `POST /oauth2/token` (client credentials; form body or HTTP Basic). Issuing a
+  new token revokes the previous one (`token-revoked`).
+- Market data: `/api/v1/prices`, `/orderbook`, `/trades`, `/price-limits`, `/candles`
+- Stock info: `/api/v1/stocks`, `/stocks/all`, warnings, and KR investor trends
+- Market info: exchange rate, KR/US market calendars, rankings, market indicators
+- Sectors: list, rankings, detail, member stocks and ETFs
+- Accounts: `/api/v1/accounts`, `/api/v1/holdings`
+- Orders: create, modify, cancel, list (`OPEN` / `CLOSED` with cursor), detail
+- Conditional orders (`SINGLE` / `OCO` / `OTO`): create, list, detail, modify, delete
+- Buying power, sellable quantity, commissions
+- Emulator control: `POST /_emulator/prices` moves a price, filling resting
+  limit orders and firing conditional orders
+
+Account-scoped endpoints need the `X-Tossinvest-Account: <accountSeq>` header.
+Responses are wrapped in `{ "result": ... }`; errors are
+`{ "error": { "requestId", "code", "message", "data"? } }`.
+
+## Start
+
+```bash
+# From this repo (after `bun install && bun run build`)
+bun packages/emulate/dist/index.js --service tossinvest
+
+# Or from the published package
+npx @pleaseai/emulate --service tossinvest
+```
+
+A single service starts on the base port (default `4000`). Use `-p <port>` to
+change it. When started alongside other services, ports are assigned
+sequentially from the base port.
+
+## Auth
+
+```bash
+curl -X POST http://localhost:4000/oauth2/token \
+  -d grant_type=client_credentials \
+  -d client_id=tsck_example_client_id \
+  -d client_secret=tsck_example_client_secret
+```
+
+## Trading Example
+
+```bash
+# Current price
+curl "http://localhost:4000/api/v1/prices?symbols=005930" \
+  -H "Authorization: Bearer <access_token>"
+
+# Market buy; fills immediately at the current price
+curl -X POST http://localhost:4000/api/v1/orders \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-Tossinvest-Account: 1" \
+  -H "content-type: application/json" \
+  -d '{"symbol":"005930","side":"BUY","orderType":"MARKET","quantity":"10"}'
+
+# Move the price to fill a resting limit order
+curl -X POST http://localhost:4000/_emulator/prices \
+  -H "content-type: application/json" \
+  -d '{"symbol":"005930","price":70000}'
+```
+
+## Seed Config
+
+Add a `tossinvest:` section to `emulate.config.yaml` (or pass `--seed <file>`):
+
+```yaml
+tossinvest:
+  clients:
+    - client_id: tsck_example_client_id
+      client_secret: tsck_example_client_secret
+      name: Demo App
+  stocks:
+    - symbol: '005930'
+      name: 삼성전자
+      market: KOSPI
+      price: 72000
+  accounts:
+    - account_seq: 1
+      cash:
+        krw: 10000000
+        usd: 10000
+      holdings:
+        - symbol: '005930'
+          quantity: 100
+          average_price: 65000
+```

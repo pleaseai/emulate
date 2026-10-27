@@ -11,6 +11,7 @@
   "packages/spotify": "0.3.0",
   "packages/supabase": "0.3.0",
   "packages/toss-payments": "0.3.0",
+  "packages/tossinvest": "0.3.0",
   "packages/workos": "0.3.0",
   "packages/x": "0.3.0"
 }

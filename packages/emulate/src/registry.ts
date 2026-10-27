@@ -20,7 +20,7 @@ export interface ServiceEntry {
   initConfig: Record<string, unknown>
 }
 
-const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase', 'asana', 'linear', 'autumn', 'gitlab', 'posthog', 'spotify', 'workos', 'x'] as const
+const SERVICE_NAME_LIST = ['kakao', 'naver', 'tosspayments', 'firebase', 'supabase', 'asana', 'linear', 'autumn', 'gitlab', 'posthog', 'spotify', 'workos', 'x', 'tossinvest'] as const
 export type ServiceName = (typeof SERVICE_NAME_LIST)[number]
 export const SERVICE_NAMES: readonly ServiceName[] = SERVICE_NAME_LIST
 
@@ -344,6 +344,25 @@ export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
           },
         ],
         tweets: [{ text: 'Hello from the emulator!', author: 'developer' }],
+      },
+    },
+  },
+
+  tossinvest: {
+    label: 'Toss Invest Open API emulator',
+    endpoints: 'OAuth 2.0 client credentials token, market data, stock info, sectors, accounts, holdings, orders, conditional orders',
+    async load() {
+      const mod = await import('@pleaseai/emulate-tossinvest')
+      return { plugin: mod.tossinvestPlugin, seedFromConfig: widenSeed(mod.seedFromConfig) }
+    },
+    defaultFallback() {
+      return { login: 'tossinvest-app', id: 1, scopes: [] }
+    },
+    initConfig: {
+      tossinvest: {
+        clients: [{ client_id: 'tsck_example_client_id', client_secret: 'tsck_example_client_secret', name: 'Demo App' }],
+        accounts: [{ account_seq: 1, cash: { krw: 10000000, usd: 10000 } }],
+        stocks: [{ symbol: '005930', name: '삼성전자', market: 'KOSPI', price: 72000 }],
       },
     },
   },
