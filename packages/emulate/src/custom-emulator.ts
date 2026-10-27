@@ -10,6 +10,14 @@ function isPlainObject(value: unknown): value is ServiceSeed {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+// Mirrors @emulators/core's compilePath, which keys strict-route duplicates on the compiled regex.
+function routeKey(method: string, path: string): string {
+  const compiled = path === '*' || path === '/*'
+    ? '*'
+    : path.replace(/:\w*(?:\{([^}]*)\})?/g, (_, expr?: string) => `:{${expr ?? '[^/]+'}}`)
+  return `${method.toUpperCase()} ${compiled}`
+}
+
 function assertTokenSeed(service: ServiceName, value: unknown): asserts value is TokenSeed | undefined {
   if (value === undefined) {
     return
@@ -45,7 +53,7 @@ export function defineServiceEmulator(service: ServiceName, loaded: LoadedServic
       const forward = (c: { req: { raw: Request } }) => inner.app.fetch(c.req.raw)
       const seen = new Set<string>()
       for (const { method, path } of inner.app.routeTable) {
-        const key = `${method} ${path}`
+        const key = routeKey(method, path)
         if (seen.has(key) || path === '/_emulate' || path.startsWith('/_emulate/')) {
           continue
         }

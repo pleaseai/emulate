@@ -64,6 +64,23 @@ describe('service custom emulators', () => {
     expect(await res.text()).toContain('/oauth/authorize')
   })
 
+  it('registers routes that differ only by param name once', async () => {
+    const definition = defineServiceEmulator('kakao', {
+      plugin: {
+        name: 'kakao',
+        register(app) {
+          app.get('/items/:id', c => c.json({ id: c.req.param('id') }))
+          app.get('/items/:itemId', c => c.json({ itemId: c.req.param('itemId') }))
+        },
+      },
+    })
+    const runtime = await createCustomRuntime(definition, { baseUrl: BASE_URL, seed: {} })
+    runtimes.push(runtime)
+    const res = await runtime.request('/items/42')
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ id: '42' })
+  })
+
   it('reset restores the seed state', async () => {
     const runtime = await createCustomRuntime(await loadDefinition('asana'), {
       baseUrl: BASE_URL,
