@@ -83,6 +83,12 @@
         "tsup": "^9",
         "typescript": "^6",
       },
+      "peerDependencies": {
+        "emulate": "^0.12.0",
+      },
+      "optionalPeers": [
+        "emulate",
+      ],
     },
     "packages/firebase": {
       "name": "@pleaseai/emulate-firebase",
