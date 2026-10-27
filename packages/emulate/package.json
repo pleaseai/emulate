@@ -36,7 +36,7 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/api.ts",
+      "bun": "./dist/api.js",
       "types": "./dist/api.d.ts",
       "import": "./dist/api.js"
     },
