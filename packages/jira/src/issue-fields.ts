@@ -228,6 +228,13 @@ export function resolveProjectItem(actor: Actor, draft: JiraIssue, field: string
   return item.id
 }
 
+function archiveClosedSprint(actor: Actor, draft: JiraIssue): void {
+  const current = draft.sprint_id ? actor.js.sprints.get(draft.sprint_id) : undefined
+  if (current?.state === 'closed') {
+    draft.closed_sprint_ids = [...new Set([...draft.closed_sprint_ids, current.id])]
+  }
+}
+
 function setCustomField(actor: Actor, draft: JiraIssue, field: string, value: unknown): void {
   const def = actor.js.customFields.findOneBy('field_id', field)
   if (!def) {
@@ -235,6 +242,7 @@ function setCustomField(actor: Actor, draft: JiraIssue, field: string, value: un
   }
   if (value === null || value === undefined) {
     if (def.type === 'sprint') {
+      archiveClosedSprint(actor, draft)
       draft.sprint_id = null
     }
     else {
@@ -292,6 +300,7 @@ function setCustomField(actor: Actor, draft: JiraIssue, field: string, value: un
       if (sprint.state === 'closed') {
         throw fieldError(field, 'Issue can be assigned only to active or future sprints.')
       }
+      archiveClosedSprint(actor, draft)
       draft.sprint_id = sprint.id
       return
     }

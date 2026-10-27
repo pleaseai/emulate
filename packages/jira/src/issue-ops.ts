@@ -33,6 +33,9 @@ export function applyUpdateOps(
       throw fieldError(field, 'Field operations must be an array.')
     }
     for (const op of opsValue as Array<Record<string, unknown>>) {
+      if (op === null || typeof op !== 'object' || Array.isArray(op)) {
+        throw fieldError(field, 'Field operations must be objects.')
+      }
       const [verb, value] = Object.entries(op)[0] ?? []
       if (field === 'comment') {
         if (verb !== 'add') {

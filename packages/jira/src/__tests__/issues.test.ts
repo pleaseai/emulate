@@ -392,4 +392,25 @@ describe('Jira issues', () => {
       expect(res.json.fields.labels.operations).toContain('add')
     })
   })
+
+  describe('review regressions', () => {
+    it('rejects null update operations with 400', async () => {
+      const res = await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { update: { labels: [null] } } })
+      expect(res.status).toBe(400)
+    })
+
+    it('leaves resolution date empty when a done transition clears the resolution', async () => {
+      const done = (await api(t.app, '/rest/api/3/issue/EMU-1/transitions')).json.transitions.find(
+        (tr: any) => tr.name === 'Done',
+      )
+      const move = await api(t.app, '/rest/api/3/issue/EMU-1/transitions', {
+        method: 'POST',
+        body: { transition: { id: done.id }, fields: { resolution: null } },
+      })
+      expect(move.status).toBe(204)
+      const issue = (await api(t.app, '/rest/api/3/issue/EMU-1')).json
+      expect(issue.fields.resolution).toBeNull()
+      expect(issue.fields.resolutiondate).toBeNull()
+    })
+  })
 })

@@ -137,6 +137,7 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
           body: readCommentBody(r, body.body),
           update_author_id: r.user.account_id,
         })!
+        touchIssue(r.js, issue.id)
         await emitCommentEvent(r, 'comment_updated', issue, updated)
         return r.c.json(formatComment(r, updated))
       },
@@ -323,10 +324,11 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
         if (!inward || !outward) {
           throw new JiraError(404, ['Issue does not exist or you do not have permission to see it.'])
         }
+        const commentDoc = body.comment?.body !== undefined ? readCommentBody(r, body.comment.body) : undefined
         createLink(r.js, type.id, inward.id, outward.id)
-        if (body.comment?.body !== undefined) {
+        if (commentDoc !== undefined) {
           // Jira adds the link comment to the "from" issue, which is the outward side.
-          const comment = addComment(r, outward, readCommentBody(r, body.comment.body))
+          const comment = addComment(r, outward, commentDoc)
           await emitCommentEvent(r, 'comment_created', outward, comment)
         }
         return r.c.body(null, 201)

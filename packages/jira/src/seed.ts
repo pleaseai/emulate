@@ -1,5 +1,5 @@
 import type { Store } from '@emulators/core'
-import type { JiraStatusCategory, JiraUser } from './entities.js'
+import type { JiraProject, JiraStatusCategory, JiraUser } from './entities.js'
 import type { JiraSeedConfig } from './seed-config.js'
 import type { CreateProjectInput } from './services.js'
 import { textToAdf } from './adf.js'
@@ -211,7 +211,45 @@ export function ensureStatus(store: Store, name: string, category: JiraStatusCat
 
 export function ensureProject(store: Store, input: CreateProjectInput) {
   const js = getJiraStore(store)
-  return js.projects.findOneBy('key', input.key.toUpperCase()) ?? createProject(js, input)
+  const existing = js.projects.findOneBy('key', input.key.toUpperCase())
+  if (!existing) {
+    return createProject(js, input)
+  }
+  const byName = <T extends { id: number, name: string }>(items: T[], names: string[]) =>
+    names
+      .map(name => items.find(item => item.name.toLowerCase() === name.toLowerCase())?.id)
+      .filter((id): id is number => id !== undefined)
+  const patch: Partial<JiraProject> = {}
+  if (input.name !== undefined) {
+    patch.name = input.name
+  }
+  if (input.description !== undefined) {
+    patch.description = input.description
+  }
+  if (input.lead !== undefined) {
+    patch.lead_account_id = input.lead
+  }
+  if (input.project_type_key !== undefined) {
+    patch.project_type_key = input.project_type_key
+  }
+  if (input.statuses !== undefined) {
+    patch.status_ids = byName(js.statuses.all(), input.statuses)
+  }
+  if (input.issue_types !== undefined) {
+    patch.issue_type_ids = byName(js.issueTypes.all(), input.issue_types)
+  }
+  const project = Object.keys(patch).length > 0 ? js.projects.update(existing.id, patch)! : existing
+  if (typeof input.board === 'object') {
+    const board = js.boards.findBy('project_id', project.id)[0]
+    const boardPatch = {
+      ...(input.board.name !== undefined ? { name: input.board.name } : {}),
+      ...(input.board.type !== undefined ? { type: input.board.type } : {}),
+    }
+    if (board && Object.keys(boardPatch).length > 0) {
+      js.boards.update(board.id, boardPatch)
+    }
+  }
+  return project
 }
 
 function inferCategory(name: string): JiraStatusCategory {
@@ -283,7 +321,11 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
     if (js.customFields.all().some(field => field.name === fieldCfg.name || field.field_id === fieldCfg.id)) {
       continue
     }
-    const used = js.customFields.all().map(field => Number(field.field_id.replace('customfield_', '')))
+    const used = js.customFields
+      .all()
+      .map(field => /^customfield_(\d+)$/.exec(field.field_id))
+      .filter((match): match is RegExpExecArray => match !== null)
+      .map(match => Number(match[1]))
     const fieldId = fieldCfg.id ?? `customfield_${Math.max(10099, ...used) + 1}`
     js.customFields.insert({
       field_id: fieldId,
@@ -301,7 +343,11 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
       key: projectCfg.key,
       name: projectCfg.name,
       description: projectCfg.description,
-      lead: userRef(projectCfg.lead) ?? js.users.all().find(user => user.admin)?.account_id ?? null,
+      lead:
+        userRef(projectCfg.lead)
+        ?? (js.projects.findOneBy('key', projectCfg.key.toUpperCase())
+          ? undefined
+          : (js.users.all().find(user => user.admin)?.account_id ?? null)),
       project_type_key: projectCfg.type,
       statuses: projectCfg.statuses,
       issue_types: projectCfg.issue_types,

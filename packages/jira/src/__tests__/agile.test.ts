@@ -168,4 +168,28 @@ describe('Jira Agile API', () => {
     const move = await api(t.app, '/rest/agile/1.0/backlog/1/issue', { method: 'POST', body: { issues: ['EMU-1'] } })
     expect(move.status).toBe(204)
   })
+
+  it('keeps closed sprint membership when a finished issue moves to another sprint', async () => {
+    const first = (await api(t.app, `${A}/sprint`, { method: 'POST', body: { name: 'S-A', originBoardId: 1 } })).json
+    await api(t.app, `${A}/sprint/${first.id}/issue`, { method: 'POST', body: { issues: ['EMU-2'] } })
+    await api(t.app, `${A}/sprint/${first.id}`, {
+      method: 'POST',
+      body: { state: 'active', startDate: '2026-10-01T09:00:00.000Z', endDate: '2026-10-14T17:00:00.000Z' },
+    })
+    const done = (await api(t.app, '/rest/api/3/issue/EMU-2/transitions')).json.transitions.find(
+      (tr: any) => tr.name === 'Done',
+    )
+    await api(t.app, '/rest/api/3/issue/EMU-2/transitions', { method: 'POST', body: { transition: { id: done.id } } })
+    await api(t.app, `${A}/sprint/${first.id}`, { method: 'POST', body: { state: 'closed' } })
+
+    const second = (await api(t.app, `${A}/sprint`, { method: 'POST', body: { name: 'S-B', originBoardId: 1 } })).json
+    const edit = await api(t.app, '/rest/api/3/issue/EMU-2', {
+      method: 'PUT',
+      body: { fields: { customfield_10020: second.id } },
+    })
+    expect(edit.status).toBe(204)
+
+    const inFirst = await api(t.app, `${A}/sprint/${first.id}/issue`)
+    expect(inFirst.json.issues.map((i: any) => i.key)).toContain('EMU-2')
+  })
 })

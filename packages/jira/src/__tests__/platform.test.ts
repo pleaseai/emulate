@@ -1,6 +1,6 @@
 import type { JiraTestApp } from './helpers.js'
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { DEFAULT_ADMIN_EMAIL, DEFAULT_API_TOKEN } from '../index.js'
+import { DEFAULT_ADMIN_EMAIL, DEFAULT_API_TOKEN, getJiraStore } from '../index.js'
 import { api, basicAuth, createJiraTestApp, jiraTestBaseUrl } from './helpers.js'
 
 describe('Jira platform basics', () => {
@@ -57,5 +57,12 @@ describe('Jira platform basics', () => {
     const res = await api(t.app, '/rest/api/3/does-not-exist')
     expect(res.status).toBe(404)
     expect(res.json.errorMessages.length).toBeGreaterThan(0)
+  })
+
+  it('looks up statuses by names containing percent signs', async () => {
+    getJiraStore(t.store).statuses.insert({ name: '100% Done', description: '', category: 'done' })
+    const res = await api(t.app, `/rest/api/3/status/${encodeURIComponent('100% Done')}`)
+    expect(res.status).toBe(200)
+    expect(res.json.name).toBe('100% Done')
   })
 })

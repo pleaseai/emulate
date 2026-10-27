@@ -170,7 +170,12 @@ export function transitionIssue(
         draft.resolution_id
           = actor.js.resolutions.findOneBy('name', 'Done')?.id ?? actor.js.resolutions.all()[0]?.id ?? null
       }
-      draft.resolution_date ??= new Date().toISOString()
+      if (draft.resolution_id) {
+        draft.resolution_date ??= new Date().toISOString()
+      }
+      else {
+        draft.resolution_date = null
+      }
     }
     else {
       draft.resolution_id = null

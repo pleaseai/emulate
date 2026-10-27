@@ -238,4 +238,29 @@ describe('Jira issue sub-resources', () => {
       expect(links[0].outwardIssue.key).toBe(other.json.key)
     })
   })
+
+  describe('review regressions', () => {
+    it('does not create a link when the link comment is invalid', async () => {
+      const res = await api(t.app, '/rest/api/3/issueLink', {
+        method: 'POST',
+        body: {
+          type: { name: 'Blocks' },
+          inwardIssue: { key: 'EMU-1' },
+          outwardIssue: { key: 'EMU-1' },
+          comment: { body: 'plain string' },
+        },
+      })
+      expect(res.status).toBe(400)
+      expect(getJiraStore(t.store).issueLinks.all()).toHaveLength(0)
+    })
+
+    it('touches the issue when a comment is edited', async () => {
+      const created = await api(t.app, '/rest/api/3/issue/EMU-1/comment', { method: 'POST', body: { body: adf('a') } })
+      const before = (await api(t.app, '/rest/api/3/issue/EMU-1')).json.fields.updated
+      await new Promise(resolve => setTimeout(resolve, 10))
+      await api(t.app, `/rest/api/3/issue/EMU-1/comment/${created.json.id}`, { method: 'PUT', body: { body: adf('b') } })
+      const after = (await api(t.app, '/rest/api/3/issue/EMU-1')).json.fields.updated
+      expect(after).not.toBe(before)
+    })
+  })
 })

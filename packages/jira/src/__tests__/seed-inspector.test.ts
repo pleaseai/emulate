@@ -176,4 +176,31 @@ describe('inspector and browse pages', () => {
     expect(html).toContain('To Do')
     expect((await t.app.request(`${jiraTestBaseUrl}/browse/EMU-404`)).status).toBe(404)
   })
+
+  it('applies configured values to an already seeded project', () => {
+    const t2 = createJiraTestApp()
+    seedFromConfig(t2.store, jiraTestBaseUrl, {
+      projects: [{ key: 'EMU', name: 'Renamed', statuses: ['To Do', 'In Review', 'Done'] }],
+    })
+    const js = getJiraStore(t2.store)
+    const project = js.projects.findOneBy('key', 'EMU')!
+    expect(project.name).toBe('Renamed')
+    const names = project.status_ids.map(id => js.statuses.get(id)!.name)
+    expect(names).toEqual(['To Do', 'In Review', 'Done'])
+    expect(project.lead_account_id).not.toBeNull()
+  })
+
+  it('ignores non-numeric custom field ids when generating ids', () => {
+    const t2 = createJiraTestApp()
+    seedFromConfig(t2.store, jiraTestBaseUrl, {
+      custom_fields: [
+        { id: 'team', name: 'TeamX', type: 'string' },
+        { name: 'Auto1', type: 'string' },
+        { name: 'Auto2', type: 'string' },
+      ],
+    })
+    const ids = getJiraStore(t2.store).customFields.all().map(f => f.field_id)
+    expect(ids.some(id => id.includes('NaN'))).toBe(false)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
 })

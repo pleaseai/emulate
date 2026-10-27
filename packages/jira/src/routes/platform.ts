@@ -240,7 +240,7 @@ export function platformRoutes({ app, store, baseUrl }: RouteContext): void {
     `${API_V}/status/:idOrName`,
     handle(
       (r) => {
-        const status = findStatus(r.js, decodeURIComponent(r.c.req.param('idOrName')))
+        const status = findStatus(r.js, r.c.req.param('idOrName'))
         if (!status) {
           throw new JiraError(404, [`The status with id '${r.c.req.param('idOrName')}' does not exist`])
         }
