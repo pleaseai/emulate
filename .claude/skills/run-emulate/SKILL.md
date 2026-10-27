@@ -36,13 +36,15 @@ bun run build        # turbo run build → packages/emulate/dist/index.js (the C
 .claude/skills/run-emulate/smoke.sh 5300     # alternate base port
 ```
 
-It builds, runs `emulate init` in a temp dir, starts all 7 services with that
-seed, then verifies: Kakao OAuth (authorize → token → `/v2/user/me`), Naver
+It builds, runs `emulate init` in a temp dir, starts every service with that
+seed on sequential ports (Jira is last, so it listens on base port + 13, e.g.
+`4313` for base `4300`), then verifies: Kakao OAuth (authorize → token → `/v2/user/me`), Naver
 OAuth (authorize → token → `/v1/nid/me`), Toss payment create → confirm
 (`"status":"DONE"`), Firebase `accounts:signUp`, Supabase PostgREST select,
 Asana workspaces, Linear GraphQL teams, and the programmatic
 `createEmulator()` API. Prints `passed: 10  failed: 0` on success; on failure
 it keeps the temp workdir and prints the `server.log` path for debugging.
+The driver has no Jira check; drive Jira manually (below).
 
 ### Driving a running server manually
 
@@ -58,6 +60,16 @@ curl -s -X POST http://localhost:4300/oauth/token \
   -d "grant_type=authorization_code&client_id=kakao_rest_api_key_example&client_secret=kakao_client_secret_example&redirect_uri=http://localhost:3000/api/auth/callback/kakao&code=$CODE"
 ```
 
+Jira on its own listens on the base port (`--service jira` → `4000` by
+default); with all services started it is base port + 13:
+
+```bash
+bun packages/emulate/dist/index.js start --service jira --port 4300 --seed emulate.config.yaml
+curl -s -u admin@example.com:jira_test_token http://localhost:4300/rest/api/3/myself
+curl -s -u admin@example.com:jira_test_token -H 'content-type: application/json' \
+  -X POST http://localhost:4300/rest/api/3/search/jql -d '{"jql":"project = ENG","fields":["summary"]}'
+```
+
 Seeded credentials from `emulate init` (see the generated yaml for all):
 Kakao `kakao_rest_api_key_example`/`kakao_client_secret_example`, Naver
 `naver_client_id_example`/`naver_client_secret_example` (authorize requires
@@ -65,7 +77,8 @@ Kakao `kakao_rest_api_key_example`/`kakao_client_secret_example`, Naver
 usable as the `?user=` auto-approve param), Toss secret
 key `test_sk_example` (Basic auth, `key:` base64), Firebase API key
 `firebase_api_key_example`, Supabase `supabase_anon_key_example`, Asana
-bearer `test_token_admin` (top-level `tokens:` seed), Linear `lin_api_test`.
+bearer `test_token_admin` (top-level `tokens:` seed), Linear `lin_api_test`,
+Jira Basic auth `admin@example.com:jira_test_token`.
 
 ## Direct invocation (most PRs need only this)
 

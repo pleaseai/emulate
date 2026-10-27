@@ -3,6 +3,7 @@ import type { JiraRequest } from '../context.js'
 import type { JiraIssue } from '../entities.js'
 import { Buffer } from 'node:buffer'
 import { API_V, intParam, JiraError, listParam, makeHandler, READ, readJson } from '../context.js'
+import { fieldMetadata } from '../fields.js'
 import { formatIssue, parseFieldSelection } from '../issue-format.js'
 import { JqlError, parseJql, runQuery } from '../jql.js'
 
@@ -13,6 +14,13 @@ interface SearchParams {
   maxResults?: number
   startAt?: number
   nextPageToken?: string
+}
+
+function bodyInt(value: unknown, fallback: number): number | undefined {
+  if (typeof value !== 'number') {
+    return undefined
+  }
+  return Number.isFinite(value) && value >= 0 ? Math.trunc(value) : fallback
 }
 
 async function searchParams(r: JiraRequest): Promise<SearchParams> {
@@ -31,8 +39,8 @@ async function searchParams(r: JiraRequest): Promise<SearchParams> {
       jql: typeof body.jql === 'string' ? body.jql : '',
       fields: list(body.fields),
       expand: list(body.expand),
-      maxResults: typeof body.maxResults === 'number' ? intParam(String(body.maxResults), 50) : undefined,
-      startAt: typeof body.startAt === 'number' ? intParam(String(body.startAt), 0) : undefined,
+      maxResults: bodyInt(body.maxResults, 50),
+      startAt: bodyInt(body.startAt, 0),
       nextPageToken: typeof body.nextPageToken === 'string' ? body.nextPageToken : undefined,
     }
   }
@@ -41,8 +49,8 @@ async function searchParams(r: JiraRequest): Promise<SearchParams> {
     jql: q('jql') ?? '',
     fields: listParam(r.c, 'fields'),
     expand: listParam(r.c, 'expand'),
-    maxResults: q('maxResults') !== undefined ? intParam(q('maxResults'), 50) : undefined,
-    startAt: q('startAt') !== undefined ? intParam(q('startAt'), 0) : undefined,
+    maxResults: q('maxResults') !== undefined ? intParam(q('maxResults'), 50, undefined, 'maxResults') : undefined,
+    startAt: q('startAt') !== undefined ? intParam(q('startAt'), 0, undefined, 'startAt') : undefined,
     nextPageToken: q('nextPageToken'),
   }
 }
@@ -81,21 +89,6 @@ function decodeToken(token: string): number {
   throw new JiraError(400, ['The provided next page token is invalid or expired.'])
 }
 
-function namesAndSchema(r: JiraRequest, expand: string[], issues: Array<Record<string, unknown>>) {
-  const extra: Record<string, unknown> = {}
-  if (issues.length === 0) {
-    return extra
-  }
-  const sample = issues[0]
-  if (expand.includes('names') && sample.names) {
-    extra.names = sample.names
-  }
-  if (expand.includes('schema') && sample.schema) {
-    extra.schema = sample.schema
-  }
-  return extra
-}
-
 export function searchRoutes({ app, store, baseUrl }: RouteContext): void {
   const handle = makeHandler(store, baseUrl)
 
@@ -117,7 +110,7 @@ export function searchRoutes({ app, store, baseUrl }: RouteContext): void {
         issues: formatted,
         ...(isLast ? {} : { nextPageToken: encodeToken(offset + page.length) }),
         isLast,
-        ...namesAndSchema(r, params.expand, formatted),
+        ...fieldMetadata(r.js, params.expand),
       })
     },
     { scopes: READ },
@@ -153,7 +146,7 @@ export function searchRoutes({ app, store, baseUrl }: RouteContext): void {
         maxResults,
         total: issues.length,
         issues: formatted,
-        ...namesAndSchema(r, params.expand, formatted),
+        ...fieldMetadata(r.js, params.expand),
       })
     },
     { scopes: READ },
@@ -168,16 +161,15 @@ export function searchRoutes({ app, store, baseUrl }: RouteContext): void {
         const query = (r.c.req.query('query') ?? '').toLowerCase()
         const currentJql = r.c.req.query('currentJQL')
         const pool = currentJql ? runJql(r, currentJql, false) : r.js.issues.all().sort((a, b) => b.id - a.id)
-        const matches = pool
-          .filter(
-            issue => !query || issue.key.toLowerCase().includes(query) || issue.summary.toLowerCase().includes(query),
-          )
-          .slice(0, 20)
+        const allMatches = pool.filter(
+          issue => !query || issue.key.toLowerCase().includes(query) || issue.summary.toLowerCase().includes(query),
+        )
+        const matches = allMatches.slice(0, 20)
         return r.c.json({
           sections: [
             {
               label: 'History Search',
-              sub: `Showing ${matches.length} of ${matches.length} matching issues`,
+              sub: `Showing ${matches.length} of ${allMatches.length} matching issues`,
               id: 'hs',
               issues: matches.map(issue => ({
                 id: issue.id,

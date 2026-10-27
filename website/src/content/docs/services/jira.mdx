@@ -17,6 +17,9 @@ Stateful Jira Cloud emulation covering the platform REST API (v3 and v2), the Ji
 ```bash
 # Jira only
 npx @pleaseai/emulate --service jira
+
+# point clients and the examples below at it
+export JIRA_EMULATOR_URL=http://localhost:4000
 ```
 
 Default URL: `http://localhost:4013` when all services are started, or `http://localhost:4000` when Jira is the only service.
@@ -100,6 +103,10 @@ jira:
       comments:
         - body: Reproduced locally.
           author: admin@example.com
+    - project: ENG
+      summary: Add checkout regression test
+      type: Task
+      assignee: dev@example.com
   links:
     - type: Blocks
       inward: Fix local checkout test

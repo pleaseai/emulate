@@ -47,7 +47,7 @@ This is not a complete Jira clone. Attachments, filters, dashboards, workflow an
 ## Auth
 
 ```bash
-curl http://localhost:4013/rest/api/3/myself \
+curl http://localhost:4000/rest/api/3/myself \
   -u admin@jira.local:jira_test_token
 ```
 

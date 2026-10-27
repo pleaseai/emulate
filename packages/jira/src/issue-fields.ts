@@ -3,7 +3,7 @@ import type { AdfNode, JiraIssue, JiraUser } from './entities.js'
 import type { Fmt } from './formatters.js'
 import type { JiraStore } from './store.js'
 import { isAdfDoc, textToAdf } from './adf.js'
-import { fieldError } from './context.js'
+import { fieldError, isIsoDate } from './context.js'
 import {
   findComponent,
   findIssue,
@@ -58,13 +58,13 @@ export function refOf(value: unknown): RefValue {
 }
 
 function resolveUserRef(js: JiraStore, field: string, value: unknown): string | null {
-  const ref = refOf(value)
-  if (ref === null) {
+  if (value === null || (typeof value === 'object' && 'accountId' in value && value.accountId === null)) {
     return null
   }
+  const ref = refOf(value) ?? {}
   const key = ref.accountId ?? (ref.id !== undefined ? String(ref.id) : undefined) ?? ref.name
-  if (key === undefined || key === null) {
-    return null
+  if (typeof key !== 'string' || !key) {
+    throw fieldError(field, `Specify a valid value for ${field}`)
   }
   if (key === '-1') {
     return null
@@ -155,11 +155,14 @@ export function setField(actor: Actor, draft: JiraIssue, field: string, value: u
       if (!labels) {
         throw fieldError('labels', 'The labels field must be an array of strings.')
       }
-      draft.labels = labels.map(label => validateLabel(String(label)))
+      if (!labels.every(label => typeof label === 'string')) {
+        throw fieldError('labels', 'The labels field must be an array of strings.')
+      }
+      draft.labels = labels.map(label => validateLabel(label))
       return
     }
     case 'duedate':
-      if (value !== null && value !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+      if (value !== null && value !== '' && !isIsoDate(value)) {
         throw fieldError('duedate', `Error parsing date string: ${String(value)}`)
       }
       draft.due_date = value ? String(value) : null
@@ -265,7 +268,7 @@ function setCustomField(actor: Actor, draft: JiraIssue, field: string, value: un
       }
       break
     case 'date':
-      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      if (!isIsoDate(value)) {
         throw invalid()
       }
       break

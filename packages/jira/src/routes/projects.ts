@@ -3,8 +3,8 @@ import type { JiraRequest } from '../context.js'
 import {
   API_V,
   fieldError,
+  isIsoDate,
   JiraError,
-
   listParam,
   makeHandler,
   MANAGE,
@@ -42,7 +42,7 @@ function dateField(field: string, value: unknown): string | null {
   if (value === undefined || value === null || value === '') {
     return null
   }
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
+  if (!isIsoDate(value)) {
     throw fieldError(field, `Invalid date format. Please enter the date in the format "yyyy-MM-dd".`)
   }
   return value
@@ -52,6 +52,18 @@ function componentExists(name: string) {
   return fieldError('name', `A component with the name ${name} already exists in this project.`)
 }
 const versionExists = () => fieldError('name', 'A version with this name already exists in this project.')
+const projectNameExists = () => fieldError('projectName', 'A project with that name already exists.')
+
+function componentLead(r: JiraRequest, value: unknown): string | null {
+  if (value === undefined || value === null || value === '') {
+    return null
+  }
+  const user = findUser(r.js, String(value))
+  if (!user) {
+    throw fieldError('leadAccountId', 'The user you specified as the component lead does not exist.')
+  }
+  return user.account_id
+}
 
 function requireAdmin(r: JiraRequest) {
   if (!r.user.admin) {
@@ -92,11 +104,15 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
         })
         const { startAt, maxResults } = pageParams(r.c, 50, 100)
         const page = paginate(projects, { startAt, maxResults })
+        const pageUrl = (offset: number) => {
+          const params = new URL(r.c.req.url).searchParams
+          params.set('startAt', String(offset))
+          params.set('maxResults', String(maxResults))
+          return restUrl(r, `/project/search?${params}`)
+        }
         return r.c.json({
-          self: restUrl(r, `/project/search?startAt=${startAt}&maxResults=${maxResults}`),
-          ...(page.isLast
-            ? {}
-            : { nextPage: restUrl(r, `/project/search?startAt=${startAt + maxResults}&maxResults=${maxResults}`) }),
+          self: pageUrl(startAt),
+          ...(page.isLast ? {} : { nextPage: pageUrl(startAt + maxResults) }),
           ...page,
           values: page.values.map(project => formatProject(r, project)),
         })
@@ -128,9 +144,7 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
         if (!name) {
           throw fieldError('projectName', 'You must specify a valid project name.')
         }
-        if (r.js.projects.all().some(project => project.name.toLowerCase() === name.toLowerCase())) {
-          throw fieldError('projectName', 'A project with that name already exists.')
-        }
+        requireUniqueName(r.js.projects.all(), name, projectNameExists)
         const typeKey = body.projectTypeKey ?? 'software'
         if (!['software', 'business', 'service_desk'].includes(typeKey)) {
           throw fieldError('projectTypeKey', 'Invalid project type key.')
@@ -170,7 +184,12 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
         const body = await readJson(r.c)
         const patch: Partial<typeof project> = {}
         if (typeof body.name === 'string') {
-          patch.name = body.name
+          const name = body.name.trim()
+          if (!name) {
+            throw fieldError('projectName', 'You must specify a valid project name.')
+          }
+          requireUniqueName(r.js.projects.all(), name, projectNameExists, project.id)
+          patch.name = name
         }
         if (typeof body.description === 'string') {
           patch.description = body.description
@@ -254,12 +273,11 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
           throw fieldError('name', 'The component name must not be empty.')
         }
         requireUniqueName(r.js.components.findBy('project_id', project.id), name, () => componentExists(name))
-        const lead = body.leadAccountId ? findUser(r.js, String(body.leadAccountId)) : undefined
         const component = insertFrom(r.js.components, 10000, {
           project_id: project.id,
           name,
           description: body.description ?? '',
-          lead_account_id: lead?.account_id ?? null,
+          lead_account_id: componentLead(r, body.leadAccountId),
         })
         return r.c.json(formatComponent(r, component), 201)
       },
@@ -298,6 +316,7 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
         const updated = r.js.components.update(component.id, {
           ...(name !== undefined ? { name } : {}),
           ...(typeof body.description === 'string' ? { description: body.description } : {}),
+          ...(body.leadAccountId !== undefined ? { lead_account_id: componentLead(r, body.leadAccountId) } : {}),
         })!
         return r.c.json(formatComponent(r, updated))
       },

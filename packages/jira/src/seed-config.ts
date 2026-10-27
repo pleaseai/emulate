@@ -30,8 +30,9 @@ export interface JiraSeedConfig {
     board?: boolean | { name?: string, type?: JiraBoardType }
   }>
   sprints?: Array<{
-    /** Project key or board name. */
+    /** Project key or ID; the sprint goes on that project's first scrum board. */
     project?: string
+    /** Board name; takes precedence over `project`. */
     board?: string
     name: string
     state?: 'future' | 'active' | 'closed'

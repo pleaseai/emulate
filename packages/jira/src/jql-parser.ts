@@ -236,13 +236,10 @@ class Parser {
       this.next()
       if (this.peek().type === 'lparen') {
         this.next()
-        const operands: Operand[] = []
-        if (this.peek().type !== 'rparen') {
+        const operands: Operand[] = [this.parseOperand()]
+        while (this.peek().type === 'comma') {
+          this.next()
           operands.push(this.parseOperand())
-          while (this.peek().type === 'comma') {
-            this.next()
-            operands.push(this.parseOperand())
-          }
         }
         if (this.peek().type !== 'rparen') {
           this.fail('\')\'')
@@ -284,6 +281,9 @@ class Parser {
         args.push(this.next().value)
         if (this.peek().type === 'comma') {
           this.next()
+          if (this.peek().type === 'rparen') {
+            this.fail('a function argument')
+          }
         }
         else if (this.peek().type !== 'rparen') {
           this.fail('\')\'')

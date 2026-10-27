@@ -53,7 +53,7 @@ export interface UserSeedInput {
 export function updateUser(store: Store, user: JiraUser, input: UserSeedInput): JiraUser {
   const js = getJiraStore(store)
   const patch: Partial<JiraUser> = {}
-  if (input.display_name) {
+  if (input.display_name !== undefined) {
     patch.display_name = input.display_name
   }
   if (input.admin !== undefined) {
@@ -88,8 +88,9 @@ function migrateAccountId(store: Store, user: JiraUser, next: string): JiraUser 
   for (const token of js.oauthTokens.findBy('account_id', prev)) {
     js.oauthTokens.update(token.id, { account_id: next })
   }
+  const userFields = js.customFields.all().filter(field => field.type === 'user')
+  const userFieldIds = new Set(['assignee', 'reporter', 'creator', ...userFields.map(field => field.field_id)])
   for (const issue of js.issues.all()) {
-    const userFields = js.customFields.all().filter(field => field.type === 'user')
     const custom = { ...issue.custom_fields }
     for (const field of userFields) {
       if (custom[field.field_id] === prev) {
@@ -113,11 +114,9 @@ function migrateAccountId(store: Store, user: JiraUser, next: string): JiraUser 
   for (const changelog of js.changelogs.all()) {
     js.changelogs.update(changelog.id, {
       author_id: swap(changelog.author_id),
-      items: changelog.items.map(item => ({
-        ...item,
-        from: swap(item.from),
-        to: swap(item.to),
-      })),
+      items: changelog.items.map(item =>
+        userFieldIds.has(item.fieldId) ? { ...item, from: swap(item.from), to: swap(item.to) } : item,
+      ),
     })
   }
   for (const project of js.projects.all()) {

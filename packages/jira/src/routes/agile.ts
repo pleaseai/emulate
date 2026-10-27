@@ -1,17 +1,19 @@
 import type { RouteContext } from '@emulators/core'
 import type { JiraRequest } from '../context.js'
 import type { JiraBoard, JiraIssue, JiraSprint, JiraSprintState } from '../entities.js'
+import type { OrderBy } from '../jql.js'
 import { JiraError, listParam, makeHandler, pageParams, READ, readJson, WRITE } from '../context.js'
 import { avatarUrls, formatStatus, projectStatuses } from '../formatters.js'
 import { formatIssue, formatSprint, parseFieldSelection } from '../issue-format.js'
 import { editIssue } from '../issue-service.js'
-import { compileJql, JqlError } from '../jql.js'
+import { JqlError, parseJql, runQuery } from '../jql.js'
 import { findIssue, findProject, paginate, requireIssue } from '../lookup.js'
 import { deleteBoardRecord, deleteSprintRecord } from '../services.js'
 import { emitEditEvents } from '../webhooks.js'
 
 const A = '/rest/agile/1.0'
 const PREFIXES = [A, '/rest/software/1.0']
+const RANK_ORDER: OrderBy[] = [{ field: 'rank', direction: 'ASC' }]
 
 function sprintName(value: unknown): string {
   const name = String(value ?? '').trim()
@@ -83,20 +85,16 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
     r.js.customFields.all().find(field => field.type === 'sprint')?.field_id ?? 'customfield_10020'
 
   const issuePage = (r: JiraRequest, candidates: JiraIssue[]) => {
-    let issues = candidates
-    const jql = r.c.req.query('jql')
-    if (jql) {
-      try {
-        issues = issues.filter(compileJql(r.js, jql, r.user))
-      }
-      catch (err) {
-        if (err instanceof JqlError) {
-          throw new JiraError(400, [err.message])
-        }
-        throw err
-      }
+    let issues: JiraIssue[]
+    try {
+      issues = runQuery(r.js, parseJql(r.c.req.query('jql') ?? ''), r.user, { candidates, fallbackOrder: RANK_ORDER })
     }
-    issues = [...issues].sort((a, b) => a.id - b.id)
+    catch (err) {
+      if (err instanceof JqlError) {
+        throw new JiraError(400, [err.message])
+      }
+      throw err
+    }
     const { startAt, maxResults } = pageParams(r.c, 50, 100)
     const options = { fields: parseFieldSelection(listParam(r.c, 'fields'), true), expand: listParam(r.c, 'expand') }
     return {
@@ -123,6 +121,11 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
       }
       return issue
     })
+    const sprintProjectId = sprintId === null ? undefined : r.js.boards.get(r.js.sprints.get(sprintId)!.board_id)?.project_id
+    const foreign = issues.find(issue => sprintProjectId !== undefined && issue.project_id !== sprintProjectId)
+    if (foreign) {
+      throw new JiraError(400, [`Issue '${foreign.key}' does not belong to the sprint's board.`])
+    }
     for (const issue of issues) {
       await emitEditEvents(r, editIssue(r, issue, { fields: { [sprintFieldId(r)]: sprintId } }))
     }
@@ -414,16 +417,19 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
       ),
     )
 
-    const moveToBacklog = handle(
+    const moveToBacklog = (boardScoped: boolean) => handle(
       async (r) => {
+        if (boardScoped) {
+          requireBoard(r)
+        }
         const body = await readJson(r.c)
         await moveIssues(r, body.issues, null)
         return r.c.body(null, 204)
       },
       { scopes: WRITE },
     )
-    app.post(`${P}/backlog/issue`, moveToBacklog)
-    app.post(`${P}/backlog/:boardId/issue`, moveToBacklog)
+    app.post(`${P}/backlog/issue`, moveToBacklog(false))
+    app.post(`${P}/backlog/:boardId/issue`, moveToBacklog(true))
 
     app.get(
       `${P}/issue/:key`,

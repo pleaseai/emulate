@@ -1,4 +1,5 @@
 import type { EvalContext, Scalar } from './jql-fields.js'
+import { isCalendarDate } from './context.js'
 import { eqi } from './jql-fields.js'
 import { JqlError } from './jql-parser.js'
 
@@ -194,12 +195,13 @@ export function parseDateLiteral(value: string, ctx: EvalContext): { time: numbe
     return { time: relative.getTime(), dayPrecision: false }
   }
   const match = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(value.trim())
-  if (!match) {
+  const [, y, m, d, hh, mm] = match ?? []
+  const [year, month, day, hour, minute] = [y, m, d, hh ?? '0', mm ?? '0'].map(Number)
+  if (!match || !isCalendarDate(year, month, day) || hour > 23 || minute > 59) {
     throw new JqlError(
       `Date value '${value}' for field is invalid. Valid formats include: 'yyyy/MM/dd HH:mm', 'yyyy-MM-dd HH:mm', 'yyyy/MM/dd', 'yyyy-MM-dd', or a period format e.g. '-5d', '4w 2d'.`,
     )
   }
-  const [, y, m, d, hh, mm] = match
-  const time = Date.UTC(Number(y), Number(m) - 1, Number(d), Number(hh ?? 0), Number(mm ?? 0))
+  const time = Date.UTC(year, month - 1, day, hour, minute)
   return { time, dayPrecision: hh === undefined }
 }

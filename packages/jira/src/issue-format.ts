@@ -10,7 +10,7 @@ import type {
 } from './entities.js'
 import type { Fmt } from './formatters.js'
 import { adfToHtml, adfToText } from './adf.js'
-import { allFields } from './fields.js'
+import { fieldMetadata } from './fields.js'
 import {
 
   formatComponent,
@@ -123,7 +123,8 @@ export function formatDuration(seconds: number): string {
 export function parseDuration(value: string): number | null {
   const trimmed = value.trim()
   if (/^\d+$/.test(trimmed)) {
-    return Number(trimmed) * 60
+    const minutes = Number(trimmed) * 60
+    return minutes > 0 && Number.isSafeInteger(minutes) ? minutes : null
   }
   const parts = trimmed.split(/\s+/)
   let total = 0
@@ -134,7 +135,8 @@ export function parseDuration(value: string): number | null {
     }
     total += Number(match[1]) * DURATION_UNITS[match[2] as keyof typeof DURATION_UNITS]
   }
-  return total > 0 ? Math.round(total) : null
+  const seconds = Math.round(total)
+  return seconds > 0 && Number.isSafeInteger(seconds) ? seconds : null
 }
 
 export function issueTransitions(r: Fmt, issue: JiraIssue) {
@@ -226,14 +228,19 @@ function formatIssueLinks(r: Fmt, issue: JiraIssue) {
 export function issueFieldGetters(r: Fmt, issue: JiraIssue): Record<string, () => unknown> {
   const js = r.js
   const worklogs = () => js.worklogs.findBy('issue_id', issue.id).sort((a, b) => a.id - b.id)
-  const timeSpent = () => worklogs().reduce((sum, worklog) => sum + worklog.time_spent_seconds, 0) || null
+  const spentOn = (id: number) => js.worklogs.findBy('issue_id', id).reduce((sum, w) => sum + w.time_spent_seconds, 0)
+  const subtasks = () =>
+    js.issues
+      .findBy('parent_id', issue.id)
+      .filter(child => js.issueTypes.get(child.issue_type_id)?.subtask)
+      .sort((a, b) => a.id - b.id)
   const parent = issue.parent_id ? js.issues.get(issue.parent_id) : undefined
 
   const getters: Record<string, () => unknown> = {
     statuscategorychangedate: () => jiraTime(issue.status_changed_at),
     issuetype: () => formatIssueType(r, js.issueTypes.get(issue.issue_type_id)),
-    timespent: timeSpent,
-    aggregatetimespent: timeSpent,
+    timespent: () => spentOn(issue.id) || null,
+    aggregatetimespent: () => subtasks().reduce((sum, child) => sum + spentOn(child.id), spentOn(issue.id)) || null,
     project: () => formatProjectRef(r, js.projects.get(issue.project_id)),
     fixVersions: () =>
       issue.fix_version_ids
@@ -267,12 +274,7 @@ export function issueFieldGetters(r: Fmt, issue: JiraIssue): Record<string, () =
     duedate: () => issue.due_date,
     creator: () => formatUserById(r, issue.creator_id),
     reporter: () => formatUserById(r, issue.reporter_id),
-    subtasks: () =>
-      js.issues
-        .findBy('parent_id', issue.id)
-        .filter(child => js.issueTypes.get(child.issue_type_id)?.subtask)
-        .sort((a, b) => a.id - b.id)
-        .map(child => formatIssueRef(r, child)),
+    subtasks: () => subtasks().map(child => formatIssueRef(r, child)),
     ...(parent ? { parent: () => formatIssueRef(r, parent) } : {}),
     comment: () => {
       const comments = js.comments.findBy('issue_id', issue.id).sort((a, b) => a.id - b.id)
@@ -350,15 +352,7 @@ export function formatIssue(r: Fmt, issue: JiraIssue, opts: IssueFormatOptions =
       updated: issue.updated_at,
     }
   }
-  if (expand.has('names') || expand.has('schema')) {
-    const defs = allFields(r.js)
-    if (expand.has('names')) {
-      result.names = Object.fromEntries(defs.map(field => [field.id, field.name]))
-    }
-    if (expand.has('schema')) {
-      result.schema = Object.fromEntries(defs.map(field => [field.id, field.schema]))
-    }
-  }
+  Object.assign(result, fieldMetadata(r.js, expand))
   if (expand.has('transitions')) {
     result.transitions = issueTransitions(r, issue).map(transition => formatTransition(r, transition))
   }

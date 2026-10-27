@@ -25,7 +25,7 @@ export interface IssueEventOptions {
 }
 
 function payloadFmt(actor: Actor): Fmt {
-  return { js: actor.js, baseUrl: actor.baseUrl, siteUrl: actor.baseUrl, version: '2', user: actor.user }
+  return { js: actor.js, baseUrl: actor.baseUrl, siteUrl: actor.siteUrl, version: '2', user: actor.user }
 }
 
 function issueEventType(event: JiraIssueEvent, opts: IssueEventOptions): string {

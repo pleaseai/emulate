@@ -28,6 +28,19 @@ function jqlProblem(r: JiraRequest, jql: string | null): string | null {
   }
 }
 
+function isWebhookUrl(value: unknown): value is string {
+  if (typeof value !== 'string') {
+    return false
+  }
+  try {
+    const url = new URL(value)
+    return (url.protocol === 'http:' || url.protocol === 'https:') && Boolean(url.hostname)
+  }
+  catch {
+    return false
+  }
+}
+
 function eventProblem(events: unknown): string | null {
   if (!Array.isArray(events) || events.length === 0) {
     return 'At least one event must be specified.'
@@ -64,7 +77,7 @@ export function webhookRoutes({ app, store, baseUrl }: RouteContext): void {
   const readAdminBody = async (r: JiraRequest, existing?: JiraWebhook) => {
     const body = await readJson(r.c)
     const url = body.url ?? existing?.url
-    if (typeof url !== 'string' || !/^https?:\/\//.test(url)) {
+    if (!isWebhookUrl(url)) {
       throw new JiraError(400, [], { url: 'A valid webhook URL is required.' })
     }
     const events = body.events ?? existing?.events
@@ -164,18 +177,20 @@ export function webhookRoutes({ app, store, baseUrl }: RouteContext): void {
       async (r) => {
         const clientId = requireApp(r)
         const body = await readJson(r.c)
-        if (typeof body.url !== 'string' || !/^https?:\/\//.test(body.url)) {
+        if (!isWebhookUrl(body.url)) {
           throw new JiraError(400, ['A valid webhook URL is required.'])
         }
-        const specs: Array<{ events?: unknown, jqlFilter?: string, fieldIdsFilter?: string[] }> = Array.isArray(
-          body.webhooks,
-        )
-          ? body.webhooks
-          : []
-        const webhookRegistrationResult = specs.map((spec) => {
+        const specs: unknown[] = Array.isArray(body.webhooks) ? body.webhooks : []
+        const webhookRegistrationResult = specs.map((entry) => {
+          if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+            return { errors: ['Each webhook registration must be an object.'] }
+          }
+          const spec = entry as { events?: unknown, jqlFilter?: unknown, fieldIdsFilter?: unknown }
           const errors = [
             eventProblem(spec.events),
-            spec.jqlFilter ? jqlProblem(r, spec.jqlFilter) : 'The JQL filter is required.',
+            typeof spec.jqlFilter === 'string' && spec.jqlFilter.trim()
+              ? jqlProblem(r, spec.jqlFilter)
+              : 'The JQL filter is required.',
           ].filter((error): error is string => Boolean(error))
           if (errors.length > 0) {
             return { errors }
@@ -184,7 +199,7 @@ export function webhookRoutes({ app, store, baseUrl }: RouteContext): void {
             name: `${clientId} dynamic webhook`,
             url: body.url,
             events: spec.events as string[],
-            jql_filter: spec.jqlFilter ?? null,
+            jql_filter: spec.jqlFilter as string,
             ...(Array.isArray(spec.fieldIdsFilter) && spec.fieldIdsFilter.length > 0
               ? { field_ids_filter: spec.fieldIdsFilter.map(String) }
               : {}),

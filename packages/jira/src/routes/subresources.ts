@@ -23,7 +23,7 @@ import { emitCommentEvent, emitIssueEvent } from '../webhooks.js'
 
 function timeSpentSeconds(body: { timeSpent?: unknown, timeSpentSeconds?: unknown }): number | undefined {
   if (typeof body.timeSpentSeconds === 'number') {
-    if (body.timeSpentSeconds <= 0) {
+    if (!Number.isSafeInteger(body.timeSpentSeconds) || body.timeSpentSeconds <= 0) {
       throw fieldError('timeLogged', 'You must indicate the time spent working.')
     }
     return body.timeSpentSeconds
@@ -324,6 +324,9 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
         const outward = findIssue(r.js, body.outwardIssue?.key ?? body.outwardIssue?.id)
         if (!inward || !outward) {
           throw new JiraError(404, ['Issue does not exist or you do not have permission to see it.'])
+        }
+        if (inward.id === outward.id) {
+          throw new JiraError(400, ['You cannot link an issue to itself.'])
         }
         const commentDoc = body.comment?.body !== undefined ? readCommentBody(r, body.comment.body) : undefined
         createLink(r.js, type.id, inward.id, outward.id)

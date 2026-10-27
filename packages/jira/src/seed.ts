@@ -6,7 +6,7 @@ import { textToAdf } from './adf.js'
 import { addComment, createIssue, createLink, systemActor } from './issue-service.js'
 import { findComponent, findIssue, findIssueType, findProject, findStatus, findUser, findVersion } from './lookup.js'
 import { ensureApiToken, ensureUser, updateUser } from './seed-users.js'
-import { createProject } from './services.js'
+import { createProject, deleteBoardRecord } from './services.js'
 import { getJiraStore, insertFrom } from './store.js'
 import { WEBHOOK_EVENTS } from './webhooks.js'
 
@@ -202,14 +202,21 @@ export function ensureProject(store: Store, input: CreateProjectInput) {
     patch.issue_type_ids = byName(js.issueTypes.all(), input.issue_types)
   }
   const project = Object.keys(patch).length > 0 ? js.projects.update(existing.id, patch)! : existing
-  if (typeof input.board === 'object') {
-    const board = js.boards.findBy('project_id', project.id)[0]
+  const boards = js.boards.findBy('project_id', project.id)
+  if (input.board === false) {
+    boards.forEach(board => deleteBoardRecord(js, board))
+  }
+  else if (input.board !== undefined) {
+    const cfg = typeof input.board === 'object' ? input.board : {}
     const boardPatch = {
-      ...(input.board.name !== undefined ? { name: input.board.name } : {}),
-      ...(input.board.type !== undefined ? { type: input.board.type } : {}),
+      ...(cfg.name !== undefined ? { name: cfg.name } : {}),
+      ...(cfg.type !== undefined ? { type: cfg.type } : {}),
     }
-    if (board && Object.keys(boardPatch).length > 0) {
-      js.boards.update(board.id, boardPatch)
+    if (!boards[0]) {
+      js.boards.insert({ name: `${project.key} board`, type: 'scrum', project_id: project.id, ...boardPatch })
+    }
+    else if (Object.keys(boardPatch).length > 0) {
+      js.boards.update(boards[0].id, boardPatch)
     }
   }
   return project
@@ -377,7 +384,10 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
     const actor = systemActor(store, js, baseUrl, reporter)
     const parent = findIssueRef(issueCfg.parent, project.id)
     const sprint = issueCfg.sprint
-      ? js.sprints.all().find(s => s.name === issueCfg.sprint || String(s.id) === issueCfg.sprint)
+      ? (js.sprints
+          .all()
+          .find(s => s.name === issueCfg.sprint && js.boards.get(s.board_id)?.project_id === project.id)
+          ?? (/^\d+$/.test(issueCfg.sprint) ? js.sprints.get(Number(issueCfg.sprint)) : undefined))
       : undefined
     const fields: Record<string, unknown> = {
       project: { key: project.key },
@@ -404,6 +414,7 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
         const done = status.category === 'done'
         js.issues.update(issue.id, {
           status_id: status.id,
+          status_changed_at: new Date().toISOString(),
           resolution_id: done ? (js.resolutions.findOneBy('name', 'Done')?.id ?? null) : null,
           resolution_date: done ? new Date().toISOString() : null,
         })

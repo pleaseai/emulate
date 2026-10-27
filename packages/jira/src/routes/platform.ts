@@ -124,16 +124,15 @@ export function platformRoutes({ app, store, baseUrl }: RouteContext): void {
           const query = r.c.req.query('query') ?? r.c.req.query('username')
           const accountId = r.c.req.query('accountId')
           const { startAt, maxResults } = pageParams(r.c, 50, 1000)
-          const users = r.js.users
+          const matching = r.js.users
             .all()
             .filter(user => (accountId ? user.account_id === accountId : matchesQuery(user, query)))
-            .slice(startAt, startAt + maxResults)
-            .map(user => formatUser(r, user))
+          const users = matching.slice(startAt, startAt + maxResults).map(user => formatUser(r, user))
           if (path.endsWith('/picker')) {
             return r.c.json({
               users: users.map(user => ({ ...user, html: user!.displayName })),
-              total: users.length,
-              header: `Showing ${users.length} of ${users.length} matching users`,
+              total: matching.length,
+              header: `Showing ${users.length} of ${matching.length} matching users`,
             })
           }
           return r.c.json(users)
@@ -156,10 +155,12 @@ export function platformRoutes({ app, store, baseUrl }: RouteContext): void {
           }
           const query = r.c.req.query('query') ?? r.c.req.query('username')
           const accountId = r.c.req.query('accountId')
+          const { startAt, maxResults } = pageParams(r.c, 50, 1000)
           const users = r.js.users
             .all()
             .filter(user => user.active && user.account_type === 'atlassian')
             .filter(user => (accountId ? user.account_id === accountId : matchesQuery(user, query)))
+            .slice(startAt, startAt + maxResults)
             .map(user => formatUser(r, user))
           return r.c.json(users)
         },

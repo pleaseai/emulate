@@ -177,6 +177,13 @@ describe('inspector and browse pages', () => {
     expect((await t.app.request(`${jiraTestBaseUrl}/browse/EMU-404`)).status).toBe(404)
   })
 
+  it('escapes the issue summary in the browse page title exactly once', async () => {
+    await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { fields: { summary: '<img src=x onerror=alert(1)>' } } })
+    const html = await (await t.app.request(`${jiraTestBaseUrl}/browse/EMU-1`)).text()
+    expect(html).not.toContain('<img src=x')
+    expect(html).toContain('EMU-1: &lt;img src=x onerror=alert(1)&gt;')
+  })
+
   it('applies configured values to an already seeded project', () => {
     const t2 = createJiraTestApp()
     seedFromConfig(t2.store, jiraTestBaseUrl, {
@@ -188,6 +195,33 @@ describe('inspector and browse pages', () => {
     const names = project.status_ids.map(id => js.statuses.get(id)!.name)
     expect(names).toEqual(['To Do', 'In Review', 'Done'])
     expect(project.lead_account_id).not.toBeNull()
+  })
+
+  it('removes the default board when an existing project sets board: false', () => {
+    const t2 = createJiraTestApp()
+    seedFromConfig(t2.store, jiraTestBaseUrl, { projects: [{ key: 'EMU', name: 'Emulate', board: false }] })
+    const js = getJiraStore(t2.store)
+    expect(js.boards.findBy('project_id', js.projects.findOneBy('key', 'EMU')!.id)).toEqual([])
+    expect(js.sprints.all()).toEqual([])
+    expect(js.issues.all()[0].sprint_id).toBeNull()
+    seedFromConfig(t2.store, jiraTestBaseUrl, { projects: [{ key: 'EMU', name: 'Emulate', board: true }] })
+    expect(js.boards.all()).toHaveLength(1)
+  })
+
+  it('resolves seeded sprint names within the issue project', () => {
+    const t2 = createJiraTestApp()
+    seedFromConfig(t2.store, jiraTestBaseUrl, {
+      projects: [{ key: 'WEB', name: 'Website' }],
+      sprints: [
+        { project: 'EMU', name: 'Sprint 1', state: 'active' },
+        { project: 'WEB', name: 'Sprint 1', state: 'active' },
+      ],
+      issues: [{ project: 'WEB', summary: 'Web work', sprint: 'Sprint 1' }],
+    })
+    const js = getJiraStore(t2.store)
+    const issue = js.issues.all().find(i => i.summary === 'Web work')!
+    const sprint = js.sprints.get(issue.sprint_id!)!
+    expect(js.boards.get(sprint.board_id)!.project_id).toBe(issue.project_id)
   })
 
   it('ignores non-numeric custom field ids when generating ids', () => {
@@ -226,5 +260,28 @@ describe('seedFromConfig default users', () => {
     expect(js.projects.findOneBy('key', 'EMU')!.lead_account_id).toBe('custom-admin')
     const res = await api(t.app, '/rest/api/3/myself')
     expect(res.json.accountId).toBe('custom-admin')
+  })
+
+  it('migrates only user-valued changelog items and applies empty display names', () => {
+    const t = createJiraTestApp()
+    const js = getJiraStore(t.store)
+    const before = js.users.findOneBy('email', 'admin@jira.local')!.account_id
+    const item = (fieldId: string) => ({
+      field: fieldId,
+      fieldtype: 'jira' as const,
+      fieldId,
+      from: before,
+      fromString: null,
+      to: null,
+      toString: null,
+    })
+    const entry = js.changelogs.insert({ issue_id: js.issues.all()[0].id, author_id: before, items: [item('assignee'), item('summary')] })
+    seedFromConfig(t.store, jiraTestBaseUrl, {
+      users: [{ email: 'admin@jira.local', account_id: 'custom-admin', display_name: '' }],
+    })
+    const [assignee, summary] = js.changelogs.get(entry.id)!.items
+    expect(assignee.from).toBe('custom-admin')
+    expect(summary.from).toBe(before)
+    expect(js.users.findOneBy('email', 'admin@jira.local')!.display_name).toBe('')
   })
 })

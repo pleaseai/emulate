@@ -188,15 +188,28 @@ export async function readJsonValue(c: Context<AppEnv>): Promise<any> {
   }
 }
 
-export function intParam(value: string | undefined, fallback: number, max = Number.MAX_SAFE_INTEGER): number {
+export function isCalendarDate(year: number, month: number, day: number): boolean {
+  return month >= 1 && month <= 12 && day >= 1 && day <= new Date(Date.UTC(year, month, 0)).getUTCDate()
+}
+
+export function isIsoDate(value: unknown): value is string {
+  const match = typeof value === 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null
+  return !!match && isCalendarDate(Number(match[1]), Number(match[2]), Number(match[3]))
+}
+
+export function intParam(
+  value: string | undefined,
+  fallback: number,
+  max = Number.MAX_SAFE_INTEGER,
+  name = 'parameter',
+): number {
   if (value === undefined || value === '') {
     return fallback
   }
-  const parsed = Number.parseInt(value, 10)
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return fallback
+  if (!/^\d+$/.test(value)) {
+    throw new JiraError(400, [`Invalid value '${value}' for ${name}; expected a non-negative integer.`])
   }
-  return Math.min(parsed, max)
+  return Math.min(Number(value), max)
 }
 
 export interface PageParams {
@@ -206,8 +219,8 @@ export interface PageParams {
 
 export function pageParams(c: Context<AppEnv>, defaultMax: number, cap?: number): PageParams {
   return {
-    startAt: intParam(c.req.query('startAt'), 0),
-    maxResults: intParam(c.req.query('maxResults'), defaultMax, cap),
+    startAt: intParam(c.req.query('startAt'), 0, undefined, 'startAt'),
+    maxResults: intParam(c.req.query('maxResults'), defaultMax, cap, 'maxResults'),
   }
 }
 

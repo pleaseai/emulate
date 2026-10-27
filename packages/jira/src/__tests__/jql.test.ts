@@ -31,6 +31,11 @@ describe('JQL parser', () => {
     expect(() => parseJql('summary ~ "unterminated')).toThrow(JqlError)
     expect(() => parseJql('(project = EMU')).toThrow(JqlError)
   })
+
+  it('rejects empty IN lists and trailing function-argument commas', () => {
+    expect(() => parseJql('project NOT IN ()')).toThrow(JqlError)
+    expect(() => parseJql('issue in linkedIssues(EMU-1,)')).toThrow(JqlError)
+  })
 })
 
 describe('JQL evaluation', () => {
@@ -116,6 +121,28 @@ describe('JQL evaluation', () => {
     expect(keys('project = EMU AND summary !~ "task" ORDER BY key')).toEqual(['EMU-1', 'EMU-2', 'EMU-3', 'EMU-4'])
     expect(keys('summary ~ "\\"dark mode\\""')).toEqual(['EMU-3'])
     expect(keys('comment ~ "seeded"')).toEqual(['EMU-1'])
+  })
+
+  it('expands * and ? wildcards inside text terms', () => {
+    expect(keys('summary ~ "cr?shes"')).toEqual(['EMU-2'])
+    expect(keys('summary ~ "d*se"')).toEqual(['EMU-4'])
+    expect(keys('summary ~ "cr?x"')).toEqual([])
+  })
+
+  it('rejects calendar-invalid date literals', () => {
+    expect(() => keys('duedate = "2026-02-30"')).toThrow(JqlError)
+    expect(() => keys('created > "2026-10-15 24:00"')).toThrow(JqlError)
+  })
+
+  it('orders custom user fields by display name', () => {
+    js.customFields.insert({ field_id: 'customfield_10200', name: 'Reviewer', type: 'user', options: [] })
+    const admin = js.users.findOneBy('email', 'admin@jira.local')!
+    js.users.update(admin.id, { display_name: 'Zed Admin' })
+    js.users.update(js.users.findOneBy('account_id', devId)!.id, { display_name: 'Amy Dev' })
+    const [first, second] = ['EMU-2', 'EMU-3'].map(key => js.issues.findOneBy('key', key)!)
+    js.issues.update(first.id, { custom_fields: { ...first.custom_fields, customfield_10200: admin.account_id } })
+    js.issues.update(second.id, { custom_fields: { ...second.custom_fields, customfield_10200: devId } })
+    expect(keys('Reviewer is not EMPTY ORDER BY Reviewer ASC')).toEqual(['EMU-3', 'EMU-2'])
   })
 
   it('filters by labels, issue type, priority, and parent', () => {
@@ -288,6 +315,36 @@ describe('search endpoints', () => {
     })
     expect(res.status).toBe(200)
     expect(res.json).toEqual({ count: 4 })
+  })
+
+  it('rejects malformed pagination parameters', async () => {
+    for (const value of ['10oops', '1.5', '-1']) {
+      const res = await api(t.app, `/rest/api/3/search?jql=project%3DEMU&maxResults=${value}`)
+      expect(res.status).toBe(400)
+    }
+  })
+
+  it('returns names and schema expansions for empty result pages', async () => {
+    const res = await api(t.app, '/rest/api/3/search/jql?jql=summary~nomatch&fields=summary&expand=names,schema')
+    expect(res.status).toBe(200)
+    expect(res.json.issues).toEqual([])
+    expect(res.json.names.summary).toBe('Summary')
+    expect(res.json.schema.summary.type).toBe('string')
+  })
+
+  it('reports the full match count when the picker truncates to 20', async () => {
+    for (let i = 0; i < 20; i++) {
+      await api(t.app, '/rest/api/3/issue', {
+        method: 'POST',
+        body: { fields: { project: { key: 'EMU' }, issuetype: { name: 'Task' }, summary: `bulk ${i}` } },
+      })
+    }
+    const res = await api(t.app, '/rest/api/3/issue/picker?query=bulk')
+    expect(res.json.sections[0].issues).toHaveLength(20)
+    expect(res.json.sections[0].sub).toBe('Showing 20 of 20 matching issues')
+    const all = await api(t.app, '/rest/api/3/issue/picker?query=emu')
+    expect(all.json.sections[0].issues).toHaveLength(20)
+    expect(all.json.sections[0].sub).toBe('Showing 20 of 24 matching issues')
   })
 
   it('serves the issue picker', async () => {

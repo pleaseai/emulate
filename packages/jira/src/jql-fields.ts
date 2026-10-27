@@ -323,7 +323,16 @@ export function resolveFieldHandler(js: JiraStore, name: string): FieldHandler {
     case 'string':
       return { name: custom.name, kind: 'text', get: raw }
     case 'user':
-      return { name: custom.name, kind: 'ref', get: raw, resolve: userResolver(custom.name) }
+      return {
+        name: custom.name,
+        kind: 'ref',
+        get: raw,
+        resolve: userResolver(custom.name),
+        sort: (issue, ctx) => {
+          const id = issue.custom_fields[custom.field_id]
+          return lower(typeof id === 'string' ? ctx.js.users.findOneBy('account_id', id)?.display_name : null)
+        },
+      }
     default:
       return { name: custom.name, kind: 'ref', get: raw, resolve: value => [value] }
   }

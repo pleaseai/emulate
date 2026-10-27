@@ -50,11 +50,12 @@ function textMatches(haystack: string, query: string): boolean {
   const words = wordsOf(haystack)
   const terms = trimmed.toLowerCase().split(/\s+/).filter(Boolean)
   return terms.every((term) => {
-    const prefix = term.replace(/[*?]+$/, '').replace(/[^\p{L}\p{N}]/gu, '')
-    if (!prefix) {
+    const pattern = term.replace(/[*?]+$/, '').replace(/[^\p{L}\p{N}*?]/gu, '')
+    if (!pattern.replace(/[*?]/g, '')) {
       return true
     }
-    return words.some(word => word.startsWith(prefix))
+    const regex = new RegExp(`^${pattern.replace(/\*/g, '.*').replace(/\?/g, '.')}`, 'u')
+    return words.some(word => regex.test(word))
   })
 }
 
@@ -175,8 +176,10 @@ function sortValue(handler: FieldHandler, issue: JiraIssue, ctx: EvalContext): S
   return typeof value === 'string' ? value.toLowerCase() : value
 }
 
-function sortIssues(issues: JiraIssue[], orderBy: OrderBy[], ctx: EvalContext): JiraIssue[] {
-  const order = orderBy.length > 0 ? orderBy : [{ field: 'created', direction: 'DESC' as const }]
+const DEFAULT_ORDER: OrderBy[] = [{ field: 'created', direction: 'DESC' }]
+
+function sortIssues(issues: JiraIssue[], orderBy: OrderBy[], ctx: EvalContext, fallback: OrderBy[]): JiraIssue[] {
+  const order = orderBy.length > 0 ? orderBy : fallback
   const handlers = order.map(entry => sortHandler(ctx.js, entry.field))
   const keyed = issues.map(issue => ({ issue, keys: handlers.map(handler => sortValue(handler, issue, ctx)) }))
   keyed.sort((a, b) => {
@@ -216,11 +219,18 @@ export function compileJql(
 
 export function searchIssues(js: JiraStore, jql: string, user: JiraUser, now = new Date()): JiraIssue[] {
   const query = parseJql(jql)
-  return runQuery(js, query, user, now)
+  return runQuery(js, query, user, { now })
 }
 
-export function runQuery(js: JiraStore, query: JqlQuery, user: JiraUser, now = new Date()): JiraIssue[] {
-  const ctx: EvalContext = { js, user, now }
+export interface RunQueryOptions {
+  now?: Date
+  candidates?: JiraIssue[]
+  fallbackOrder?: OrderBy[]
+}
+
+export function runQuery(js: JiraStore, query: JqlQuery, user: JiraUser, opts: RunQueryOptions = {}): JiraIssue[] {
+  const ctx: EvalContext = { js, user, now: opts.now ?? new Date() }
   const predicate = query.where ? compile(query.where, ctx) : () => true
-  return sortIssues(js.issues.all().filter(predicate), query.orderBy, ctx)
+  const candidates = opts.candidates ?? js.issues.all()
+  return sortIssues(candidates.filter(predicate), query.orderBy, ctx, opts.fallbackOrder ?? DEFAULT_ORDER)
 }

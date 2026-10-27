@@ -86,6 +86,21 @@ describe('Jira webhooks', () => {
       filters: { 'issue-related-events-section': 'project = NOPE' },
     })
     expect(badJql.status).toBe(400)
+    for (const url of ['https://', 'not a url', 'ftp://example.test']) {
+      expect((await register({ name: 'x', url, events: ['jira:issue_created'] })).status).toBe(400)
+    }
+    expect(getJiraStore(t.store).webhooks.all()).toHaveLength(0)
+  })
+
+  it('builds payload self URLs from the gateway site URL', async () => {
+    await register({ name: 'Gateway', url: 'https://example.test/hook', events: ['jira:issue_created'] })
+    const cloudId = getJiraStore(t.store).sites.all()[0].cloud_id
+    const created = await api(t.app, `/ex/jira/${cloudId}/rest/api/3/issue`, {
+      method: 'POST',
+      body: { fields: { project: { key: 'EMU' }, issuetype: { name: 'Task' }, summary: 'Via gateway' } },
+    })
+    expect(created.status).toBe(201)
+    expect(captured[0].json.issue.self).toContain(`/ex/jira/${cloudId}/rest/api/2/issue/`)
   })
 
   it('delivers signed issue_created payloads that match the JQL filter', async () => {
@@ -296,6 +311,26 @@ describe('Jira webhooks', () => {
       const priorityEdit = await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { fields: { priority: { id: other.id } } } })
       expect(priorityEdit.status).toBe(204)
       expect(captured).toHaveLength(1)
+    })
+
+    it('reports invalid dynamic registration entries instead of crashing', async () => {
+      const res = await api(t.app, '/rest/api/3/webhook', {
+        method: 'POST',
+        auth: oauth,
+        body: {
+          url: 'https://app.test/webhook',
+          webhooks: [null, 'x', { events: ['jira:issue_created'], jqlFilter: '   ' }],
+        },
+      })
+      expect(res.status).toBe(200)
+      expect(res.json.webhookRegistrationResult.every((result: any) => result.errors?.length > 0)).toBe(true)
+      expect((await api(t.app, '/rest/api/3/webhook', { auth: oauth })).json.total).toBe(0)
+      const badUrl = await api(t.app, '/rest/api/3/webhook', {
+        method: 'POST',
+        auth: oauth,
+        body: { url: 'https://', webhooks: [{ events: ['jira:issue_created'], jqlFilter: 'project = EMU' }] },
+      })
+      expect(badUrl.status).toBe(400)
     })
 
     it('rejects dynamic webhook registration from API token users', async () => {

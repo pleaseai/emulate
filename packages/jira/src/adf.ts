@@ -88,6 +88,14 @@ export function adfToText(node: AdfNode | null | undefined): string {
   return lines.join('\n')
 }
 
+const SAFE_SCHEMES = new Set(['http', 'https', 'mailto'])
+
+function isSafeHref(href: string): boolean {
+  const compact = [...href].filter(ch => ch.charCodeAt(0) > 0x20 && ch.charCodeAt(0) !== 0x7F).join('')
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(compact)
+  return !scheme || SAFE_SCHEMES.has(scheme[1].toLowerCase())
+}
+
 export function adfToHtml(node: AdfNode | null | undefined): string {
   if (!node) {
     return ''
@@ -130,7 +138,8 @@ export function adfToHtml(node: AdfNode | null | undefined): string {
             text = `<tt>${text}</tt>`
           }
           else if (mark.type === 'link') {
-            text = `<a href="${escapeHtml(String(mark.attrs?.href ?? ''))}">${text}</a>`
+            const href = String(mark.attrs?.href ?? '')
+            text = isSafeHref(href) ? `<a href="${escapeHtml(href)}">${text}</a>` : text
           }
         }
         return text

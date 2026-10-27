@@ -72,24 +72,22 @@ export function findResolution(js: JiraStore, ref: Ref) {
 
 export function findComponent(js: JiraStore, projectId: number, ref: { id?: string | number, name?: string }) {
   const components = js.components.findBy('project_id', projectId)
-  if (ref.id !== undefined) {
-    return components.find(component => component.id === Number(ref.id))
+  const id = ref.id === undefined ? undefined : asId(ref.id)
+  if (id !== undefined) {
+    return components.find(component => component.id === id)
   }
-  if (ref.name) {
-    return components.find(component => eqi(component.name, ref.name!))
-  }
-  return undefined
+  const name = ref.name ?? (ref.id === undefined ? undefined : String(ref.id))
+  return name ? components.find(component => eqi(component.name, name)) : undefined
 }
 
 export function findVersion(js: JiraStore, projectId: number, ref: { id?: string | number, name?: string }) {
   const versions = js.versions.findBy('project_id', projectId)
-  if (ref.id !== undefined) {
-    return versions.find(version => version.id === Number(ref.id))
+  const id = ref.id === undefined ? undefined : asId(ref.id)
+  if (id !== undefined) {
+    return versions.find(version => version.id === id)
   }
-  if (ref.name) {
-    return versions.find(version => eqi(version.name, ref.name!))
-  }
-  return undefined
+  const name = ref.name ?? (ref.id === undefined ? undefined : String(ref.id))
+  return name ? versions.find(version => eqi(version.name, name)) : undefined
 }
 
 export function paginate<T>(items: T[], { startAt, maxResults }: PageParams) {
@@ -98,7 +96,7 @@ export function paginate<T>(items: T[], { startAt, maxResults }: PageParams) {
     startAt,
     maxResults,
     total: items.length,
-    isLast: startAt + values.length >= items.length,
+    isLast: maxResults === 0 || startAt + values.length >= items.length,
     values,
   }
 }

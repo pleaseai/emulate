@@ -139,6 +139,23 @@ describe('Jira issue sub-resources', () => {
       const res = await api(t.app, '/rest/api/3/issue/EMU-1/worklog', { method: 'POST', body: { timeSpent: 'soon' } })
       expect(res.status).toBe(400)
       expect(res.json.errors.timeLogged).toBeTruthy()
+      for (const body of ['{"timeSpentSeconds":1.5}', '{"timeSpentSeconds":1e400}', `{"timeSpent":"${'9'.repeat(400)}w"}`]) {
+        const bad = await api(t.app, '/rest/api/3/issue/EMU-1/worklog', { method: 'POST', body })
+        expect(bad.status).toBe(400)
+      }
+      expect((await api(t.app, '/rest/api/3/issue/EMU-1/worklog')).json.total).toBe(0)
+    })
+
+    it('includes subtask worklogs in aggregate time spent', async () => {
+      const sub = await api(t.app, '/rest/api/3/issue', {
+        method: 'POST',
+        body: { fields: { project: { key: 'EMU' }, issuetype: { name: 'Subtask' }, parent: { key: 'EMU-1' }, summary: 'Sub' } },
+      })
+      await api(t.app, '/rest/api/3/issue/EMU-1/worklog', { method: 'POST', body: { timeSpentSeconds: 600 } })
+      await api(t.app, `/rest/api/3/issue/${sub.json.key}/worklog`, { method: 'POST', body: { timeSpentSeconds: 1200 } })
+      const issue = (await api(t.app, '/rest/api/3/issue/EMU-1')).json
+      expect(issue.fields.timespent).toBe(600)
+      expect(issue.fields.aggregatetimespent).toBe(1800)
     })
   })
 
@@ -220,6 +237,12 @@ describe('Jira issue sub-resources', () => {
         body: { type: { name: 'Blocks' }, inwardIssue: { key: 'EMU-1' }, outwardIssue: { key: 'EMU-404' } },
       })
       expect(badIssue.status).toBe(404)
+      const selfLink = await api(t.app, '/rest/api/3/issueLink', {
+        method: 'POST',
+        body: { type: { name: 'Blocks' }, inwardIssue: { key: 'EMU-1' }, outwardIssue: { key: 'EMU-1' } },
+      })
+      expect(selfLink.status).toBe(400)
+      expect((await api(t.app, '/rest/api/3/issue/EMU-1')).json.fields.issuelinks).toEqual([])
     })
 
     it('links issues through the update operation on edit', async () => {

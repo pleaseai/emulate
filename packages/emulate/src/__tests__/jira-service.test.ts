@@ -45,11 +45,13 @@ describe('jira service', () => {
       expect(missing.status).toBe(404)
       expect(((await missing.json()) as { errorMessages: string[] }).errorMessages).toHaveLength(1)
 
-      await fetch(`${jira.url}/rest/api/3/issue`, {
+      const created = await fetch(`${jira.url}/rest/api/3/issue`, {
         method: 'POST',
         headers: { 'Authorization': basic('admin@jira.local', 'jira_test_token'), 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: { project: { key: 'QA' }, issuetype: { name: 'Task' }, summary: 'Temporary' } }),
       })
+      expect(created.status).toBe(201)
+      expect(((await created.json()) as { key: string }).key).toBe('QA-2')
       jira.reset()
       const afterReset = await fetch(`${jira.url}/rest/api/3/issue/QA-2`, {
         headers: { Authorization: basic('admin@jira.local', 'jira_test_token') },

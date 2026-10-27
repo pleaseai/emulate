@@ -38,6 +38,19 @@ describe('Jira metadata', () => {
       expect(res.json[0].emailAddress).toBe('admin@jira.local')
     })
 
+    it('paginates assignable users and reports the full picker total', async () => {
+      const page = await api(t.app, '/rest/api/3/user/assignable/search?project=EMU&startAt=1&maxResults=1')
+      expect(page.status).toBe(200)
+      expect(page.json).toHaveLength(1)
+      const multi = await api(t.app, '/rest/api/3/user/assignable/multiProjectSearch?projectKeys=EMU&maxResults=1')
+      expect(multi.json).toHaveLength(1)
+
+      const picker = await api(t.app, '/rest/api/3/user/picker?maxResults=1')
+      expect(picker.json.users).toHaveLength(1)
+      expect(picker.json.total).toBe(2)
+      expect(picker.json.header).toBe('Showing 1 of 2 matching users')
+    })
+
     it('returns bulk users as a paginated page', async () => {
       const users = getJiraStore(t.store).users.all()
       const res = await api(
@@ -63,6 +76,35 @@ describe('Jira metadata', () => {
       expect(search.json.total).toBe(1)
       expect(search.json.values[0].key).toBe('EMU')
       expect(search.json.isLast).toBe(true)
+    })
+
+    it('keeps search filters in project pagination links and ends on maxResults=0', async () => {
+      await api(t.app, '/rest/api/3/project', { method: 'POST', body: { key: 'OPS', name: 'Operations' } })
+      await api(t.app, '/rest/api/3/project', { method: 'POST', body: { key: 'BIZ', name: 'Business', projectTypeKey: 'business' } })
+      const first = await api(t.app, '/rest/api/3/project/search?typeKey=software&maxResults=1')
+      expect(first.json.total).toBe(2)
+      const next = new URL(first.json.nextPage)
+      expect(next.searchParams.get('typeKey')).toBe('software')
+      expect(next.searchParams.get('startAt')).toBe('1')
+      const second = await api(t.app, `${next.pathname}${next.search}`)
+      expect(second.json.values.map((p: any) => p.key)).toEqual(['OPS'])
+
+      const empty = await api(t.app, '/rest/api/3/project/search?maxResults=0')
+      expect(empty.json.total).toBe(3)
+      expect(empty.json.values).toEqual([])
+      expect(empty.json.isLast).toBe(true)
+      expect(empty.json.nextPage).toBeUndefined()
+    })
+
+    it('rejects empty or duplicate names when renaming a project', async () => {
+      await api(t.app, '/rest/api/3/project', { method: 'POST', body: { key: 'OPS', name: 'Operations' } })
+      for (const name of ['  ', 'operations']) {
+        const res = await api(t.app, '/rest/api/3/project/EMU', { method: 'PUT', body: { name } })
+        expect(res.status).toBe(400)
+        expect(res.json.errors.projectName).toBeTruthy()
+      }
+      const renamed = await api(t.app, '/rest/api/3/project/EMU', { method: 'PUT', body: { name: ' Emulate 2 ' } })
+      expect(renamed.json.name).toBe('Emulate 2')
     })
 
     it('gets a project by key or id with issue types and lead', async () => {
@@ -184,6 +226,32 @@ describe('Jira metadata', () => {
       })
       expect(badDate.status).toBe(400)
       expect(badDate.json.errors.releaseDate).toBeTruthy()
+      const impossibleDate = await api(t.app, '/rest/api/3/version', {
+        method: 'POST',
+        body: { project: 'EMU', name: '2.0.0', releaseDate: '2026-02-30' },
+      })
+      expect(impossibleDate.status).toBe(400)
+    })
+
+    it('validates and updates component leads', async () => {
+      const dev = getJiraStore(t.store).users.findOneBy('email', DEFAULT_DEV_EMAIL)!
+      const ghost = await api(t.app, '/rest/api/3/component', {
+        method: 'POST',
+        body: { project: 'EMU', name: 'API', leadAccountId: 'ghost' },
+      })
+      expect(ghost.status).toBe(400)
+      const created = await api(t.app, '/rest/api/3/component', { method: 'POST', body: { project: 'EMU', name: 'API' } })
+      expect(created.json.lead).toBeUndefined()
+      const updated = await api(t.app, `/rest/api/3/component/${created.json.id}`, {
+        method: 'PUT',
+        body: { leadAccountId: dev.account_id },
+      })
+      expect(updated.json.lead.accountId).toBe(dev.account_id)
+      const badUpdate = await api(t.app, `/rest/api/3/component/${created.json.id}`, {
+        method: 'PUT',
+        body: { leadAccountId: 'ghost' },
+      })
+      expect(badUpdate.status).toBe(400)
     })
 
     it('lets the project lead manage components', async () => {
@@ -243,6 +311,16 @@ describe('Jira metadata', () => {
       expect(sprint.id).toBe('customfield_10020')
       expect(sprint.custom).toBe(true)
       expect(sprint.clauseNames).toContain('cf[10020]')
+      for (const id of ['aggregatetimespent', 'workratio', 'lastViewed', 'votes']) {
+        expect(res.json.find((f: any) => f.id === id)).toBeTruthy()
+      }
+    })
+
+    it('omits numeric metadata for custom fields without a customfield_<number> id', async () => {
+      getJiraStore(t.store).customFields.insert({ field_id: 'team', name: 'Team', type: 'string', options: [] })
+      const team = (await api(t.app, '/rest/api/3/field')).json.find((f: any) => f.id === 'team')
+      expect(team.clauseNames).toEqual(['Team'])
+      expect(team.schema.customId).toBeUndefined()
     })
 
     it('lists issue link types', async () => {

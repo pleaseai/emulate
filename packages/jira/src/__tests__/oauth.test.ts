@@ -114,7 +114,38 @@ describe('Atlassian OAuth 2.0 (3LO) and the API gateway', () => {
       code: await authorize('read:jira-work'),
       redirect_uri: REDIRECT,
     })
+    expect(ok.status).toBe(200)
     expect(ok.json.refresh_token).toBeUndefined()
+  })
+
+  it('rejects malformed JSON token requests with invalid_request', async () => {
+    const res = await api(t.app, '/oauth/token', { method: 'POST', auth: null, body: '{"grant_type":' })
+    expect(res.status).toBe(400)
+    expect(res.json.error).toBe('invalid_request')
+  })
+
+  it('refuses to mint codes for non-Atlassian accounts', async () => {
+    const js = getJiraStore(t.store)
+    const admin = js.users.findOneBy('email', 'admin@jira.local')!
+    js.users.update(admin.id, { account_type: 'app' })
+    const res = await t.app.request(`${jiraTestBaseUrl}/authorize/callback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        account_id: admin.account_id,
+        client_id: CLIENT_ID,
+        redirect_uri: REDIRECT,
+        scope: 'read:jira-work',
+      }).toString(),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('requires an OAuth access token for accessible resources and /me', async () => {
+    expect((await api(t.app, '/oauth/token/accessible-resources')).status).toBe(401)
+    expect((await api(t.app, '/me')).status).toBe(401)
+    const apiToken = getJiraStore(t.store).apiTokens.all()[0].token
+    expect((await api(t.app, '/me', { auth: `Bearer ${apiToken}` })).status).toBe(401)
   })
 
   it('accepts form encoded token requests', async () => {
@@ -222,6 +253,10 @@ describe('Atlassian OAuth 2.0 (3LO) and the API gateway', () => {
 
     const js = getJiraStore(t.store)
     const record = js.oauthTokens.findOneBy('token', tokens.access_token)!
+    js.oauthTokens.update(record.id, { revoked: true })
+    expect((await api(t.app, '/rest/api/3/myself', { auth: `Bearer ${tokens.access_token}` })).status).toBe(401)
+    js.oauthTokens.update(record.id, { revoked: false })
+    expect((await api(t.app, '/rest/api/3/myself', { auth: `Bearer ${tokens.access_token}` })).status).toBe(200)
     js.oauthTokens.update(record.id, { expires_at: new Date(Date.now() - 1000).toISOString() })
     expect((await api(t.app, '/rest/api/3/myself', { auth: `Bearer ${tokens.access_token}` })).status).toBe(401)
   })

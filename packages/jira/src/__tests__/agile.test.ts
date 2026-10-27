@@ -43,6 +43,27 @@ describe('Jira Agile API', () => {
     expect(created.json.type).toBe('kanban')
     const deleted = await api(t.app, `${A}/board/${created.json.id}`, { method: 'DELETE' })
     expect(deleted.status).toBe(204)
+    expect((await api(t.app, `${A}/board/${created.json.id}`)).status).toBe(404)
+  })
+
+  it('applies JQL ORDER BY to board issue pages', async () => {
+    const res = await api(t.app, `${A}/board/1/issue?jql=${encodeURIComponent('ORDER BY key DESC')}&maxResults=1`)
+    expect(res.status).toBe(200)
+    expect(res.json.issues.map((i: any) => i.key)).toEqual(['EMU-3'])
+    const ranked = await api(t.app, `${A}/board/1/issue?maxResults=1`)
+    expect(ranked.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
+  })
+
+  it('rejects moving issues from another project into a sprint', async () => {
+    await api(t.app, '/rest/api/3/project', { method: 'POST', body: { key: 'OPS', name: 'Operations' } })
+    const ops = await api(t.app, '/rest/api/3/issue', {
+      method: 'POST',
+      body: { fields: { project: { key: 'OPS' }, issuetype: { name: 'Task' }, summary: 'Ops work' } },
+    })
+    const res = await api(t.app, `${A}/sprint/1/issue`, { method: 'POST', body: { issues: [ops.json.key] } })
+    expect(res.status).toBe(400)
+    const sprintIssues = await api(t.app, `${A}/sprint/1/issue`)
+    expect(sprintIssues.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
   })
 
   it('excludes done issues and epics from the backlog', async () => {
@@ -140,6 +161,13 @@ describe('Jira Agile API', () => {
     expect(res.status).toBe(204)
     const backlog = await api(t.app, `${A}/board/1/backlog`)
     expect(backlog.json.issues.map((i: any) => i.key)).toContain('EMU-1')
+  })
+
+  it('404s the board-scoped backlog move for unknown boards without moving issues', async () => {
+    const res = await api(t.app, `${A}/backlog/99/issue`, { method: 'POST', body: { issues: ['EMU-1'] } })
+    expect(res.status).toBe(404)
+    const sprintIssues = await api(t.app, `${A}/sprint/1/issue`)
+    expect(sprintIssues.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
   })
 
   it('updates and deletes sprints', async () => {

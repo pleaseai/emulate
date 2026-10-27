@@ -28,7 +28,7 @@ export function formatUser(r: Fmt, user: JiraUser | undefined | null) {
     return null
   }
   return {
-    self: restUrl(r, `/user?accountId=${user.account_id}`),
+    self: restUrl(r, `/user?accountId=${encodeURIComponent(user.account_id).replace(/%3A/g, ':')}`),
     accountId: user.account_id,
     accountType: user.account_type,
     emailAddress: user.email,

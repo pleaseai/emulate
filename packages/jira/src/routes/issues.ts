@@ -4,8 +4,8 @@ import type { JiraProject } from '../entities.js'
 import type { FieldDef } from '../fields.js'
 import {
   API_V,
+  fieldError,
   JiraError,
-
   listParam,
   makeHandler,
   pageParams,
@@ -87,7 +87,10 @@ export function issueRoutes({ app, store, baseUrl }: RouteContext): void {
     handle(
       async (r) => {
         const body = await readJson(r.c)
-        const updates: unknown[] = Array.isArray(body.issueUpdates) ? body.issueUpdates : []
+        if (!Array.isArray(body.issueUpdates)) {
+          throw fieldError('issueUpdates', 'The issueUpdates field must be an array of issues to create.')
+        }
+        const updates: unknown[] = body.issueUpdates
         const issues: unknown[] = []
         const errors: unknown[] = []
         for (const [index, update] of updates.entries()) {

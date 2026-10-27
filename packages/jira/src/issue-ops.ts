@@ -36,7 +36,11 @@ export function applyUpdateOps(
       if (op === null || typeof op !== 'object' || Array.isArray(op)) {
         throw fieldError(field, 'Field operations must be objects.')
       }
-      const [verb, value] = Object.entries(op)[0] ?? []
+      const entries = Object.entries(op)
+      if (entries.length !== 1) {
+        throw fieldError(field, 'Each field operation must contain exactly one operation.')
+      }
+      const [verb, value] = entries[0]
       if (field === 'comment') {
         if (verb !== 'add') {
           throw fieldError('comment', 'Only add is supported for comments.')

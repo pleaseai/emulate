@@ -129,7 +129,7 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
       return c.html(renderErrorPage(checked.error[0], checked.error[1], SERVICE_LABEL), 400)
     }
     const user = js().users.findOneBy('account_id', bodyStr(body.account_id))
-    if (!user || !user.active) {
+    if (!user || !user.active || user.account_type !== 'atlassian') {
       return c.html(renderErrorPage('Unknown user', 'Pick a user from the consent screen.', SERVICE_LABEL), 400)
     }
     const code = secretToken('jira_code')
@@ -179,7 +179,13 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
     const contentType = c.req.header('Content-Type') ?? ''
     let body: Record<string, unknown>
     if (contentType.includes('application/json')) {
-      const parsed: unknown = await c.req.json().catch(() => ({}))
+      let parsed: unknown
+      try {
+        parsed = await c.req.json()
+      }
+      catch {
+        return oauthError(c, 400, 'invalid_request', 'Request body must be valid JSON.')
+      }
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
         return oauthError(c, 400, 'invalid_request', 'Request body must be a JSON object.')
       }
@@ -224,16 +230,16 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
 
   const requireOAuthUser = (c: Context<AppEnv>) => {
     const auth = authenticate(c, js())
-    if (!auth) {
+    if (!auth || !auth.scopes || !auth.clientId) {
       throw new JiraError(401, ['Unauthorized'])
     }
-    return auth
+    return { ...auth, scopes: auth.scopes }
   }
 
   app.get('/oauth/token/accessible-resources', (c) => {
     try {
       const auth = requireOAuthUser(c)
-      const scopes = auth.scopes ?? js().oauthApps.all()[0]?.scopes ?? []
+      const scopes = auth.scopes
       return c.json(
         js()
           .sites.all()
@@ -257,7 +263,7 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
   app.get('/me', (c) => {
     try {
       const { user, scopes } = requireOAuthUser(c)
-      if (scopes && store.getData<boolean>('jira.strict_scopes') && !scopes.includes('read:me')) {
+      if (store.getData<boolean>('jira.strict_scopes') && !scopes.includes('read:me')) {
         throw new JiraError(401, ['Unauthorized; scope does not match. Required one of: read:me'])
       }
       return c.json({
