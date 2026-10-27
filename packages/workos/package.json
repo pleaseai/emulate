@@ -37,6 +37,6 @@
   "devDependencies": {
     "@workos-inc/node": "^11.0.0",
     "tsup": "^9",
-    "typescript": "^6"
+    "typescript": "^7"
   }
 }
