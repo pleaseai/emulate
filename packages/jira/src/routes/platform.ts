@@ -318,7 +318,7 @@ export function platformRoutes({ app, store, baseUrl }: RouteContext): void {
     `${API_V}/label`,
     handle(
       (r) => {
-        const labels = [...new Set(r.js.issues.all().flatMap(issue => issue.labels))].sort()
+        const labels = [...new Set(r.js.issues.all().flatMap(issue => issue.labels))].sort((a, b) => a.localeCompare(b))
         const page = paginate(labels, pageParams(r.c, 1000))
         return r.c.json(page)
       },
