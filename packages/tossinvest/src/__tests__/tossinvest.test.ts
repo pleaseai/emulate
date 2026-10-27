@@ -137,6 +137,14 @@ describe('tossinvest emulator: auth', () => {
     expect((bad.json as ApiError).error.code).toBe('invalid-token')
     expect(bad.res.headers.get('www-authenticate')).toBe('Bearer realm="openapi", error="invalid_token"')
   })
+
+  it('rejects prototype property names as bearer tokens', async () => {
+    for (const token of ['__proto__', 'constructor', 'toString']) {
+      const res = await api(token, '/api/v1/prices?symbols=005930')
+      expect(res.res.status).toBe(401)
+      expect((res.json as ApiError).error.code).toBe('invalid-token')
+    }
+  })
 })
 
 describe('tossinvest emulator: envelope and market data', () => {

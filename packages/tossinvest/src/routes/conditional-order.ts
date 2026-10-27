@@ -78,7 +78,7 @@ function parseLeg(c: Ctx, stock: TossStock, raw: unknown, name: 'first' | 'secon
   }
 }
 
-function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body): ParsedConditional | Response {
+function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body, liveChecks = true): ParsedConditional | Response {
   const type = body.type as ConditionalType
   if (!TYPES.includes(type)) {
     return invalid(c, { field: 'type', allowedValues: [...TYPES] })
@@ -122,7 +122,7 @@ function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body): P
     if (first.orderSide !== 'SELL' || second!.orderSide !== 'SELL') {
       return invalid(c, { field: 'first.orderSide,second.orderSide', allowedValues: ['SELL'] })
     }
-    if (!(Number(first.triggerPrice) > stock.price && stock.price > Number(second!.triggerPrice))) {
+    if (liveChecks && !(Number(first.triggerPrice) > stock.price && stock.price > Number(second!.triggerPrice))) {
       return invalid(c, { field: 'first.triggerPrice,second.triggerPrice' })
     }
   }
@@ -131,6 +131,9 @@ function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body): P
       return invalid(c, { field: 'first.orderSide,second.orderSide' })
     }
     second!.status = 'HOLDING'
+  }
+  if (!liveChecks) {
+    return { type, quantity, orderType, expireDate, first, second }
   }
   const notional = Number(quantity) * Math.max(...[first, second].filter(l => l !== null).map(l => Number(l!.orderPrice ?? l!.triggerPrice)))
   const valueError = checkOrderValue(c, store, stock, notional, body.confirmHighValueOrder === true)
@@ -196,7 +199,7 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
     if (clientOrderId !== null && !/^[\w-]{1,36}$/.test(clientOrderId)) {
       return invalid(c, { field: 'clientOrderId', maxLength: 36, pattern: '^[a-zA-Z0-9\\-_]+$' })
     }
-    const parsed = parseConditional(c, store, stock, body)
+    const parsed = parseConditional(c, store, stock, body, false)
     if (parsed instanceof Response) {
       return parsed
     }
@@ -210,7 +213,11 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
           : fail(c, 422, 'idempotency-key-conflict', '동일한 clientOrderId 로 다른 내용의 주문을 요청할 수 없습니다.')
       }
     }
-    const co = insert(account, stock, parsed, clientOrderId)
+    const live = parseConditional(c, store, stock, body)
+    if (live instanceof Response) {
+      return live
+    }
+    const co = insert(account, stock, live, clientOrderId)
     return ok(c, { conditionalOrderId: co.conditional_order_id, clientOrderId })
   })
 

@@ -107,7 +107,8 @@ export function issueToken(store: Store, clientId: string, now = Date.now()): st
 }
 
 export function checkToken(store: Store, token: string, now = Date.now()): { state: TokenState, clientId?: string } {
-  const rec = (store.getData<Record<string, IssuedToken>>(TOKEN_KEY) ?? {})[token]
+  const tokens = store.getData<Record<string, IssuedToken>>(TOKEN_KEY) ?? {}
+  const rec = Object.hasOwn(tokens, token) ? tokens[token] : undefined
   if (!rec) {
     return { state: 'invalid' }
   }

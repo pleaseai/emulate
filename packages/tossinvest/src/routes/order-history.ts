@@ -40,10 +40,6 @@ export function orderHistoryRoutes({ app, store }: RouteContext): void {
       range.push(day)
     }
     const [from, to] = range
-    const limit = intQuery(c, 'limit', 20, 1, 100)
-    if (limit instanceof Response) {
-      return limit
-    }
 
     const matching = ts.orders
       .findBy('account_seq', account.account_seq)
@@ -57,6 +53,10 @@ export function orderHistoryRoutes({ app, store }: RouteContext): void {
 
     if (status === 'OPEN') {
       return ok(c, { orders: matching.map(orderView), nextCursor: null, hasNext: false })
+    }
+    const limit = intQuery(c, 'limit', 20, 1, 100)
+    if (limit instanceof Response) {
+      return limit
     }
     const cursorRaw = c.req.query('cursor')
     const after = cursorRaw ? decodeCursor(cursorRaw) : undefined
