@@ -41,6 +41,11 @@
       "types": "./dist/api.d.ts",
       "import": "./dist/api.js"
     },
+    "./emulators/*": {
+      "bun": "./src/emulators/*.ts",
+      "types": "./dist/emulators/*.d.ts",
+      "import": "./dist/emulators/*.js"
+    },
     "./cli": {
       "import": "./dist/index.js"
     }
@@ -62,6 +67,14 @@
     "test": "bun test",
     "clean": "rm -rf dist .turbo",
     "type-check": "bun check"
+  },
+  "peerDependencies": {
+    "emulate": ">=0.12.0"
+  },
+  "peerDependenciesMeta": {
+    "emulate": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@emulators/core": "^0.12.3",
