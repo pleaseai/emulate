@@ -1,9 +1,9 @@
-import type { RouteContext } from '@emulators/core'
+import type { RouteContext, Store } from '@emulators/core'
 import type { TossAccount, TossHolding, TossStock } from '../entities.js'
 import { clientIdOf, fmt, ok, requireAccount } from '../helpers.js'
 import { countryOf, currencyOf, formatPrice, previousClose, toKrw } from '../market.js'
 import { getTossinvestStore } from '../store.js'
-import { commissionRate, KR_SELL_TAX_RATE } from '../trading.js'
+import { tradeCosts } from '../trading.js'
 import { resolveStock } from './market-data.js'
 
 interface HoldingCalc {
@@ -17,16 +17,17 @@ interface HoldingCalc {
 
 const RATE_DP = 4
 
-function holdingCalc(account: TossAccount, h: TossHolding, stock: TossStock): HoldingCalc {
+function holdingCalc(store: Store, account: TossAccount, h: TossHolding, stock: TossStock): HoldingCalc {
   const currency = currencyOf(stock.market)
   const dp = currency === 'KRW' ? 0 : 2
   const kr = countryOf(stock.market) === 'KR'
   const purchase = h.quantity * h.average_price
   const amount = h.quantity * stock.price
-  const commission = amount * commissionRate(account, stock)
-  const tax = kr ? amount * KR_SELL_TAX_RATE : null
+  const costs = tradeCosts(account, stock, amount, 'SELL')
+  const commission = costs.commission
+  const tax = kr ? costs.tax : null
   const afterCost = amount - commission - (tax ?? 0)
-  const prev = previousClose(stock)
+  const prev = previousClose(store, stock)
   const daily = h.quantity * (stock.price - prev)
   const rate = (x: number, base: number) => fmt(base === 0 ? 0 : x / base, RATE_DP)
   return {
@@ -76,7 +77,7 @@ export function accountRoutes({ app, store }: RouteContext): void {
     }
     const symbolRaw = c.req.query('symbol')
     let filter: TossStock | undefined
-    if (symbolRaw !== undefined && symbolRaw !== '') {
+    if (symbolRaw !== undefined) {
       const stock = resolveStock(c, store, symbolRaw)
       if (stock instanceof Response) {
         return stock
@@ -89,7 +90,7 @@ export function accountRoutes({ app, store }: RouteContext): void {
       .map(h => ({ h, stock: ts.stocks.findOneBy('symbol', h.symbol) }))
       .filter((x): x is { h: TossHolding, stock: TossStock } => !!x.stock)
       .sort((a, b) => a.h.id - b.h.id)
-      .map(({ h, stock }) => holdingCalc(account, h, stock))
+      .map(({ h, stock }) => holdingCalc(store, account, h, stock))
 
     const hasUsd = calcs.some(x => x.currency === 'USD')
     const sum = (pick: (x: HoldingCalc) => number) => ({

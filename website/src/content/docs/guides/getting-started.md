@@ -34,7 +34,7 @@ All services start with sensible defaults — no config file needed:
 | [WorkOS](/services/workos/) | 4011 | User Management, organizations, OAuth/OIDC, Vault KV |
 | [X](/services/x/) | 4012 | X API v2: OAuth 2.0 PKCE, tweets, users, timelines |
 | [Jira](/services/jira/) | 4013 | Jira Cloud REST API v2/v3, JQL search, Agile boards and sprints, webhooks, OAuth 2.0 (3LO) |
-| [Toss Invest](/services/tossinvest/) | 4014 | OAuth client credentials, market data, sectors, accounts, orders, conditional orders |
+| [Toss Invest](/services/tossinvest/) | 4014 | OAuth client credentials, market data, sectors, accounts, holdings, orders, conditional orders |
 
 ## CLI
 

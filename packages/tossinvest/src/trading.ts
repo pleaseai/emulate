@@ -8,7 +8,7 @@ import type {
   TossStock,
 } from './entities.js'
 import { floorIgnoringFloatError, fmt, round } from './helpers.js'
-import { countryOf, currencyOf, formatPrice, localDayIdx } from './market.js'
+import { countryOf, currencyOf, formatPrice, holidaysOf, localDayIdx } from './market.js'
 import { getTossinvestStore, newOrderId } from './store.js'
 import { addBusinessDays, businessDayOnOrAfter, dayIdxToDate, kstIso } from './time.js'
 
@@ -23,9 +23,15 @@ export function commissionRate(account: TossAccount, stock: TossStock): number {
 const moneyDp = (stock: TossStock): number => (currencyOf(stock.market) === 'KRW' ? 0 : 2)
 export const qtyDp = (stock: TossStock): number => (countryOf(stock.market) === 'KR' ? 0 : 6)
 
-export function cashOf(account: TossAccount, stock: TossStock): number {
-  return currencyOf(stock.market) === 'KRW' ? account.cash_krw : account.cash_usd
+/** Commission and KR sell tax on a gross trade amount; won amounts are floored. */
+export function tradeCosts(account: TossAccount, stock: TossStock, gross: number, side: OrderSide): { commission: number, tax: number } {
+  const rate = commissionRate(account, stock)
+  const commission = moneyDp(stock) === 0 ? floorIgnoringFloatError(gross * rate) : round(gross * rate, 2)
+  const tax = side === 'SELL' && countryOf(stock.market) === 'KR' ? floorIgnoringFloatError(gross * KR_SELL_TAX_RATE) : 0
+  return { commission, tax }
 }
+
+const grossAmount = (stock: TossStock, qty: number, price: number): number => round(qty * price, moneyDp(stock))
 
 export function availableCash(store: Store, account: TossAccount, currency: 'KRW' | 'USD'): number {
   const ts = getTossinvestStore(store)
@@ -69,7 +75,8 @@ function isMarketable(side: OrderSide, limit: number, price: number): boolean {
 }
 
 export function buyCost(account: TossAccount, stock: TossStock, qty: number, price: number): number {
-  return round(qty * price * (1 + commissionRate(account, stock)), moneyDp(stock))
+  const gross = grossAmount(stock, qty, price)
+  return round(gross + tradeCosts(account, stock, gross, 'BUY').commission, moneyDp(stock))
 }
 
 export function placeOrder(
@@ -90,10 +97,7 @@ export function placeOrder(
 
   const freed = extra.replaces?.reserved ?? 0
   if (req.side === 'BUY') {
-    const cost = req.orderAmount !== null
-      ? round(req.orderAmount * (1 + commissionRate(account, stock)), 2)
-      : buyCost(account, stock, qty, refPrice)
-    if (cost > availableCash(store, account, currency) + freed) {
+    if (buyCost(account, stock, qty, refPrice) > availableCash(store, account, currency) + freed) {
       return { error: 'insufficient-buying-power' }
     }
   }
@@ -147,10 +151,8 @@ export function fillOrder(store: Store, order: TossOrder, stock: TossStock, pric
   }
   const dp = moneyDp(stock)
   const qty = Number(order.quantity)
-  const gross = round(qty * price, dp)
-  const rate = commissionRate(account, stock)
-  const commission = dp === 0 ? floorIgnoringFloatError(gross * rate) : round(gross * rate, 2)
-  const tax = order.side === 'SELL' && countryOf(stock.market) === 'KR' ? floorIgnoringFloatError(gross * KR_SELL_TAX_RATE) : 0
+  const gross = grossAmount(stock, qty, price)
+  const { commission, tax } = tradeCosts(account, stock, gross, order.side)
   const cashDelta = order.side === 'BUY' ? -(gross + commission) : gross - commission - tax
   ts.accounts.update(
     account.id,
@@ -183,7 +185,9 @@ export function fillOrder(store: Store, order: TossOrder, stock: TossStock, pric
   }
 
   const now = Date.now()
-  const settleDays = countryOf(stock.market) === 'KR' ? 2 : 1
+  const country = countryOf(stock.market)
+  const settleDays = country === 'KR' ? 2 : 1
+  const holidays = holidaysOf(store, country)
   ts.executions.insert({
     order_id: order.order_id,
     account_seq: order.account_seq,
@@ -205,7 +209,7 @@ export function fillOrder(store: Store, order: TossOrder, stock: TossStock, pric
     commission: fmt(commission, dp),
     tax: fmt(tax, dp),
     filled_at: kstIso(now),
-    settlement_date: dayIdxToDate(addBusinessDays(businessDayOnOrAfter(localDayIdx(countryOf(stock.market), now)), settleDays)),
+    settlement_date: dayIdxToDate(addBusinessDays(businessDayOnOrAfter(localDayIdx(country, now), holidays), settleDays, holidays)),
   })
 }
 

@@ -1,8 +1,8 @@
-import type { RouteContext } from '@emulators/core'
+import type { RouteContext, Store } from '@emulators/core'
 import type { TossStock } from '../entities.js'
 import type { Ctx } from '../helpers.js'
 import { boolQuery, fail, fmt, intQuery, invalid, noise, ok, SYMBOL_RE } from '../helpers.js'
-import { countryOf, currencyOf, dailyClose, dailyVolume } from '../market.js'
+import { countryOf, currencyOf, dailyClose, dailyVolume, holidaysOf } from '../market.js'
 import { getTossinvestStore } from '../store.js'
 import {
   businessDayOnOrBefore,
@@ -50,7 +50,7 @@ export function stockInfoView(s: TossStock): Record<string, unknown> {
     leverageFactor: s.leverage_factor,
     koreanMarketDetail: kr
       ? {
-          liquidationTrading: s.warnings.some(w => w.warningType === 'LIQUIDATION_TRADING'),
+          liquidationTrading: activeWarnings(s).some(w => w.warningType === 'LIQUIDATION_TRADING'),
           nxtSupported: s.nxt_supported,
           krxTradingSuspended: false,
           nxtTradingSuspended: s.nxt_supported ? false : null,
@@ -69,7 +69,7 @@ function at(dayIdx: number, h: number, m: number, s = 0): string {
   return isoWithOffset(localMidnightMs(dayIdx, 540) + ((h * 60 + m) * 60 + s) * 1000, 540)
 }
 
-type TrendBuilder = (stock: TossStock, dayIdx: number, today: number) => Record<string, unknown>
+type TrendBuilder = (stock: TossStock, dayIdx: number, today: number, store: Store) => Record<string, unknown>
 
 function volumeTriple(buy: number, sell: number) {
   return {
@@ -90,7 +90,7 @@ const BREAKDOWN_KEYS = [
 ] as const
 const BREAKDOWN_WEIGHTS = [0.55, 0.03, 0.07, 0.1, 0.01, 0.01, 0.23]
 
-const investorTrading: TrendBuilder = (stock, d, today) => {
+const investorTrading: TrendBuilder = (stock, d, today, store) => {
   const base = dailyVolume(stock, d)
   const n = (k: string) => noise(`${stock.symbol}:inv:${k}:${d}`)
   const share = (k: string, w: number) => Math.round(base * w * (0.85 + 0.3 * n(k)))
@@ -106,7 +106,7 @@ const investorTrading: TrendBuilder = (stock, d, today) => {
   const cfdSell = Math.round(shares * 0.0001 * (0.5 + n('cfds')))
   return {
     date: dayIdxToDate(d),
-    updatedAt: provisional ? kstIso(Date.now()) : at(nextBusinessDay(d), 9, 12, 43),
+    updatedAt: provisional ? kstIso(Date.now()) : at(nextBusinessDay(d, holidaysOf(store, 'KR')), 9, 12, 43),
     individual: provisional ? null : volumeTriple(share('ib', 0.45), share('is', 0.45)),
     foreigner: volumeTriple(share('fb', 0.25), share('fs', 0.25)),
     institution: { ...volumeTriple(instBuy, instSell), breakdown: provisional ? null : breakdown },
@@ -135,10 +135,10 @@ const programTrades: TrendBuilder = (stock, d) => {
   }
 }
 
-const shortSelling: TrendBuilder = (stock, d) => {
+const shortSelling: TrendBuilder = (stock, d, _today, store) => {
   const base = dailyVolume(stock, d)
   const volume = Math.round(base * (0.01 + 0.04 * noise(`${stock.symbol}:ss:${d}`)))
-  const close = dailyClose(stock, d)
+  const close = dailyClose(store, stock, d)
   return {
     date: dayIdxToDate(d),
     updatedAt: at(d, 17, 25, 43),
@@ -163,14 +163,14 @@ function creditDetail(stock: TossStock, d: number, kind: string, scale: number) 
   }
 }
 
-const creditTrades: TrendBuilder = (stock, d) => ({
+const creditTrades: TrendBuilder = (stock, d, _today, store) => ({
   date: dayIdxToDate(d),
-  updatedAt: at(nextBusinessDay(d), 2, 35),
+  updatedAt: at(nextBusinessDay(d, holidaysOf(store, 'KR')), 2, 35),
   marginLoan: creditDetail(stock, d, 'margin', 1),
   stockLoan: creditDetail(stock, d, 'stock', 0.02),
 })
 
-const securitiesLending: TrendBuilder = (stock, d) => {
+const securitiesLending: TrendBuilder = (stock, d, _today, store) => {
   const n = (k: string) => noise(`${stock.symbol}:sl:${k}:${d}`)
   const shares = Number(stock.shares_outstanding) || 1
   const balance = Math.round(shares * 0.0025 * (0.9 + 0.2 * n('b')))
@@ -181,7 +181,7 @@ const securitiesLending: TrendBuilder = (stock, d) => {
     executionQuantity: String(exec),
     repaymentQuantity: String(Math.round(exec * (0.7 + 0.6 * n('r')))),
     balanceQuantity: String(balance),
-    balanceAmount: fmt(balance * dailyClose(stock, d), 0),
+    balanceAmount: fmt(balance * dailyClose(store, stock, d), 0),
   }
 }
 
@@ -269,16 +269,17 @@ export function stockInfoRoutes({ app, store }: RouteContext): void {
         return invalid(c, { field: 'until', format: 'date' })
       }
       const today = kstDayIdx(Date.now())
-      let latest = businessDayOnOrBefore(today)
+      const holidays = holidaysOf(store, 'KR')
+      let latest = businessDayOnOrBefore(today, holidays)
       for (let i = 0; i < lagDays; i++) {
-        latest = prevBusinessDay(latest)
+        latest = prevBusinessDay(latest, holidays)
       }
       const earliest = latest - HISTORY_DAYS
-      let d = until === undefined ? latest : Math.min(latest, businessDayOnOrBefore(until))
+      let d = until === undefined ? latest : Math.min(latest, businessDayOnOrBefore(until, holidays))
       const records: Record<string, unknown>[] = []
       while (records.length < count && d >= earliest) {
-        records.push(build(stock, d, today))
-        d = prevBusinessDay(d)
+        records.push(build(stock, d, today, store))
+        d = prevBusinessDay(d, holidays)
       }
       return ok(c, { nextUntil: d >= earliest ? dayIdxToDate(d) : null, records })
     })

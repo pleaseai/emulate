@@ -1,6 +1,5 @@
 import type { RouteContext } from '@emulators/core'
 import { fmt, invalid, ok, requireAccount } from '../helpers.js'
-import { kstToday } from '../time.js'
 import { availableCash, qtyDp, sellableQuantity } from '../trading.js'
 import { resolveStock } from './market-data.js'
 
@@ -35,9 +34,8 @@ export function orderInfoRoutes({ app, store }: RouteContext): void {
     if (account instanceof Response) {
       return account
     }
-    const year = kstToday().slice(0, 4)
     return ok(c, [
-      { marketCountry: 'KR', commissionRate: account.commission_kr, startDate: `${year}-01-01`, endDate: null },
+      { marketCountry: 'KR', commissionRate: account.commission_kr, startDate: account.commission_kr_start_date, endDate: null },
       { marketCountry: 'US', commissionRate: account.commission_us, startDate: null, endDate: null },
     ])
   })

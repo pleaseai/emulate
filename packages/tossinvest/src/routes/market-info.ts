@@ -1,6 +1,7 @@
 import type { RouteContext } from '@emulators/core'
+import type { Holidays } from '../time.js'
 import { fail, fmt, invalid, ok } from '../helpers.js'
-import { usdKrwMid } from '../market.js'
+import { holidaysOf, usdKrwMid } from '../market.js'
 import {
   dateToDayIdx,
   dayIdxToDate,
@@ -22,8 +23,8 @@ function kstAt(dayIdx: number, h: number, m = 0): string {
   return isoWithOffset(localMidnightMs(dayIdx, 540) + (h * 60 + m) * 60_000, 540)
 }
 
-function krDay(dayIdx: number): Record<string, unknown> {
-  if (!isBusinessDay(dayIdx)) {
+function krDay(dayIdx: number, holidays: Holidays): Record<string, unknown> {
+  if (!isBusinessDay(dayIdx, holidays)) {
     return { date: dayIdxToDate(dayIdx), integrated: null }
   }
   return {
@@ -38,9 +39,9 @@ function krDay(dayIdx: number): Record<string, unknown> {
 
 // US sessions expressed in KST on the US-local trading date. Standard time
 // shifts the US sessions one hour later in KST; the Toss day market does not move.
-function usDay(dayIdx: number): Record<string, unknown> {
+function usDay(dayIdx: number, holidays: Holidays): Record<string, unknown> {
   const date = dayIdxToDate(dayIdx)
-  if (!isBusinessDay(dayIdx)) {
+  if (!isBusinessDay(dayIdx, holidays)) {
     return { date, dayMarket: null, preMarket: null, regularMarket: null, afterMarket: null }
   }
   const s = usIsDst(dayIdx) ? 0 : 60
@@ -104,7 +105,8 @@ export function marketInfoRoutes({ app, store }: RouteContext): void {
     if (day === undefined || Math.abs(day - today) > CALENDAR_RANGE_DAYS) {
       return fail(c, 400, 'unsupported-date', '요청한 조회 일자를 지원하지 않습니다.', { field: 'date' })
     }
-    return ok(c, { today: krDay(day), previousBusinessDay: krDay(prevBusinessDay(day)), nextBusinessDay: krDay(nextBusinessDay(day)) })
+    const h = holidaysOf(store, 'KR')
+    return ok(c, { today: krDay(day, h), previousBusinessDay: krDay(prevBusinessDay(day, h), h), nextBusinessDay: krDay(nextBusinessDay(day, h), h) })
   })
 
   // The US calendar documents no 400, so an unusable `date` falls back to today.
@@ -112,6 +114,7 @@ export function marketInfoRoutes({ app, store }: RouteContext): void {
     const today = usDayIdx(Date.now())
     const parsed = dateToDayIdx(c.req.query('date') ?? '')
     const day = parsed !== undefined && Math.abs(parsed - today) <= CALENDAR_RANGE_DAYS ? parsed : today
-    return ok(c, { today: usDay(day), previousBusinessDay: usDay(prevBusinessDay(day)), nextBusinessDay: usDay(nextBusinessDay(day)) })
+    const h = holidaysOf(store, 'US')
+    return ok(c, { today: usDay(day, h), previousBusinessDay: usDay(prevBusinessDay(day, h), h), nextBusinessDay: usDay(nextBusinessDay(day, h), h) })
   })
 }

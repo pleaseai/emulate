@@ -46,39 +46,42 @@ export function weekday(dayIdx: number): number {
   return (dayIdx + 4) % 7
 }
 
-export function isBusinessDay(dayIdx: number): boolean {
+export type Holidays = ReadonlySet<number>
+const NO_HOLIDAYS: Holidays = new Set()
+
+export function isBusinessDay(dayIdx: number, holidays = NO_HOLIDAYS): boolean {
   const w = weekday(dayIdx)
-  return w !== 0 && w !== 6
+  return w !== 0 && w !== 6 && !holidays.has(dayIdx)
 }
 
-export function prevBusinessDay(dayIdx: number): number {
+export function prevBusinessDay(dayIdx: number, holidays = NO_HOLIDAYS): number {
   let d = dayIdx - 1
-  while (!isBusinessDay(d)) {
+  while (!isBusinessDay(d, holidays)) {
     d--
   }
   return d
 }
 
-export function nextBusinessDay(dayIdx: number): number {
+export function nextBusinessDay(dayIdx: number, holidays = NO_HOLIDAYS): number {
   let d = dayIdx + 1
-  while (!isBusinessDay(d)) {
+  while (!isBusinessDay(d, holidays)) {
     d++
   }
   return d
 }
 
-export function businessDayOnOrBefore(dayIdx: number): number {
-  return isBusinessDay(dayIdx) ? dayIdx : prevBusinessDay(dayIdx)
+export function businessDayOnOrBefore(dayIdx: number, holidays = NO_HOLIDAYS): number {
+  return isBusinessDay(dayIdx, holidays) ? dayIdx : prevBusinessDay(dayIdx, holidays)
 }
 
-export function businessDayOnOrAfter(dayIdx: number): number {
-  return isBusinessDay(dayIdx) ? dayIdx : nextBusinessDay(dayIdx)
+export function businessDayOnOrAfter(dayIdx: number, holidays = NO_HOLIDAYS): number {
+  return isBusinessDay(dayIdx, holidays) ? dayIdx : nextBusinessDay(dayIdx, holidays)
 }
 
-export function addBusinessDays(dayIdx: number, n: number): number {
+export function addBusinessDays(dayIdx: number, n: number, holidays = NO_HOLIDAYS): number {
   let d = dayIdx
   for (let i = 0; i < n; i++) {
-    d = nextBusinessDay(d)
+    d = nextBusinessDay(d, holidays)
   }
   return d
 }
@@ -113,7 +116,7 @@ export function localMidnightMs(dayIdx: number, offsetMinutes: number): number {
  */
 export function parseDateTime(value: string): number | undefined {
   const normalized = value.trim().replace(' ', '+')
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized)) {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized) || dateToDayIdx(normalized.slice(0, 10)) === undefined) {
     return undefined
   }
   const hasOffset = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i.test(normalized.slice(16))

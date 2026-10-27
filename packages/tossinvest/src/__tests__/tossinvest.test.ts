@@ -163,6 +163,54 @@ describe('tossinvest emulator: auth', () => {
       expect((res.json as ApiError).error.code).toBe('invalid-token')
     }
   })
+
+  it('rejects Basic client authentication combined with form credentials', async () => {
+    const res = await app.request(`${base}/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'authorization': `Basic ${btoa('test-client:test-secret')}`,
+      },
+      body: new URLSearchParams({ grant_type: 'client_credentials', client_id: 'test-client', client_secret: 'test-secret' }),
+    })
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { error: string }).error).toBe('invalid_request')
+  })
+
+  it('keeps an expired token expired after a reissue, then prunes it', async () => {
+    const start = Date.now()
+    try {
+      setSystemTime(new Date(start))
+      const first = await fetchToken()
+      setSystemTime(new Date(start + 86_401_000))
+      await fetchToken()
+      expect((await api(first, '/api/v1/accounts')).json.error.code).toBe('expired-token')
+      setSystemTime(new Date(start + 2 * 86_400_000 + 1000))
+      await fetchToken()
+      expect((await api(first, '/api/v1/accounts')).json.error.code).toBe('invalid-token')
+    }
+    finally {
+      setSystemTime()
+    }
+  })
+
+  it('keeps reporting token-revoked for old tokens after many reissues', async () => {
+    const start = Date.now()
+    try {
+      setSystemTime(new Date(start))
+      const first = await fetchToken()
+      for (let i = 1; i <= 21; i++) {
+        setSystemTime(new Date(start + i * 60_000))
+        await fetchToken()
+      }
+      const stale = await api(first, '/api/v1/accounts')
+      expect(stale.res.status).toBe(401)
+      expect((stale.json as ApiError).error.code).toBe('token-revoked')
+    }
+    finally {
+      setSystemTime()
+    }
+  })
 })
 
 describe('tossinvest emulator: envelope and market data', () => {
@@ -243,6 +291,51 @@ describe('tossinvest emulator: envelope and market data', () => {
     expect(stocks.json.result.stocks.map((s: { symbol: string }) => s.symbol)).toEqual(['005930'])
     const rankings = await api(token, '/api/v1/sectors/rankings?type=TOP_GAINERS&marketCountry=KR&duration=1d')
     expect(rankings.res.status).toBe(200)
+  })
+
+  it('orders sector ETFs by market cap with missing caps last', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, {
+      stocks: [
+        { symbol: '100001', name: 'ETF 소형', market: 'KOSPI', security_type: 'ETF', price: 10000, shares_outstanding: '1000' },
+        { symbol: '100002', name: 'ETF 미상', market: 'KOSPI', security_type: 'ETF', price: 10000, shares_outstanding: '0' },
+        { symbol: '100003', name: 'ETF 대형', market: 'KOSPI', security_type: 'ETF', price: 10000, shares_outstanding: '100000' },
+      ],
+      sectors: [{ sector_id: '100', name: '반도체', parent_sector_id: '10', stocks: ['005930'], etfs: ['100001', '100002', '100003'] }],
+    })
+    const token = await fetchToken()
+    const etfs = await api(token, '/api/v1/sectors/100/etfs?marketCountry=KR')
+    expect(etfs.json.result.etfs.map((e: { symbol: string }) => e.symbol)).toEqual(['100003', '100001', '100002'])
+  })
+
+  it('reports liquidationTrading only for an active designation', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, {
+      stocks: [
+        { symbol: '200001', name: '정리매매 종료', market: 'KOSDAQ', price: 1000, warnings: [{ warningType: 'LIQUIDATION_TRADING', startDate: '2020-01-01', endDate: '2020-01-10' }] },
+        { symbol: '200002', name: '정리매매 중', market: 'KOSDAQ', price: 1000, warnings: [{ warningType: 'LIQUIDATION_TRADING' }] },
+      ],
+    })
+    const token = await fetchToken()
+    const { json } = await api(token, '/api/v1/stocks?symbols=200001,200002')
+    expect(json.result.map((s: any) => s.koreanMarketDetail.liquidationTrading)).toEqual([false, true])
+  })
+
+  it('excludes only investment-caution designations from rankings', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, {
+      stocks: [
+        { symbol: '300001', name: 'VI 발동', market: 'KOSPI', price: 1000, warnings: [{ warningType: 'VI_STATIC' }] },
+        { symbol: '300002', name: '단기과열', market: 'KOSPI', price: 1000, warnings: [{ warningType: 'OVERHEATED' }] },
+        { symbol: '300003', name: '투자위험', market: 'KOSPI', price: 1000, warnings: [{ warningType: 'INVESTMENT_RISK' }] },
+      ],
+    })
+    const token = await fetchToken()
+    const { json } = await api(token, '/api/v1/rankings?type=MARKET_TRADING_AMOUNT&marketCountry=KR&duration=1d&excludeInvestmentCaution=true')
+    expect(json.result.rankings.map((r: { symbol: string }) => r.symbol).sort()).toEqual(['005930', '300001'])
   })
 })
 
@@ -449,6 +542,110 @@ describe('tossinvest emulator: trading', () => {
     }
   })
 
+  it('accepts a buy when cash exactly covers the fill cost', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, { accounts: [{ account_seq: 2, cash: { krw: 72_010 } }] })
+    const token = await fetchToken()
+    const placed = await api(token, '/api/v1/orders', { method: 'POST', account: 2, body: { symbol: '005930', side: 'BUY', orderType: 'MARKET', quantity: '1' } })
+    expect(placed.res.status).toBe(200)
+    expect((await api(token, '/api/v1/buying-power?currency=KRW', { account: 2 })).json.result.cashBuyingPower).toBe('0')
+  })
+
+  it('rejects modifying a CLS order into a market order', async () => {
+    const token = await fetchToken()
+    const placed = await order(token, { symbol: 'AAPL', side: 'BUY', orderType: 'LIMIT', timeInForce: 'CLS', quantity: '1', price: '180' })
+    expect(placed.res.status).toBe(200)
+    const modified = await api(token, `/api/v1/orders/${placed.json.result.orderId}/modify`, { method: 'POST', body: { orderType: 'MARKET' } })
+    expect(modified.res.status).toBe(400)
+    expect((modified.json as ApiError).error.data).toMatchObject({ field: 'timeInForce' })
+    expect((await api(token, `/api/v1/orders/${placed.json.result.orderId}`)).json.result.status).toBe('PENDING')
+  })
+
+  it('serves sellable quantity and commissions, with account-not-found as 400', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, { accounts: [{ account_seq: 2, commission: { kr: '0.0001', kr_start_date: '2025-07-01' } }] })
+    const token = await fetchToken()
+    await order(token, { symbol: '005930', side: 'SELL', orderType: 'LIMIT', quantity: '3', price: '80000' })
+    expect((await api(token, '/api/v1/sellable-quantity?symbol=005930')).json.result).toEqual({ sellableQuantity: '7' })
+    expect((await api(token, '/api/v1/commissions')).json.result).toEqual([
+      { marketCountry: 'KR', commissionRate: '0.00015', startDate: '2026-01-01', endDate: null },
+      { marketCountry: 'US', commissionRate: '0.001', startDate: null, endDate: null },
+    ])
+    expect((await api(token, '/api/v1/commissions', { account: 2 })).json.result[0]).toMatchObject({ commissionRate: '0.0001', startDate: '2025-07-01' })
+    for (const path of ['/api/v1/sellable-quantity?symbol=005930', '/api/v1/commissions']) {
+      const missing = await api(token, path, { account: 99 })
+      expect(missing.res.status).toBe(400)
+      expect((missing.json as ApiError).error.code).toBe('account-not-found')
+    }
+  })
+
+  it('replays the original conditional create after the order was modified', async () => {
+    const token = await fetchToken()
+    const expireDate = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
+    const body = { symbol: '005930', clientOrderId: 'co-1', type: 'SINGLE', quantity: '1', orderType: 'MARKET', expireDate, first: { orderSide: 'BUY', triggerPrice: '60000' } }
+    const created = await api(token, '/api/v1/conditional-orders', { method: 'POST', body })
+    expect(created.res.status).toBe(200)
+    const id = created.json.result.conditionalOrderId as string
+    const modified = await api(token, `/api/v1/conditional-orders/${id}/modify`, {
+      method: 'POST',
+      body: { type: 'SINGLE', quantity: '2', orderType: 'MARKET', expireDate, first: { orderSide: 'BUY', triggerPrice: '61000' } },
+    })
+    expect(modified.res.status).toBe(200)
+    const retry = await api(token, '/api/v1/conditional-orders', { method: 'POST', body })
+    expect(retry.res.status).toBe(200)
+    expect(retry.json.result).toEqual({ conditionalOrderId: id, clientOrderId: 'co-1' })
+  })
+
+  it('rejects conditional quantities finer than the stock supports', async () => {
+    const token = await fetchToken()
+    const expireDate = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
+    const res = await api(token, '/api/v1/conditional-orders', {
+      method: 'POST',
+      body: { symbol: 'AAPL', type: 'SINGLE', quantity: '0.0000001', orderType: 'MARKET', expireDate, first: { orderSide: 'BUY', triggerPrice: '200' } },
+    })
+    expect(res.res.status).toBe(400)
+    expect((res.json as ApiError).error).toMatchObject({ code: 'invalid-request', data: { field: 'quantity' } })
+  })
+
+  it('accepts conditional quantities whose extra decimals are trailing zeros', async () => {
+    const token = await fetchToken()
+    const expireDate = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
+    const create = (symbol: string, quantity: string, triggerPrice: string) => api(token, '/api/v1/conditional-orders', {
+      method: 'POST',
+      body: { symbol, type: 'SINGLE', quantity, orderType: 'MARKET', expireDate, first: { orderSide: 'BUY', triggerPrice } },
+    })
+    expect((await create('005930', '1.0', '60000')).res.status).toBe(200)
+    expect((await create('AAPL', '0.1000000', '150')).res.status).toBe(200)
+  })
+
+  it('keeps an explicitly null KR commission start date across reseeds', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, { accounts: [{ account_seq: 3, commission: { kr_start_date: null } }] })
+    seedFromConfig(test.store, base, { accounts: [{ account_seq: 3, cash: { krw: 1000 } }] })
+    const token = await fetchToken()
+    expect((await api(token, '/api/v1/commissions', { account: 3 })).json.result[0].startDate).toBeNull()
+  })
+
+  it('replays a conditional create retried after the KST date rolled over', async () => {
+    try {
+      setSystemTime(new Date('2026-11-02T14:55:00Z')) // 23:55 KST
+      const token = await fetchToken()
+      const body = { symbol: '005930', clientOrderId: 'co-midnight', type: 'SINGLE', quantity: '1', orderType: 'MARKET', expireDate: '2026-11-02', first: { orderSide: 'BUY', triggerPrice: '60000' } }
+      const created = await api(token, '/api/v1/conditional-orders', { method: 'POST', body })
+      expect(created.res.status).toBe(200)
+      setSystemTime(new Date('2026-11-02T15:02:00Z')) // 00:02 KST the next day
+      const retry = await api(token, '/api/v1/conditional-orders', { method: 'POST', body })
+      expect(retry.res.status).toBe(200)
+      expect(retry.json.result.conditionalOrderId).toBe(created.json.result.conditionalOrderId)
+    }
+    finally {
+      setSystemTime()
+    }
+  })
+
   it('seeds demo data via plugin.seed', async () => {
     const store = new Store()
     const seededApp = new Hono()
@@ -472,5 +669,59 @@ describe('tossinvest emulator: time parsing', () => {
     expect(parseDateTime('2026-10-27T10:00:00Z')).toBe(Date.parse('2026-10-27T10:00:00Z'))
     expect(parseDateTime('2026-10-27T10:00:00 09:00')).toBe(Date.parse('2026-10-27T01:00:00Z'))
     expect(parseDateTime('2026-10-27T10:00:00-05:00')).toBe(Date.parse('2026-10-27T15:00:00Z'))
+  })
+})
+
+describe('tossinvest emulator: market calendar', () => {
+  it('closes country-specific holidays and honors seeded overrides', async () => {
+    try {
+      setSystemTime(new Date('2026-06-01T03:00:00Z'))
+      const test = createTestApp()
+      app = test.app
+      const token = await fetchToken()
+      const childrensDay = await api(token, '/api/v1/market-calendar/KR?date=2026-05-05')
+      expect(childrensDay.json.result.today).toEqual({ date: '2026-05-05', integrated: null })
+      expect(childrensDay.json.result.nextBusinessDay.date).toBe('2026-05-06')
+      const after = await api(token, '/api/v1/market-calendar/KR?date=2026-05-06')
+      expect(after.json.result.previousBusinessDay.date).toBe('2026-05-04')
+      const us = await api(token, '/api/v1/market-calendar/US?date=2026-07-03')
+      expect(us.json.result.today).toEqual({ date: '2026-07-03', dayMarket: null, preMarket: null, regularMarket: null, afterMarket: null })
+      expect(us.json.result.previousBusinessDay.date).toBe('2026-07-02')
+      expect(us.json.result.nextBusinessDay.date).toBe('2026-07-06')
+
+      seedFromConfig(test.store, base, { holidays: { KR: [] } })
+      const open = await api(token, '/api/v1/market-calendar/KR?date=2026-05-05')
+      expect(open.json.result.today.integrated).not.toBeNull()
+      expect((await api(token, '/api/v1/market-calendar/US?date=2026-07-03')).json.result.today.regularMarket).toBeNull()
+    }
+    finally {
+      setSystemTime()
+    }
+  })
+})
+
+describe('tossinvest emulator: holidays in market data', () => {
+  it('skips a KR holiday in daily candles and the previous close', async () => {
+    try {
+      setSystemTime(new Date('2026-10-08T03:00:00Z')) // Thu 12:00 KST
+      const token = await fetchToken()
+      const thursdayLimits = (await api(token, '/api/v1/price-limits?symbol=005930')).json.result
+      setSystemTime(new Date('2026-10-09T03:00:00Z')) // Hangul Day, 12:00 KST
+      const holidayToken = await fetchToken()
+      const candles = await api(holidayToken, '/api/v1/candles?symbol=005930&interval=1d&count=3')
+      expect(candles.json.result.candles.map((b: { timestamp: string }) => b.timestamp.slice(0, 10))).toEqual(['2026-10-08', '2026-10-07', '2026-10-06'])
+      expect(candles.json.result.candles[0].closePrice).toBe('72000')
+      const holidayLimits = (await api(holidayToken, '/api/v1/price-limits?symbol=005930')).json.result
+      expect([holidayLimits.upperLimitPrice, holidayLimits.lowerLimitPrice]).toEqual([thursdayLimits.upperLimitPrice, thursdayLimits.lowerLimitPrice])
+    }
+    finally {
+      setSystemTime()
+    }
+  })
+
+  it('rejects malformed seeded holiday dates', () => {
+    const { store } = createTestApp()
+    expect(() => seedFromConfig(store, base, { holidays: { KR: ['2026-2-16'] } })).toThrow(/KR.*"2026-2-16"/)
+    expect(() => seedFromConfig(store, base, { holidays: { US: ['2026-02-30'] } })).toThrow(/US.*"2026-02-30"/)
   })
 })

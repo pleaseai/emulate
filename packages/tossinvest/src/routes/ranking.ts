@@ -1,4 +1,4 @@
-import type { RouteContext } from '@emulators/core'
+import type { RouteContext, Store } from '@emulators/core'
 import type { TossStock } from '../entities.js'
 import { boolQuery, enumQuery, fail, fmt, intQuery, ok } from '../helpers.js'
 import {
@@ -8,6 +8,7 @@ import {
   dailyVolume,
   DURATION_DAYS,
   formatPrice,
+  holidaysOf,
   latestTradingDay,
   previousClose,
 } from '../market.js'
@@ -26,19 +27,22 @@ const TYPES = [
 const COUNTRIES = ['KR', 'US'] as const
 const DURATIONS = ['realtime', '1d', '1w', '1mo', '3mo', '6mo', '1y'] as const
 const TOSS_SHARE = 0.02
+const INVESTMENT_CAUTION = new Set(['OVERHEATED', 'INVESTMENT_WARNING', 'INVESTMENT_RISK'])
 
-export function volumeOver(stock: TossStock, days: number): number {
-  let d = latestTradingDay(countryOf(stock.market))
+export function volumeOver(store: Store, stock: TossStock, days: number): number {
+  const country = countryOf(stock.market)
+  const holidays = holidaysOf(store, country)
+  let d = latestTradingDay(store, country)
   let total = 0
   for (let i = 0; i < days; i++) {
     total += dailyVolume(stock, d)
-    d = prevBusinessDay(d)
+    d = prevBusinessDay(d, holidays)
   }
   return total
 }
 
-export function changeOver(stock: TossStock, days: number): { base: number, rate: number | null } {
-  const base = days <= 1 ? previousClose(stock) : closeTradingDaysAgo(stock, days)
+export function changeOver(store: Store, stock: TossStock, days: number): { base: number, rate: number | null } {
+  const base = days <= 1 ? previousClose(store, stock) : closeTradingDaysAgo(store, stock, days)
   return { base, rate: base === 0 ? null : (stock.price - base) / base }
 }
 
@@ -79,10 +83,10 @@ export function rankingRoutes({ app, store }: RouteContext): void {
     const rows = ts.stocks
       .all()
       .filter(s => s.status === 'ACTIVE' && countryOf(s.market) === country)
-      .filter(s => !excludeCaution || activeWarnings(s).length === 0)
+      .filter(s => !excludeCaution || !activeWarnings(s).some(w => INVESTMENT_CAUTION.has(w.warningType)))
       .map((s) => {
-        const { base, rate } = changeOver(s, periodChange ? days : 1)
-        const volume = Math.round(volumeOver(s, days) * scale)
+        const { base, rate } = changeOver(store, s, periodChange ? days : 1)
+        const volume = Math.round(volumeOver(store, s, days) * scale)
         return { s, base, rate: rate ?? 0, rawRate: rate, volume, amount: volume * s.price }
       })
     const key = (r: (typeof rows)[number]): number => {

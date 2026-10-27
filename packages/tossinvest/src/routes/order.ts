@@ -86,11 +86,11 @@ export function checkOrderValue(c: Ctx, store: Store, stock: TossStock, notional
 }
 
 /** KR daily price band (previous close ±30%); US stocks have no band. */
-export function checkPriceLimits(c: Ctx, stock: TossStock, price: number | null): Response | undefined {
+export function checkPriceLimits(c: Ctx, store: Store, stock: TossStock, price: number | null): Response | undefined {
   if (price === null) {
     return undefined
   }
-  const { upper, lower } = priceLimits(stock)
+  const { upper, lower } = priceLimits(store, stock)
   if ((upper !== null && price > upper) || (lower !== null && price < lower)) {
     return fail(c, 422, 'price-out-of-range', '주문 가격이 허용 범위를 벗어났습니다.')
   }
@@ -110,6 +110,17 @@ export function finalStateError(c: Ctx, order: TossOrder): Response | undefined 
     default:
       return OPEN_STATUSES.has(order.status) ? undefined : fail(c, 409, 'already-processing', '주문이 처리 중입니다. 잠시 후 다시 시도해 주세요.', { retryAfterSeconds: 1 })
   }
+}
+
+function checkCls(c: Ctx, stock: TossStock, tif: TimeInForce, orderType: OrderType): Response | undefined {
+  if (tif === 'CLS' && (countryOf(stock.market) !== 'US' || orderType !== 'LIMIT')) {
+    return invalid(
+      c,
+      { field: 'timeInForce', allowedConditions: { marketCountry: 'US', orderType: 'LIMIT' } },
+      '종가 주문(CLS)은 미국 주식 지정가 주문에만 사용할 수 있습니다.',
+    )
+  }
+  return undefined
 }
 
 const orderNotFound = (c: Ctx): Response => fail(c, 404, 'order-not-found', '주문을 찾을 수 없습니다.')
@@ -155,12 +166,9 @@ export function orderRoutes({ app, store }: RouteContext): void {
       return invalid(c, { field: 'timeInForce', allowedValues: ['DAY', 'CLS', 'OPG'] }, '주문 유효 조건이 올바르지 않습니다.')
     }
     const country = countryOf(stock.market)
-    if (tif === 'CLS' && (country !== 'US' || orderType !== 'LIMIT')) {
-      return invalid(
-        c,
-        { field: 'timeInForce', allowedConditions: { marketCountry: 'US', orderType: 'LIMIT' } },
-        '종가 주문(CLS)은 미국 주식 지정가 주문에만 사용할 수 있습니다.',
-      )
+    const clsError = checkCls(c, stock, tif, orderType)
+    if (clsError) {
+      return clsError
     }
     if (tif === 'OPG' && country !== 'KR') {
       return invalid(c, { field: 'timeInForce', allowedConditions: { marketCountry: 'KR' } }, '주문 유효 조건이 올바르지 않습니다.')
@@ -237,7 +245,7 @@ export function orderRoutes({ app, store }: RouteContext): void {
       }
     }
 
-    const limitError = checkPriceLimits(c, stock, price)
+    const limitError = checkPriceLimits(c, store, stock, price)
     if (limitError) {
       return limitError
     }
@@ -312,7 +320,11 @@ export function orderRoutes({ app, store }: RouteContext): void {
     else if (priceRaw !== undefined) {
       return invalid(c)
     }
-    const limitError = checkPriceLimits(c, stock, price)
+    const clsError = checkCls(c, stock, order.time_in_force, orderType)
+    if (clsError) {
+      return clsError
+    }
+    const limitError = checkPriceLimits(c, store, stock, price)
     if (limitError) {
       return limitError
     }

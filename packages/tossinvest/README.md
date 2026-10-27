@@ -2,7 +2,7 @@
 
 Toss Invest (토스증권) Open API emulator for local development and CI.
 
-Covers all 40 operations of the Open API: OAuth 2.0 client credentials tokens, market data (prices, order book, trades, price limits, candles), stock info and KR investor trends, exchange rates and market calendars, rankings, market indicators, sectors, accounts and holdings, orders (create, modify, cancel, history), conditional orders (SINGLE / OCO / OTO), and buying power / sellable quantity / commissions.
+Covers all 41 operations of the Open API, including the OAuth 2.0 token endpoint: client credentials tokens, market data (prices, order book, trades, price limits, candles), stock info and KR investor trends, exchange rates and market calendars, rankings, market indicators, sectors, accounts and holdings, orders (create, modify, cancel, history), conditional orders (SINGLE / OCO / OTO), and buying power / sellable quantity / commissions.
 
 Accounts, holdings, orders, and conditional orders are stateful: a market order (or a marketable limit order) fills immediately at the current price and updates cash and holdings; other limit orders rest as `PENDING` and reserve buying power. Market and reference data are generated deterministically from the seeded prices, so the same request returns the same data.
 
@@ -43,7 +43,7 @@ curl -X POST http://localhost:4000/api/v1/orders \
   -d '{"symbol":"005930","side":"BUY","orderType":"MARKET","quantity":"10"}'
 ```
 
-Successful responses are wrapped in `{ "result": ... }`; errors use `{ "error": { "requestId", "code", "message", "data"? } }`. Every response carries `X-Request-Id`.
+Successful responses are wrapped in `{ "result": ... }`; errors use `{ "error": { "requestId", "code", "message", "data"? } }`. The exception is `POST /oauth2/token`, which returns the plain OAuth2 shape (`{ "access_token", "token_type", "expires_in" }`, or `{ "error", "error_description" }`). Every response carries `X-Request-Id`.
 
 ## Emulator controls
 
@@ -57,6 +57,9 @@ Successful responses are wrapped in `{ "result": ... }`; errors use `{ "error": 
 ```yaml
 tossinvest:
   usd_krw: 1375
+  holidays:
+    KR: [2026-05-05, 2026-10-09]
+    US: [2026-07-03]
   clients:
     - client_id: tsck_example_client_id
       client_secret: tsck_example_client_secret
@@ -80,6 +83,10 @@ tossinvest:
       cash:
         krw: 10000000
         usd: 10000
+      commission:
+        kr: '0.00015'
+        us: '0.001'
+        kr_start_date: 2026-01-01
       holdings:
         - symbol: '005930'
           quantity: 100
@@ -94,6 +101,8 @@ Units and formats:
 - `cash.krw` / `cash.usd`: cash balance in won and dollars.
 - `holdings[].quantity`: number of shares.
 - `accounts[].client_id` (optional): limits the account to one client; omit it to show the account to every client.
+- `accounts[].commission.kr_start_date` (optional): the KR rate's `startDate` in `GET /api/v1/commissions` (`YYYY-MM-DD` or `null`). Defaults to `2026-01-01`.
+- `holidays` (optional): market holidays per country as `YYYY-MM-DD` strings. A holiday is closed in the market calendars and is skipped by daily candles, previous closes and price limits, rankings, trend data, and settlement dates. A country you list replaces its built-in 2026 holiday set; a country you leave out keeps it.
 
 ## Not emulated
 

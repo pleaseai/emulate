@@ -70,7 +70,6 @@ export type TokenState = 'valid' | 'invalid' | 'expired' | 'revoked'
 
 const TOKEN_KEY = 'tossinvest.tokens'
 export const TOKEN_TTL_SECONDS = 86_400
-const REVOKED_KEEP = 20
 
 function makeJwtShapedToken(clientId: string, now: number): string {
   const enc = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url')
@@ -86,20 +85,15 @@ function makeJwtShapedToken(clientId: string, now: number): string {
 
 export function issueToken(store: Store, clientId: string, now = Date.now()): string {
   const tokens = store.getData<Record<string, IssuedToken>>(TOKEN_KEY) ?? {}
-  const revoked: string[] = []
   for (const [tok, rec] of Object.entries(tokens)) {
-    if (rec.clientId !== clientId) {
-      continue
-    }
-    rec.revoked = true
-    revoked.push(tok)
-  }
-  revoked
-    .sort((a, b) => tokens[b].issuedAt - tokens[a].issuedAt)
-    .slice(REVOKED_KEEP)
-    .forEach((tok) => {
+    // Revoked and expired records answer with their state for one more TTL, then are pruned.
+    if (rec.expiresAt + TOKEN_TTL_SECONDS * 1000 <= now) {
       delete tokens[tok]
-    })
+    }
+    else if (rec.clientId === clientId && rec.expiresAt > now) {
+      rec.revoked = true
+    }
+  }
   const token = makeJwtShapedToken(clientId, now)
   tokens[token] = { clientId, issuedAt: now, expiresAt: now + TOKEN_TTL_SECONDS * 1000, revoked: false }
   store.setData(TOKEN_KEY, tokens)

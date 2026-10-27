@@ -56,7 +56,8 @@ export function tokenRoutes({ app, store }: RouteContext): void {
         'invalid_request',
         'Malformed client authentication: check Authorization header or client_id/client_secret/code_verifier parameters',
       )
-      if (sep < 0) {
+      // RFC 6749 §2.3: a client must not use more than one authentication method.
+      if (sep < 0 || clientId || clientSecret) {
         return malformed()
       }
       // RFC 6749 §2.3.1: both halves are form-urlencoded before base64 encoding.

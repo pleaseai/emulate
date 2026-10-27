@@ -1,8 +1,10 @@
 import type { Store } from '@emulators/core'
 import type { Currency, MarketCountry, StockMarket, TossStock } from './entities.js'
+import type { Holidays } from './time.js'
 import { fmt, noise } from './helpers.js'
 import {
   businessDayOnOrBefore,
+  dateToDayIdx,
   DAY_MS,
   isoWithOffset,
   kstDayIdx,
@@ -80,8 +82,8 @@ export function dayBarTimestamp(country: MarketCountry, dayIdx: number): string 
   return isoWithOffset(localMidnightMs(dayIdx, off), off)
 }
 
-export function latestTradingDay(country: MarketCountry, now = Date.now()): number {
-  return businessDayOnOrBefore(localDayIdx(country, now))
+export function latestTradingDay(store: Store, country: MarketCountry, now = Date.now()): number {
+  return businessDayOnOrBefore(localDayIdx(country, now), holidaysOf(store, country))
 }
 
 function dailyFactor(key: string, dayIdx: number): number {
@@ -102,23 +104,24 @@ export function rawMinuteClose(key: string, price: number, minuteIdx: number, la
   return (price * minuteFactor(key, minuteIdx)) / minuteFactor(key, latest)
 }
 
-export function dailyClose(stock: TossStock, dayIdx: number, now = Date.now()): number {
-  const country = countryOf(stock.market)
-  const latest = latestTradingDay(country, now)
+export function dailyClose(store: Store, stock: TossStock, dayIdx: number, now = Date.now()): number {
+  const latest = latestTradingDay(store, countryOf(stock.market), now)
   return roundToTick(stock, rawDailyClose(stock.symbol, stock.price, dayIdx, latest))
 }
 
-export function previousClose(stock: TossStock, now = Date.now()): number {
+export function previousClose(store: Store, stock: TossStock, now = Date.now()): number {
   const country = countryOf(stock.market)
-  return dailyClose(stock, prevBusinessDay(latestTradingDay(country, now)), now)
+  return dailyClose(store, stock, prevBusinessDay(latestTradingDay(store, country, now), holidaysOf(store, country)), now)
 }
 
-export function closeTradingDaysAgo(stock: TossStock, n: number, now = Date.now()): number {
-  let d = latestTradingDay(countryOf(stock.market), now)
+export function closeTradingDaysAgo(store: Store, stock: TossStock, n: number, now = Date.now()): number {
+  const country = countryOf(stock.market)
+  const holidays = holidaysOf(store, country)
+  let d = latestTradingDay(store, country, now)
   for (let i = 0; i < n; i++) {
-    d = prevBusinessDay(d)
+    d = prevBusinessDay(d, holidays)
   }
-  return dailyClose(stock, d, now)
+  return dailyClose(store, stock, d, now)
 }
 
 export const DURATION_DAYS: Record<string, number> = { '1d': 1, '1w': 5, '1mo': 21, '3mo': 63, '6mo': 126, '1y': 250 }
@@ -144,6 +147,7 @@ export interface CandleSeriesSpec {
   round: (n: number) => number
   volume: (barIdx: number) => number
   dayTimestamp: (dayIdx: number) => string
+  holidays: Holidays
   latestDay: number
   earliestDay: number
   dayOf: (ms: number) => number
@@ -162,9 +166,9 @@ export function candlePage(
 ): { bars: CandleBar[], nextBefore: string | null } {
   const bars: CandleBar[] = []
   if (interval === '1d') {
-    let d = beforeMs === undefined ? spec.latestDay : Math.min(spec.latestDay, businessDayOnOrBefore(spec.dayOf(beforeMs)))
+    let d = beforeMs === undefined ? spec.latestDay : Math.min(spec.latestDay, businessDayOnOrBefore(spec.dayOf(beforeMs), spec.holidays))
     while (bars.length < count && d >= spec.earliestDay) {
-      const prev = prevBusinessDay(d)
+      const prev = prevBusinessDay(d, spec.holidays)
       const close = spec.round(rawDailyClose(spec.key, spec.price, d, spec.latestDay))
       const open = spec.round(rawDailyClose(spec.key, spec.price, prev, spec.latestDay))
       const spread = 0.004 + 0.01 * noise(`${spec.key}:hl:${d}`)
@@ -201,9 +205,9 @@ export function candlePage(
   return { bars, nextBefore: m >= earliestMinute ? minuteStampOf(m) : null }
 }
 
-export function stockCandleSpec(stock: TossStock, now = Date.now()): CandleSeriesSpec {
+export function stockCandleSpec(store: Store, stock: TossStock, now = Date.now()): CandleSeriesSpec {
   const country = countryOf(stock.market)
-  const latestDay = latestTradingDay(country, now)
+  const latestDay = latestTradingDay(store, country, now)
   const listed = stock.list_date ? Math.floor(Date.parse(`${stock.list_date}T00:00:00Z`) / DAY_MS) : latestDay - 3650
   return {
     key: stock.symbol,
@@ -211,17 +215,18 @@ export function stockCandleSpec(stock: TossStock, now = Date.now()): CandleSerie
     round: n => roundToTick(stock, n),
     volume: d => dailyVolume(stock, d),
     dayTimestamp: d => dayBarTimestamp(country, d),
+    holidays: holidaysOf(store, country),
     latestDay,
     earliestDay: Math.max(listed, latestDay - 3650),
     dayOf: ms => localDayIdx(country, ms),
   }
 }
 
-export function priceLimits(stock: TossStock, now = Date.now()): { upper: number | null, lower: number | null } {
+export function priceLimits(store: Store, stock: TossStock, now = Date.now()): { upper: number | null, lower: number | null } {
   if (countryOf(stock.market) === 'US') {
     return { upper: null, lower: null }
   }
-  const base = previousClose(stock, now)
+  const base = previousClose(store, stock, now)
   const upperRaw = base * 1.3
   const lowerRaw = base * 0.7
   const upTick = tickSize(stock, upperRaw)
@@ -247,8 +252,8 @@ export function indicatorLevel(symbol: string, now = Date.now()): number {
   return Math.round(rawMinuteClose(`IDX:${symbol}`, base, minute, Math.floor(minute / 1440) * 1440) * 100) / 100
 }
 
-export function indicatorCandleSpec(symbol: string, now = Date.now()): CandleSeriesSpec {
-  const latestDay = latestTradingDay('KR', now)
+export function indicatorCandleSpec(store: Store, symbol: string, now = Date.now()): CandleSeriesSpec {
+  const latestDay = latestTradingDay(store, 'KR', now)
   const isIndex = MARKET_INDICATORS[symbol].asset === 'INDEX'
   return {
     key: `IDX:${symbol}`,
@@ -257,6 +262,7 @@ export function indicatorCandleSpec(symbol: string, now = Date.now()): CandleSer
     volume: d => (isIndex ? Math.round(450_000_000 * (0.7 + 0.6 * noise(`IDX:${symbol}:vol:${d}`))) : 0),
     // Indicator daily bars are stamped with the session open (bar start time).
     dayTimestamp: d => isoWithOffset(localMidnightMs(d, 540) + 9 * 3_600_000, 540),
+    holidays: holidaysOf(store, 'KR'),
     latestDay,
     earliestDay: latestDay - 3650,
     dayOf: ms => kstDayIdx(ms - 9 * 3_600_000),
@@ -279,4 +285,62 @@ export function usdKrwMid(store: Store, ms = Date.now()): number {
 
 export function toKrw(store: Store, amount: number, currency: Currency): number {
   return currency === 'KRW' ? amount : amount * usdKrwMid(store)
+}
+
+const HOLIDAYS_KEY = 'tossinvest.holidays'
+export const DEFAULT_HOLIDAYS: Record<MarketCountry, readonly string[]> = {
+  KR: [
+    '2026-01-01',
+    '2026-02-16',
+    '2026-02-17',
+    '2026-02-18',
+    '2026-03-02',
+    '2026-05-01',
+    '2026-05-05',
+    '2026-05-25',
+    '2026-06-03',
+    '2026-08-17',
+    '2026-09-24',
+    '2026-09-25',
+    '2026-10-05',
+    '2026-10-09',
+    '2026-12-25',
+    '2026-12-31',
+  ],
+  US: [
+    '2026-01-01',
+    '2026-01-19',
+    '2026-02-16',
+    '2026-04-03',
+    '2026-05-25',
+    '2026-06-19',
+    '2026-07-03',
+    '2026-09-07',
+    '2026-11-26',
+    '2026-12-25',
+  ],
+}
+
+/** Replaces the market holiday list of each given country; the others keep theirs. */
+export function setHolidays(store: Store, holidays: Partial<Record<MarketCountry, readonly string[]>>): void {
+  for (const [country, dates] of Object.entries(holidays)) {
+    const bad = (dates ?? []).find(d => dateToDayIdx(d) === undefined)
+    if (bad !== undefined) {
+      throw new Error(`tossinvest.holidays.${country}: invalid date ${JSON.stringify(bad)} (expected an existing YYYY-MM-DD date)`)
+    }
+  }
+  const current = store.getData<Partial<Record<MarketCountry, readonly string[]>>>(HOLIDAYS_KEY) ?? {}
+  store.setData(HOLIDAYS_KEY, { ...current, ...holidays })
+}
+
+const HOLIDAY_SETS = new WeakMap<readonly string[], Holidays>()
+
+export function holidaysOf(store: Store, country: MarketCountry): Holidays {
+  const dates = store.getData<Partial<Record<MarketCountry, readonly string[]>>>(HOLIDAYS_KEY)?.[country] ?? DEFAULT_HOLIDAYS[country]
+  let set = HOLIDAY_SETS.get(dates)
+  if (!set) {
+    set = new Set(dates.map(d => dateToDayIdx(d)!))
+    HOLIDAY_SETS.set(dates, set)
+  }
+  return set
 }

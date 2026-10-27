@@ -10,7 +10,7 @@ sidebar:
 Default port **4014** · Package [`@pleaseai/emulate-tossinvest`](https://www.npmjs.com/package/@pleaseai/emulate-tossinvest)
 :::
 
-Emulates all 40 operations of the Toss Invest Open API. Accounts, holdings,
+Emulates all 41 operations of the Toss Invest Open API. Accounts, holdings,
 orders, and conditional orders are stateful; market and reference data are
 generated deterministically from the seeded prices.
 
@@ -31,7 +31,10 @@ Included now:
 
 Account-scoped endpoints need the `X-Tossinvest-Account: <accountSeq>` header.
 Responses are wrapped in `{ "result": ... }`; errors are
-`{ "error": { "requestId", "code", "message", "data"? } }`.
+`{ "error": { "requestId", "code", "message", "data"? } }`. The exception is
+`POST /oauth2/token`, which answers in the plain OAuth2 shape
+(`{ "access_token", "token_type", "expires_in" }`, or
+`{ "error", "error_description" }`).
 
 ## Start
 
@@ -82,6 +85,9 @@ Add a `tossinvest:` section to `emulate.config.yaml` (or pass `--seed <file>`):
 
 ```yaml
 tossinvest:
+  holidays: # optional; a listed country replaces its built-in 2026 holiday set
+    KR: [2026-05-05, 2026-10-09]
+    US: [2026-07-03]
   clients:
     - client_id: tsck_example_client_id
       client_secret: tsck_example_client_secret
@@ -96,6 +102,10 @@ tossinvest:
       cash:
         krw: 10000000
         usd: 10000
+      commission:
+        kr: '0.00015'
+        us: '0.001'
+        kr_start_date: 2026-01-01 # KR startDate in GET /commissions
       holdings:
         - symbol: '005930'
           quantity: 100

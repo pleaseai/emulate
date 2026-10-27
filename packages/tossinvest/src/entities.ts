@@ -80,6 +80,7 @@ export interface TossAccount extends Entity {
   cash_usd: number
   commission_kr: string
   commission_us: string
+  commission_kr_start_date: string | null
 }
 
 export interface TossHolding extends Entity {

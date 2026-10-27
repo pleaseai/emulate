@@ -1,6 +1,7 @@
 import type { RouteContext } from '@emulators/core'
+import type { Holidays } from '../time.js'
 import { fail, fmt, intQuery, invalid, noise, ok } from '../helpers.js'
-import { candlePage, indicatorCandleSpec, indicatorLevel, MARKET_INDICATOR_SYMBOLS, MARKET_INDICATORS } from '../market.js'
+import { candlePage, holidaysOf, indicatorCandleSpec, indicatorLevel, MARKET_INDICATOR_SYMBOLS, MARKET_INDICATORS } from '../market.js'
 import {
   addBusinessDays,
   businessDayOnOrBefore,
@@ -33,9 +34,9 @@ function unsupportedSymbol(c: Parameters<typeof fail>[0], field: string, allowed
   return fail(c, 400, 'unsupported-symbol', '지원하지 않는 심볼입니다.', { field, allowedValues: allowed })
 }
 
-function bucketDate(interval: InvestorInterval, dayIdx: number): number {
+function bucketDate(interval: InvestorInterval, dayIdx: number, holidays: Holidays): number {
   if (interval === '1d') {
-    return businessDayOnOrBefore(dayIdx)
+    return businessDayOnOrBefore(dayIdx, holidays)
   }
   const d = dayIdx
   const date = new Date(d * 86_400_000)
@@ -48,9 +49,9 @@ function bucketDate(interval: InvestorInterval, dayIdx: number): number {
   return Math.floor(Date.UTC(date.getUTCFullYear(), 0, 1) / 86_400_000)
 }
 
-function previousBucket(interval: InvestorInterval, bucket: number): number {
+function previousBucket(interval: InvestorInterval, bucket: number, holidays: Holidays): number {
   if (interval === '1d') {
-    return prevBusinessDay(bucket)
+    return prevBusinessDay(bucket, holidays)
   }
   if (interval === '1w') {
     return bucket - 7
@@ -63,7 +64,7 @@ function previousBucket(interval: InvestorInterval, bucket: number): number {
 
 const BUCKET_DAYS: Record<InvestorInterval, number> = { '1d': 1, '1w': 5, '1mo': 21, '1y': 250 }
 
-function investorRecord(symbol: string, interval: InvestorInterval, bucket: number, today: number) {
+function investorRecord(symbol: string, interval: InvestorInterval, bucket: number, today: number, holidays: Holidays) {
   const n = (k: string) => noise(`${symbol}:mi:${interval}:${k}:${bucket}`)
   const scale = (symbol === 'KOSPI' ? 12e12 : 8e12) * BUCKET_DAYS[interval] * (0.8 + 0.4 * n('t'))
   const round = (x: number) => Math.round(x / 1e8) * 1e8
@@ -78,7 +79,7 @@ function investorRecord(symbol: string, interval: InvestorInterval, bucket: numb
   const individualBuy = round(scale * 0.46 * (0.9 + 0.2 * n('ib')))
   const individualSell = individualBuy + instBuy + foreignBuy + otherBuy - (instSell + foreignSell + otherSell)
   const pair = (b: number, s: number) => ({ buyAmount: fmt(b, 0), sellAmount: fmt(s, 0) })
-  const lastDay = Math.min(today, addBusinessDays(bucket, Math.max(0, BUCKET_DAYS[interval] - 1)))
+  const lastDay = Math.min(today, addBusinessDays(bucket, Math.max(0, BUCKET_DAYS[interval] - 1), holidays))
   const updatedAt = lastDay >= today
     ? kstIso(Date.now())
     : isoWithOffset(localMidnightMs(lastDay, 540) + 18 * 3_600_000 + 10 * 60_000, 540)
@@ -95,7 +96,7 @@ function investorRecord(symbol: string, interval: InvestorInterval, bucket: numb
   }
 }
 
-export function marketIndicatorRoutes({ app }: RouteContext): void {
+export function marketIndicatorRoutes({ app, store }: RouteContext): void {
   app.get('/api/v1/market-indicators/prices', (c) => {
     const symbols = parseSymbols(c, /^\w+$/)
     if (symbols instanceof Response) {
@@ -130,7 +131,7 @@ export function marketIndicatorRoutes({ app }: RouteContext): void {
       return invalid(c, { field: 'before', format: 'date-time' })
     }
     // Indicator minute bars are stamped with the bar start time.
-    const { bars, nextBefore } = candlePage(indicatorCandleSpec(symbol), interval, count, before !== undefined && interval === '1m' ? before + 60_000 : before, Date.now(), m =>
+    const { bars, nextBefore } = candlePage(indicatorCandleSpec(store, symbol), interval, count, before !== undefined && interval === '1m' ? before + 60_000 : before, Date.now(), m =>
       isoWithOffset((m - 1) * 60_000, 540))
     return ok(c, {
       candles: bars.map(b => ({
@@ -165,11 +166,12 @@ export function marketIndicatorRoutes({ app }: RouteContext): void {
     }
     const today = kstDayIdx(Date.now())
     const earliest = today - 3650
-    let bucket = bucketDate(interval, Math.min(today, until ?? today))
+    const holidays = holidaysOf(store, 'KR')
+    let bucket = bucketDate(interval, Math.min(today, until ?? today), holidays)
     const records = []
     while (records.length < count && bucket >= earliest) {
-      records.push(investorRecord(symbol, interval, bucket, today))
-      bucket = previousBucket(interval, bucket)
+      records.push(investorRecord(symbol, interval, bucket, today, holidays))
+      bucket = previousBucket(interval, bucket, holidays)
     }
     return ok(c, { nextUntil: bucket >= earliest ? dayIdxToDate(bucket) : null, records })
   })

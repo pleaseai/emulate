@@ -21,6 +21,7 @@ import { decodeCursor, encodeCursor, fail, fmt, intQuery, invalid, MSG_INVALID_F
 import { countryOf, formatPrice } from '../market.js'
 import { getTossinvestStore, newConditionalOrderId } from '../store.js'
 import { dateToDayIdx, kstDayIdx, kstIso } from '../time.js'
+import { qtyDp } from '../trading.js'
 import { checkOrderValue, checkPrice, checkPriceLimits, IDEMPOTENCY_WINDOW_MS, readJson } from './order.js'
 
 const TYPES: readonly ConditionalType[] = ['SINGLE', 'OCO', 'OTO']
@@ -88,6 +89,9 @@ function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body, li
   if (!DECIMAL_RE.test(quantity) || Number(quantity) <= 0 || (kr && !Number.isInteger(Number(quantity)))) {
     return invalid(c, { field: 'quantity', format: 'decimal', constraint: { min: 1, integerOnly: kr } })
   }
+  if ((quantity.split('.')[1]?.replace(/0+$/, '').length ?? 0) > qtyDp(stock)) {
+    return invalid(c, { field: 'quantity', constraint: { maxScale: qtyDp(stock) } }, '소수점 수량은 소수점 6자리까지 지원합니다.')
+  }
   const orderType = body.orderType as OrderType
   if (orderType !== 'LIMIT' && orderType !== 'MARKET') {
     return invalid(c, { field: 'orderType', allowedValues: ['LIMIT', 'MARKET'] })
@@ -98,7 +102,7 @@ function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body, li
   const expireDate = typeof body.expireDate === 'string' ? body.expireDate : ''
   const expireDay = dateToDayIdx(expireDate)
   const today = kstDayIdx(Date.now())
-  if (expireDay === undefined || expireDay < today || expireDay > today + 365) {
+  if (expireDay === undefined || (liveChecks && (expireDay < today || expireDay > today + 365))) {
     return invalid(c, { field: 'expireDate', format: 'date' }, MSG_INVALID_FIELD)
   }
   const first = parseLeg(c, stock, body.first, 'first', orderType)
@@ -136,7 +140,7 @@ function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body, li
     return { type, quantity, orderType, expireDate, first, second }
   }
   for (const leg of [first, second]) {
-    const limitError = leg && leg.orderPrice !== null ? checkPriceLimits(c, stock, Number(leg.orderPrice)) : undefined
+    const limitError = leg && leg.orderPrice !== null ? checkPriceLimits(c, store, stock, Number(leg.orderPrice)) : undefined
     if (limitError) {
       return limitError
     }
@@ -212,7 +216,7 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
     if (clientOrderId !== null) {
       const prior = ts.conditionalOrders
         .findBy('account_seq', account.account_seq)
-        .find(co => co.client_order_id === clientOrderId && !co.replaced && Date.now() - co.created_ms < IDEMPOTENCY_WINDOW_MS)
+        .find(co => co.client_order_id === clientOrderId && Date.now() - co.created_ms < IDEMPOTENCY_WINDOW_MS)
       if (prior) {
         return prior.request_key === requestKeyOf(stock, parsed)
           ? ok(c, { conditionalOrderId: prior.conditional_order_id, clientOrderId })
@@ -313,7 +317,8 @@ export function conditionalOrderRoutes({ app, store }: RouteContext): void {
       return parsed
     }
     ts.conditionalOrders.update(co.id, { replaced: true })
-    const next = insert(account, stock, parsed, co.client_order_id)
+    // The clientOrderId stays with the original create so its retries keep replaying.
+    const next = insert(account, stock, parsed, null)
     return ok(c, { conditionalOrderId: next.conditional_order_id })
   })
 }

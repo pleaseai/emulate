@@ -114,7 +114,7 @@ export function marketDataRoutes({ app, store }: RouteContext): void {
     if (stock instanceof Response) {
       return stock
     }
-    const { upper, lower } = priceLimits(stock)
+    const { upper, lower } = priceLimits(store, stock)
     return ok(c, {
       timestamp: kstIso(Date.now(), true),
       upperLimitPrice: upper === null ? null : fmt(upper, 0),
@@ -145,7 +145,7 @@ export function marketDataRoutes({ app, store }: RouteContext): void {
     if (stock instanceof Response) {
       return stock
     }
-    const { bars, nextBefore } = candlePage(stockCandleSpec(stock), interval, count, before)
+    const { bars, nextBefore } = candlePage(stockCandleSpec(store, stock), interval, count, before)
     const currency = currencyOf(stock.market)
     return ok(c, {
       candles: bars.map(b => ({
@@ -164,12 +164,12 @@ export function marketDataRoutes({ app, store }: RouteContext): void {
   app.post('/_emulator/prices', async (c) => {
     const body = (await c.req.json().catch(() => null)) as { symbol?: unknown, price?: unknown } | null
     const symbol = typeof body?.symbol === 'string' ? body.symbol.toUpperCase() : ''
-    const price = Number(body?.price)
+    const price = body?.price
     const stock = ts.stocks.findOneBy('symbol', symbol)
     if (!stock) {
       return fail(c, 404, 'stock-not-found', '종목을 찾을 수 없습니다.')
     }
-    if (!Number.isFinite(price) || price <= 0) {
+    if (typeof price !== 'number' || !Number.isFinite(price) || price <= 0) {
       return invalid(c, { field: 'price' })
     }
     const updated = ts.stocks.update(stock.id, { price })!

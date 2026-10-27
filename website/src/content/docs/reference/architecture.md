@@ -52,7 +52,7 @@ Each service is a `ServicePlugin` that:
 4. Uses shared middleware for auth, error handling, and webhooks
 
 The CLI's registry (`packages/emulate/src/registry.ts`) lazily loads each
-plugin, so starting one service does not import the other twelve. Multiple
+plugin, so starting one service does not import the other services. Multiple
 services run simultaneously, each on its own port (auto-incremented from the
 base port).
 

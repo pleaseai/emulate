@@ -53,8 +53,8 @@ function marketCapKrw(store: Store, s: TossStock): number {
   return toKrw(store, (Number(s.shares_outstanding) || 0) * s.price, currencyOf(s.market))
 }
 
-function avgChange(stocks: TossStock[], days: number): number | null {
-  return stocks.length ? stocks.reduce((sum, s) => sum + (changeOver(s, days).rate ?? 0), 0) / stocks.length : null
+function avgChange(store: Store, stocks: TossStock[], days: number): number | null {
+  return stocks.length ? stocks.reduce((sum, s) => sum + (changeOver(store, s, days).rate ?? 0), 0) / stocks.length : null
 }
 
 export function sectorRoutes({ app, store }: RouteContext): void {
@@ -90,11 +90,11 @@ export function sectorRoutes({ app, store }: RouteContext): void {
       .map(({ s }) => {
         const members = memberStocks(store, sectorSymbolsDeep(store, s), country)
         const direct = memberStocks(store, s.symbols, country)
-        const amount = members.reduce((sum, m) => sum + toKrw(store, volumeOver(m, days) * m.price, currencyOf(m.market)), 0)
+        const amount = members.reduce((sum, m) => sum + toKrw(store, volumeOver(store, m, days) * m.price, currencyOf(m.market)), 0)
         return {
           s,
           members,
-          changeRate: avgChange(members, days) ?? 0,
+          changeRate: avgChange(store, members, days) ?? 0,
           tradingAmount: members.length ? amount : null,
           marketCapitalization: direct.length ? direct.reduce((sum, m) => sum + marketCapKrw(store, m), 0) : null,
         }
@@ -145,7 +145,7 @@ export function sectorRoutes({ app, store }: RouteContext): void {
       summary: r.sector.summary,
       performance: {
         changeRates: DURATIONS.map((duration) => {
-          const rate = avgChange(members, DURATION_DAYS[duration])
+          const rate = avgChange(store, members, DURATION_DAYS[duration])
           return { duration, changeRate: rate === null ? null : fmt(rate, 4) }
         }),
       },
@@ -157,7 +157,7 @@ export function sectorRoutes({ app, store }: RouteContext): void {
     if (r instanceof Response) {
       return r
     }
-    const latest = latestTradingDay(r.country)
+    const latest = latestTradingDay(store, r.country)
     const stocks = memberStocks(store, sectorSymbolsDeep(store, r.sector), r.country)
       .filter(s => s.is_common_share)
       .map(s => ({ s, cap: marketCapKrw(store, s) }))
@@ -184,7 +184,9 @@ export function sectorRoutes({ app, store }: RouteContext): void {
     const etfs = r.sector.etfs
       .map(sym => ts.stocks.findOneBy('symbol', sym))
       .filter((s): s is TossStock => !!s && s.status !== 'DELISTED' && countryOf(s.market) === r.country)
-      .map(s => ({ symbol: s.symbol, name: s.name }))
+      .map(s => ({ s, cap: Number(s.shares_outstanding) > 0 ? marketCapKrw(store, s) : null }))
+      .sort((a, b) => (a.cap === null ? 1 : 0) - (b.cap === null ? 1 : 0) || (b.cap ?? 0) - (a.cap ?? 0))
+      .map(({ s }) => ({ symbol: s.symbol, name: s.name }))
     return ok(c, { etfs })
   })
 }

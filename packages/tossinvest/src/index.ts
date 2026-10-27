@@ -1,8 +1,8 @@
 import type { RouteContext, ServicePlugin, Store } from '@emulators/core'
-import type { SecurityType, StockMarket, StockWarningRecord, TossAccount } from './entities.js'
+import type { MarketCountry, SecurityType, StockMarket, StockWarningRecord, TossAccount } from './entities.js'
 import { DEMO_SEED } from './defaults.js'
 import { registerMiddleware } from './helpers.js'
-import { countryOf, setUsdKrwBase } from './market.js'
+import { countryOf, setHolidays, setUsdKrwBase } from './market.js'
 import { accountRoutes } from './routes/account.js'
 import { appsRoutes, tokenRoutes } from './routes/auth.js'
 import { conditionalOrderRoutes } from './routes/conditional-order.js'
@@ -24,6 +24,8 @@ export interface TossinvestSeedConfig {
   clients?: Array<{ client_id: string, client_secret: string, name?: string }>
   /** USD→KRW interbank rate the exchange-rate series moves around. */
   usd_krw?: number
+  /** Market holidays (YYYY-MM-DD) per country; a listed country replaces the built-in 2026 set. */
+  holidays?: Partial<Record<MarketCountry, string[]>>
   stocks?: Array<{
     symbol: string
     name: string
@@ -56,10 +58,13 @@ export interface TossinvestSeedConfig {
     /** Restrict the account to one client; omitted = visible to every client. */
     client_id?: string
     cash?: { krw?: number, usd?: number }
-    commission?: { kr?: string, us?: string }
+    /** `kr_start_date` is the KR rate's `startDate` in GET /commissions (default 2026-01-01). */
+    commission?: { kr?: string, us?: string, kr_start_date?: string | null }
     holdings?: Array<{ symbol: string, quantity: number, average_price: number }>
   }>
 }
+
+const DEFAULT_KR_COMMISSION_START = '2026-01-01'
 
 function defaultIsin(symbol: string, market: StockMarket): string {
   if (countryOf(market) === 'KR') {
@@ -82,6 +87,9 @@ export function seedFromConfig(store: Store, _baseUrl: string, config: Tossinves
   }
   if (config.usd_krw !== undefined) {
     setUsdKrwBase(store, config.usd_krw)
+  }
+  if (config.holidays) {
+    setHolidays(store, config.holidays)
   }
   for (const s of config.stocks ?? []) {
     const symbol = s.symbol.toUpperCase()
@@ -134,6 +142,8 @@ export function seedFromConfig(store: Store, _baseUrl: string, config: Tossinves
   }
   for (const a of config.accounts ?? []) {
     const existing = ts.accounts.findOneBy('account_seq', a.account_seq)
+    // An explicit null start date survives reseeding; only a missing one takes the default.
+    const krStart = a.commission?.kr_start_date !== undefined ? a.commission.kr_start_date : existing?.commission_kr_start_date
     const data = {
       account_seq: a.account_seq,
       account_no: a.account_no ?? existing?.account_no ?? String(10_000_000_000 + a.account_seq),
@@ -143,6 +153,7 @@ export function seedFromConfig(store: Store, _baseUrl: string, config: Tossinves
       cash_usd: a.cash?.usd ?? existing?.cash_usd ?? 0,
       commission_kr: a.commission?.kr ?? existing?.commission_kr ?? '0.00015',
       commission_us: a.commission?.us ?? existing?.commission_us ?? '0.001',
+      commission_kr_start_date: krStart === undefined ? DEFAULT_KR_COMMISSION_START : krStart,
     }
     if (existing) {
       ts.accounts.update(existing.id, data)
