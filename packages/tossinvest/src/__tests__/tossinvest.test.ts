@@ -364,6 +364,33 @@ describe('tossinvest emulator: trading', () => {
     expect(closed.json.result.conditionalOrders.find((co: { conditionalOrderId: string }) => co.conditionalOrderId === delId).first.status).toBe('CANCELED')
   })
 
+  it('rejects conditional KR order prices outside the daily price band on create and modify', async () => {
+    const token = await fetchToken()
+    const upper = Number((await api(token, '/api/v1/price-limits?symbol=005930')).json.result.upperLimitPrice)
+    const expireDate = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
+    const body = (orderPrice: number) => ({
+      symbol: '005930',
+      type: 'SINGLE',
+      quantity: '1',
+      orderType: 'LIMIT',
+      expireDate,
+      first: { orderSide: 'SELL', triggerPrice: '75000', orderPrice: String(orderPrice) },
+    })
+
+    const outside = await api(token, '/api/v1/conditional-orders', { method: 'POST', body: body(upper + 1000) })
+    expect(outside.res.status).toBe(422)
+    expect((outside.json as ApiError).error.code).toBe('price-out-of-range')
+
+    const created = await api(token, '/api/v1/conditional-orders', { method: 'POST', body: body(75000) })
+    expect(created.res.status).toBe(200)
+    const modify = (orderPrice: number) => api(token, `/api/v1/conditional-orders/${created.json.result.conditionalOrderId}/modify`, {
+      method: 'POST',
+      body: body(orderPrice),
+    })
+    expect((await modify(upper + 1000)).json.error.code).toBe('price-out-of-range')
+    expect((await modify(76000)).res.status).toBe(200)
+  })
+
   it('pages 1m indicator candles via nextBefore without gaps', async () => {
     const token = await fetchToken()
     const symbol = 'KOSPI'

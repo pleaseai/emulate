@@ -86,7 +86,7 @@ export function checkOrderValue(c: Ctx, store: Store, stock: TossStock, notional
 }
 
 /** KR daily price band (previous close ±30%); US stocks have no band. */
-function checkPriceLimits(c: Ctx, stock: TossStock, price: number | null): Response | undefined {
+export function checkPriceLimits(c: Ctx, stock: TossStock, price: number | null): Response | undefined {
   if (price === null) {
     return undefined
   }

@@ -21,7 +21,7 @@ import { decodeCursor, encodeCursor, fail, fmt, intQuery, invalid, MSG_INVALID_F
 import { countryOf, formatPrice } from '../market.js'
 import { getTossinvestStore, newConditionalOrderId } from '../store.js'
 import { dateToDayIdx, kstDayIdx, kstIso } from '../time.js'
-import { checkOrderValue, checkPrice, IDEMPOTENCY_WINDOW_MS, readJson } from './order.js'
+import { checkOrderValue, checkPrice, checkPriceLimits, IDEMPOTENCY_WINDOW_MS, readJson } from './order.js'
 
 const TYPES: readonly ConditionalType[] = ['SINGLE', 'OCO', 'OTO']
 const ID_RE = /^[\w-]{1,64}$/
@@ -134,6 +134,12 @@ function parseConditional(c: Ctx, store: Store, stock: TossStock, body: Body, li
   }
   if (!liveChecks) {
     return { type, quantity, orderType, expireDate, first, second }
+  }
+  for (const leg of [first, second]) {
+    const limitError = leg && leg.orderPrice !== null ? checkPriceLimits(c, stock, Number(leg.orderPrice)) : undefined
+    if (limitError) {
+      return limitError
+    }
   }
   const notional = Number(quantity) * Math.max(...[first, second].filter(l => l !== null).map(l => Number(l!.orderPrice ?? l!.triggerPrice)))
   const valueError = checkOrderValue(c, store, stock, notional, body.confirmHighValueOrder === true)
