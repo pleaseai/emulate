@@ -1,6 +1,7 @@
 import type { JiraTestApp } from './helpers.js'
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { api, createJiraTestApp, jiraTestBaseUrl } from './helpers.js'
+import { getJiraStore } from '../index.js'
+import { api, basicAuth, createJiraTestApp, jiraTestBaseUrl } from './helpers.js'
 
 const A = '/rest/agile/1.0'
 
@@ -170,6 +171,69 @@ describe('Jira Agile API', () => {
     expect(sprintIssues.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
   })
 
+  it('rejects board-scoped backlog moves of issues from another project', async () => {
+    await api(t.app, '/rest/api/3/project', { method: 'POST', body: { key: 'OPS', name: 'Operations' } })
+    const ops = await api(t.app, '/rest/api/3/issue', {
+      method: 'POST',
+      body: { fields: { project: { key: 'OPS' }, issuetype: { name: 'Task' }, summary: 'Ops work' } },
+    })
+    const res = await api(t.app, `${A}/backlog/1/issue`, { method: 'POST', body: { issues: ['EMU-1', ops.json.key] } })
+    expect(res.status).toBe(400)
+    const sprintIssues = await api(t.app, `${A}/sprint/1/issue`)
+    expect(sprintIssues.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
+  })
+
+  it('clears the sprint of done issues on close so reopened issues return to the backlog', async () => {
+    const transition = async (name: string) => {
+      const target = (await api(t.app, '/rest/api/3/issue/EMU-1/transitions')).json.transitions.find(
+        (tr: any) => tr.name === name,
+      )
+      await api(t.app, '/rest/api/3/issue/EMU-1/transitions', { method: 'POST', body: { transition: { id: target.id } } })
+    }
+    await api(t.app, `${A}/sprint/1`, {
+      method: 'POST',
+      body: { state: 'active', startDate: '2026-10-01T09:00:00.000Z', endDate: '2026-10-14T17:00:00.000Z' },
+    })
+    await transition('Done')
+    await api(t.app, `${A}/sprint/1`, { method: 'POST', body: { state: 'closed' } })
+    const issue = getJiraStore(t.store).issues.findOneBy('key', 'EMU-1')!
+    expect(issue.sprint_id).toBeNull()
+    expect(issue.closed_sprint_ids).toEqual([1])
+
+    await transition('To Do')
+    const backlog = await api(t.app, `${A}/board/1/backlog`)
+    expect(backlog.json.issues.map((i: any) => i.key)).toContain('EMU-1')
+  })
+
+  it('rejects non-string sprint goals on create and update', async () => {
+    const created = await api(t.app, `${A}/sprint`, { method: 'POST', body: { name: 'G', originBoardId: 1, goal: 5 } })
+    expect(created.status).toBe(400)
+    const sprint = (await api(t.app, `${A}/sprint`, { method: 'POST', body: { name: 'G', originBoardId: 1 } })).json
+    expect(sprint.goal).toBe('')
+    const update = await api(t.app, `${A}/sprint/${sprint.id}`, { method: 'POST', body: { goal: { text: 'x' } } })
+    expect(update.status).toBe(400)
+  })
+
+  it('404s a sprint move when the sprint is deleted while the body is read', async () => {
+    const js = getJiraStore(t.store)
+    const sprint = (await api(t.app, `${A}/sprint`, { method: 'POST', body: { name: 'Gone', originBoardId: 1 } })).json
+    const body = new ReadableStream({
+      pull(controller) {
+        js.sprints.delete(sprint.id)
+        controller.enqueue(new TextEncoder().encode(JSON.stringify({ issues: ['EMU-2'] })))
+        controller.close()
+      },
+    })
+    const res = await t.app.request(`${jiraTestBaseUrl}${A}/sprint/${sprint.id}/issue`, {
+      method: 'POST',
+      headers: { 'Authorization': basicAuth(), 'Content-Type': 'application/json' },
+      body,
+      duplex: 'half',
+    } as RequestInit)
+    expect(res.status).toBe(404)
+    expect(js.issues.findOneBy('key', 'EMU-2')?.sprint_id).toBeNull()
+  })
+
   it('updates and deletes sprints', async () => {
     const created = await api(t.app, `${A}/sprint`, { method: 'POST', body: { name: 'Tmp', originBoardId: 1 } })
     const put = await api(t.app, `${A}/sprint/${created.json.id}`, {
@@ -207,7 +271,7 @@ describe('Jira Agile API', () => {
     expect(sprintIssues.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
     const backlog = await api(t.app, '/rest/software/1.0/board/1/backlog')
     expect(backlog.json.total).toBe(2)
-    const move = await api(t.app, '/rest/agile/1.0/backlog/1/issue', { method: 'POST', body: { issues: ['EMU-1'] } })
+    const move = await api(t.app, '/rest/software/1.0/backlog/1/issue', { method: 'POST', body: { issues: ['EMU-1'] } })
     expect(move.status).toBe(204)
   })
 
@@ -231,6 +295,8 @@ describe('Jira Agile API', () => {
     })
     expect(edit.status).toBe(204)
 
+    const inSecond = await api(t.app, `${A}/sprint/${second.id}/issue`)
+    expect(inSecond.json.issues.map((i: any) => i.key)).toContain('EMU-2')
     const inFirst = await api(t.app, `${A}/sprint/${first.id}/issue`)
     expect(inFirst.json.issues.map((i: any) => i.key)).toContain('EMU-2')
   })

@@ -74,7 +74,7 @@ export const SYSTEM_FIELDS: FieldDef[] = [
   sys('timespent', 'Time Spent', 'number', ['timespent'], { orderable: false }),
   sys('aggregatetimespent', 'Σ Time Spent', 'number', ['aggregatetimespent'], { orderable: false }),
   sys('workratio', 'Work Ratio', 'number', ['workratio'], { orderable: false }),
-  sys('lastViewed', 'Last Viewed', 'datetime', ['lastViewed'], { orderable: false }),
+  sys('lastViewed', 'Last Viewed', 'datetime', ['lastViewed'], { orderable: false, searchable: false }),
   sys('votes', 'Votes', 'votes', ['votes'], { orderable: false }),
 ]
 

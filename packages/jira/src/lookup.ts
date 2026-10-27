@@ -13,10 +13,8 @@ function findByIdOrName<T extends Entity>(collection: Collection<T>, ref: Ref, n
     return undefined
   }
   const id = asId(ref)
-  if (id !== undefined) {
-    return collection.get(id)
-  }
-  return collection.all().find(item => names(item).some(name => eqi(name, String(ref))))
+  const byId = id !== undefined ? collection.get(id) : undefined
+  return byId ?? collection.all().find(item => names(item).some(name => eqi(name, String(ref))))
 }
 
 export function findProject(js: JiraStore, ref: Ref) {

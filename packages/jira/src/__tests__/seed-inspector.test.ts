@@ -87,6 +87,7 @@ describe('seedFromConfig', () => {
     expect(issue.fields.fixVersions[0].name).toBe('2.0')
     expect(issue.fields.customfield_10020[0].name).toBe('WEB Sprint 1')
     expect(issue.fields.customfield_10050.value).toBe('Red')
+    expect(issue.fields.labels).toEqual(['marketing'])
     expect(issue.fields.comment.comments[0].author.emailAddress).toBe('alice@example.com')
     expect(issue.fields.issuelinks[0].inwardIssue.key).toBe('WEB-2')
 
@@ -124,6 +125,64 @@ describe('seedFromConfig', () => {
     })
     expect(search.json.issues).toHaveLength(1)
     expect(search.json.issues[0].fields.customfield_10020[0].state).toBe('closed')
+  })
+
+  it('gives each configured option a stable id and lists options in edit metadata', async () => {
+    const edit = await api(t.app, '/rest/api/3/issue/WEB-2', {
+      method: 'PUT',
+      body: { fields: { customfield_10050: { value: 'Blue' } } },
+    })
+    expect(edit.status).toBe(204)
+    const red = (await api(t.app, '/rest/api/3/issue/WEB-1')).json.fields.customfield_10050
+    const blue = (await api(t.app, '/rest/api/3/issue/WEB-2')).json.fields.customfield_10050
+    expect(red.id).not.toBe(blue.id)
+    expect(red.self).toEndWith(`/customFieldOption/${red.id}`)
+    expect(blue.self).toEndWith(`/customFieldOption/${blue.id}`)
+
+    const meta = (await api(t.app, '/rest/api/3/issue/WEB-1/editmeta')).json.fields.customfield_10050
+    expect(meta.allowedValues).toEqual([red, blue])
+  })
+
+  it('sets option fields by an advertised option id', async () => {
+    const meta = (await api(t.app, '/rest/api/3/issue/WEB-1/editmeta')).json.fields.customfield_10050
+    const blue = meta.allowedValues.find((o: any) => o.value === 'Blue')
+    const edit = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10050: { id: blue.id } } },
+    })
+    expect(edit.status).toBe(204)
+    expect((await api(t.app, '/rest/api/3/issue/WEB-1')).json.fields.customfield_10050.value).toBe('Blue')
+    const unknown = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10050: { id: '1' } } },
+    })
+    expect(unknown.status).toBe(400)
+  })
+
+  it('rejects non-string elements in custom array fields', async () => {
+    seedFromConfig(t.store, jiraTestBaseUrl, { custom_fields: [{ id: 'customfield_10060', name: 'Tags', type: 'array' }] })
+    const bad = await api(t.app, '/rest/api/3/issue/WEB-1', {
+      method: 'PUT',
+      body: { fields: { customfield_10060: ['a', 1] } },
+    })
+    expect(bad.status).toBe(400)
+    const ok = await api(t.app, '/rest/api/3/issue/WEB-1', { method: 'PUT', body: { fields: { customfield_10060: ['a'] } } })
+    expect(ok.status).toBe(204)
+    expect((await api(t.app, '/rest/api/3/issue/WEB-1')).json.fields.customfield_10060).toEqual(['a'])
+  })
+
+  it('resolves numeric sprint references only within the issue project', async () => {
+    const js = getJiraStore(t.store)
+    const emuSprint = js.sprints.all().find(s => s.name === 'EMU Sprint 1')!
+    const webSprint = js.sprints.all().find(s => s.name === 'WEB Sprint 1')!
+    seedFromConfig(t.store, jiraTestBaseUrl, {
+      issues: [
+        { project: 'WEB', summary: 'Foreign id', sprint: String(emuSprint.id) },
+        { project: 'WEB', summary: 'Own id', sprint: String(webSprint.id) },
+      ],
+    })
+    expect(js.issues.all().find(i => i.summary === 'Foreign id')?.sprint_id).toBeNull()
+    expect(js.issues.all().find(i => i.summary === 'Own id')?.sprint_id).toBe(webSprint.id)
   })
 
   it('lets config toggle strict scopes', () => {

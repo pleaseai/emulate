@@ -122,13 +122,14 @@ export async function emitCommentEvent(
   issue: JiraIssue,
   comment: JiraComment,
 ): Promise<void> {
-  const webhooks = matchingWebhooks(actor, event, issue)
+  const current = actor.js.issues.get(issue.id) ?? issue
+  const webhooks = matchingWebhooks(actor, event, current)
   if (webhooks.length === 0) {
     return
   }
   const fmt = payloadFmt(actor)
-  const ref = formatIssueRef(fmt, issue)
-  const project = actor.js.projects.get(issue.project_id)
+  const ref = formatIssueRef(fmt, current)
+  const project = actor.js.projects.get(current.project_id)
   await deliverAll(actor, webhooks, event, {
     timestamp: Date.now(),
     webhookEvent: event,

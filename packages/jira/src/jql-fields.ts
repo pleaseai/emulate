@@ -138,7 +138,70 @@ const sprintField: FieldHandler = {
   ),
 }
 
+function numberField(name: string, value: (issue: JiraIssue, ctx: EvalContext) => number | null): FieldHandler {
+  return {
+    name,
+    kind: 'number',
+    get: (issue, ctx) => {
+      const n = value(issue, ctx)
+      return n === null ? [] : [n]
+    },
+  }
+}
+
+function timeSpent(issue: JiraIssue, ctx: EvalContext): number {
+  return ctx.js.worklogs.findBy('issue_id', issue.id).reduce((sum, w) => sum + w.time_spent_seconds, 0)
+}
+
+function subtasksOf(issue: JiraIssue, ctx: EvalContext): JiraIssue[] {
+  return ctx.js.issues
+    .findBy('parent_id', issue.id)
+    .filter(child => ctx.js.issueTypes.get(child.issue_type_id)?.subtask)
+}
+
 const SYSTEM_JQL: Record<string, FieldHandler & { aliases?: string[] }> = {
+  timespent: numberField('timespent', (issue, ctx) => timeSpent(issue, ctx) || null),
+  aggregatetimespent: numberField(
+    'aggregatetimespent',
+    (issue, ctx) =>
+      subtasksOf(issue, ctx).reduce((sum, child) => sum + timeSpent(child, ctx), timeSpent(issue, ctx)) || null,
+  ),
+  workratio: numberField('workratio', () => -1),
+  votes: numberField('votes', () => 0),
+  subtasks: {
+    name: 'subtasks',
+    kind: 'ref',
+    get: (issue, ctx) => subtasksOf(issue, ctx).map(child => child.id),
+    resolve: resolveIssue,
+  },
+  issuelinks: {
+    name: 'issueLink',
+    kind: 'ref',
+    get: (issue, ctx) => [
+      ...ctx.js.issueLinks.findBy('inward_issue_id', issue.id).map(link => link.outward_issue_id),
+      ...ctx.js.issueLinks.findBy('outward_issue_id', issue.id).map(link => link.inward_issue_id),
+    ],
+    resolve: resolveIssue,
+  },
+  worklogComment: {
+    name: 'worklogComment',
+    kind: 'text',
+    get: (issue, ctx) => {
+      const text = ctx.js.worklogs
+        .findBy('issue_id', issue.id)
+        .map(worklog => adfToText(worklog.comment))
+        .filter(Boolean)
+        .join('\n')
+      return text ? [text] : []
+    },
+    aliases: ['worklogComment'],
+  },
+  worklogDate: {
+    name: 'worklogDate',
+    kind: 'date',
+    get: (issue, ctx) => ctx.js.worklogs.findBy('issue_id', issue.id).flatMap(worklog => dateOf(worklog.started)),
+    aliases: ['worklogDate'],
+  },
   project: {
     name: 'project',
     kind: 'ref',

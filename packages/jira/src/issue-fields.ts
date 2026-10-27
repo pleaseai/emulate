@@ -4,6 +4,7 @@ import type { Fmt } from './formatters.js'
 import type { JiraStore } from './store.js'
 import { isAdfDoc, textToAdf } from './adf.js'
 import { fieldError, isIsoDate } from './context.js'
+import { customOptionId } from './formatters.js'
 import {
   findComponent,
   findIssue,
@@ -278,13 +279,18 @@ function setCustomField(actor: Actor, draft: JiraIssue, field: string, value: un
       }
       break
     case 'array':
-      if (!Array.isArray(value)) {
+      if (!Array.isArray(value) || !value.every(item => typeof item === 'string')) {
         throw invalid()
       }
-      stored = value.map(String)
+      stored = value
       break
     case 'option': {
-      const option = typeof value === 'string' ? value : (value as { value?: string }).value
+      const ref = (value ?? {}) as { id?: unknown, value?: string }
+      const option = typeof value === 'string'
+        ? value
+        : ref.id !== undefined
+          ? def.options.find(o => String(customOptionId(def, o)) === String(ref.id))
+          : ref.value
       if (!option || (def.options.length > 0 && !def.options.includes(option))) {
         throw invalid()
       }

@@ -142,8 +142,8 @@ describe('Atlassian OAuth 2.0 (3LO) and the API gateway', () => {
   })
 
   it('requires an OAuth access token for accessible resources and /me', async () => {
-    expect((await api(t.app, '/oauth/token/accessible-resources')).status).toBe(401)
-    expect((await api(t.app, '/me')).status).toBe(401)
+    expect((await api(t.app, '/oauth/token/accessible-resources', { auth: null })).status).toBe(401)
+    expect((await api(t.app, '/me', { auth: null })).status).toBe(401)
     const apiToken = getJiraStore(t.store).apiTokens.all()[0].token
     expect((await api(t.app, '/me', { auth: `Bearer ${apiToken}` })).status).toBe(401)
   })

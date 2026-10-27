@@ -273,6 +273,13 @@ describe('search endpoints', () => {
     expect(res.json.issues).toHaveLength(2)
   })
 
+  it('rejects fractional POST pagination values', async () => {
+    for (const body of [{ maxResults: 1.5 }, { startAt: 1.5 }]) {
+      const res = await api(t.app, '/rest/api/3/search', { method: 'POST', body: { jql: 'project = EMU', ...body } })
+      expect(res.status).toBe(400)
+    }
+  })
+
   it('returns only ids by default from /search/jql', async () => {
     const res = await api(t.app, '/rest/api/3/search/jql?jql=project%3DEMU')
     expect(res.json.issues[0].id).toBeTruthy()

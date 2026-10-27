@@ -1,6 +1,7 @@
 import type { JiraRequest } from './context.js'
 import type {
   JiraComponent,
+  JiraCustomField,
   JiraIssueType,
   JiraPriority,
   JiraProject,
@@ -161,6 +162,23 @@ export function formatComponent(r: Fmt, component: JiraComponent) {
     project: project?.key,
     projectId: component.project_id,
   }
+}
+
+export function customOptionId(field: JiraCustomField, value: string): number {
+  const index = field.options.indexOf(value)
+  if (index >= 0) {
+    return 10000 + field.id * 1_000_000 + index
+  }
+  let hash = 2166136261
+  for (const char of `${field.id}:${value}`) {
+    hash = Math.imul(hash ^ char.codePointAt(0)!, 16777619) >>> 0
+  }
+  return 1_000_000_000 + (hash % 1_000_000_000)
+}
+
+export function formatCustomOption(r: Fmt, field: JiraCustomField, value: string) {
+  const id = customOptionId(field, value)
+  return { self: restUrl(r, `/customFieldOption/${id}`), value, id: String(id) }
 }
 
 export function formatVersion(r: Fmt, version: JiraVersion) {

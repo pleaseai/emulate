@@ -115,7 +115,7 @@ describe('Jira webhooks', () => {
       method: 'POST',
       body: { key: 'OPS', name: 'Ops', projectTypeKey: 'software' },
     })
-    await createIssue('Ignored', 'OPS')
+    expect((await createIssue('Ignored', 'OPS')).status).toBe(201)
     expect(captured).toHaveLength(0)
 
     const res = await createIssue('Delivered')
@@ -194,9 +194,29 @@ describe('Jira webhooks', () => {
     expect(captured.map(c => c.json.webhookEvent).slice(2)).toEqual(['comment_updated', 'comment_deleted'])
   })
 
+  it('matches comment webhook filters against the freshly touched issue', async () => {
+    const js = getJiraStore(t.store)
+    js.issues.findOneBy('key', 'EMU-1')!.updated_at = '2020-01-01T00:00:00.000Z'
+    await register({
+      name: 'Recent',
+      url: 'https://example.test/recent',
+      events: ['comment_created'],
+      filters: { 'issue-related-events-section': 'updated >= -1h' },
+    })
+    const created = await api(t.app, '/rest/api/3/issue/EMU-1/comment', { method: 'POST', body: { body: adf('Hi') } })
+    expect(created.status).toBe(201)
+    expect(captured.map(c => c.json.webhookEvent)).toEqual(['comment_created'])
+  })
+
   it('delivers issue_deleted and skips disabled webhooks', async () => {
     await register({ name: 'Deletes', url: 'https://example.test/d', events: ['jira:issue_deleted'] })
-    await register({ name: 'Off', url: 'https://example.test/off', events: ['jira:issue_deleted'], enabled: false })
+    const off = await register({
+      name: 'Off',
+      url: 'https://example.test/off',
+      events: ['jira:issue_deleted'],
+      enabled: false,
+    })
+    expect(off.status).toBe(201)
     await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'DELETE' })
     expect(captured).toHaveLength(1)
     expect(captured[0].json.webhookEvent).toBe('jira:issue_deleted')

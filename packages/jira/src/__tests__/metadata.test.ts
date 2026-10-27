@@ -27,6 +27,11 @@ describe('Jira metadata', () => {
       expect(res.status).toBe(200)
       expect(res.json.map((u: any) => u.emailAddress)).toEqual([DEFAULT_DEV_EMAIL])
 
+      const byName = await api(t.app, '/rest/api/3/user/search?query=Developer')
+      expect(byName.json.map((u: any) => u.emailAddress)).toEqual([DEFAULT_DEV_EMAIL])
+      const byEmail = await api(t.app, '/rest/api/3/user/search?query=%40jira.local')
+      expect(byEmail.json).toHaveLength(2)
+
       const all = await api(t.app, '/rest/api/3/users/search')
       expect(all.json.length).toBe(2)
     })

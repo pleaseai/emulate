@@ -54,9 +54,37 @@ function textMatches(haystack: string, query: string): boolean {
     if (!pattern.replace(/[*?]/g, '')) {
       return true
     }
-    const regex = new RegExp(`^${pattern.replace(/\*/g, '.*').replace(/\?/g, '.')}`, 'u')
-    return words.some(word => regex.test(word))
+    const chars = Array.from(`${pattern.replace(/\*+/g, '*')}*`)
+    return words.some(word => wildcardMatch(chars, Array.from(word)))
   })
+}
+
+function wildcardMatch(pattern: string[], text: string[]): boolean {
+  let p = 0
+  let t = 0
+  let star = -1
+  let mark = 0
+  while (t < text.length) {
+    if (p < pattern.length && (pattern[p] === '?' || pattern[p] === text[t])) {
+      p++
+      t++
+    }
+    else if (p < pattern.length && pattern[p] === '*') {
+      star = p++
+      mark = t
+    }
+    else if (star !== -1) {
+      p = star + 1
+      t = ++mark
+    }
+    else {
+      return false
+    }
+  }
+  while (pattern[p] === '*') {
+    p++
+  }
+  return p === pattern.length
 }
 
 function compileClause(node: Extract<JqlNode, { type: 'clause' }>, ctx: EvalContext): (issue: JiraIssue) => boolean {
@@ -85,22 +113,25 @@ function compileClause(node: Extract<JqlNode, { type: 'clause' }>, ctx: EvalCont
   const operands = node.listFn ? [node.listFn] : node.operands
   const resolved = operands.map(operand => resolveOperand(handler, operand, ctx))
   const wantsEmpty = resolved.some(entry => entry.empty)
-  const values = resolved.flatMap(entry => (entry.empty ? [] : entry.values))
-  const dayPrecision = resolved.some(entry => !entry.empty && entry.dayPrecision)
+  const candidates = resolved.flatMap(entry =>
+    entry.empty ? [] : entry.values.map(value => ({ value, day: handler.kind === 'date' && !!entry.dayPrecision })),
+  )
+  const values = candidates.map(candidate => candidate.value)
+  const dayPrecision = candidates.some(candidate => candidate.day)
 
-  const eq = (a: Scalar, b: Scalar) =>
-    handler.kind === 'date' && dayPrecision
-      ? Math.floor(Number(a) / DAY) === Math.floor(Number(b) / DAY)
-      : typeof a === 'string' && typeof b === 'string'
-        ? eqi(a, b)
-        : a === b
+  const eq = (a: Scalar, b: { value: Scalar, day: boolean }) =>
+    b.day
+      ? Math.floor(Number(a) / DAY) === Math.floor(Number(b.value) / DAY)
+      : typeof a === 'string' && typeof b.value === 'string'
+        ? eqi(a, b.value)
+        : a === b.value
 
   const matchesAny = (issue: JiraIssue) => {
     const current = handler.get(issue, ctx)
     if (current.length === 0) {
       return wantsEmpty
     }
-    return current.some(value => values.some(candidate => eq(value, candidate)))
+    return current.some(value => candidates.some(candidate => eq(value, candidate)))
   }
 
   if (op === '=' || op === 'in') {

@@ -20,6 +20,9 @@ function isAdfNode(value: unknown): boolean {
   if (node.text !== undefined && typeof node.text !== 'string') {
     return false
   }
+  if (node.attrs !== undefined && !isPlainObject(node.attrs)) {
+    return false
+  }
   if (node.marks !== undefined && !(Array.isArray(node.marks) && node.marks.every(isAdfMark))) {
     return false
   }
@@ -34,7 +37,11 @@ function isAdfMark(value: unknown): boolean {
   if (typeof mark.type !== 'string') {
     return false
   }
-  return mark.attrs === undefined || (!!mark.attrs && typeof mark.attrs === 'object' && !Array.isArray(mark.attrs))
+  return mark.attrs === undefined || isPlainObject(mark.attrs)
+}
+
+function isPlainObject(value: unknown): boolean {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
 export function textToAdf(text: string): AdfNode {
@@ -61,6 +68,9 @@ function inlineText(node: AdfNode): string {
       return String(node.attrs?.text ?? node.attrs?.shortName ?? node.attrs?.id ?? '')
     case 'inlineCard':
       return String(node.attrs?.url ?? '')
+    case 'status':
+    case 'placeholder':
+      return String(node.attrs?.text ?? '')
     default:
       return (node.content ?? []).map(inlineText).join('')
   }

@@ -383,11 +383,11 @@ export function seedFromConfig(store: Store, baseUrl: string, config: JiraSeedCo
       = findUser(js, issueCfg.reporter ?? '') ?? js.users.all().find(user => user.admin) ?? js.users.all()[0]
     const actor = systemActor(store, js, baseUrl, reporter)
     const parent = findIssueRef(issueCfg.parent, project.id)
-    const sprint = issueCfg.sprint
-      ? (js.sprints
-          .all()
-          .find(s => s.name === issueCfg.sprint && js.boards.get(s.board_id)?.project_id === project.id)
-          ?? (/^\d+$/.test(issueCfg.sprint) ? js.sprints.get(Number(issueCfg.sprint)) : undefined))
+    const sprintRef = issueCfg.sprint
+    const projectSprints = js.sprints.all().filter(s => js.boards.get(s.board_id)?.project_id === project.id)
+    const sprint = sprintRef
+      ? (projectSprints.find(s => s.name === sprintRef)
+        ?? projectSprints.find(s => /^\d+$/.test(sprintRef) && s.id === Number(sprintRef)))
       : undefined
     const fields: Record<string, unknown> = {
       project: { key: project.key },

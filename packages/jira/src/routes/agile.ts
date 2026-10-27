@@ -26,6 +26,16 @@ function sprintName(value: unknown): string {
   return name
 }
 
+function sprintGoal(value: unknown): string {
+  if (value === undefined || value === null) {
+    return ''
+  }
+  if (typeof value !== 'string') {
+    throw new JiraError(400, [], { goal: 'Sprint goal must be a string.' })
+  }
+  return value
+}
+
 function sprintDate(field: string, value: unknown): string | null {
   if (value === undefined || value === null || value === '') {
     return null
@@ -107,7 +117,7 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
     }
   }
 
-  const moveIssues = async (r: JiraRequest, refs: unknown, sprintId: number | null) => {
+  const moveIssues = async (r: JiraRequest, refs: unknown, sprintId: number | null, projectId?: number) => {
     if (!Array.isArray(refs) || refs.length === 0) {
       throw new JiraError(400, ['At least one issue must be specified.'])
     }
@@ -121,10 +131,9 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
       }
       return issue
     })
-    const sprintProjectId = sprintId === null ? undefined : r.js.boards.get(r.js.sprints.get(sprintId)!.board_id)?.project_id
-    const foreign = issues.find(issue => sprintProjectId !== undefined && issue.project_id !== sprintProjectId)
+    const foreign = issues.find(issue => projectId !== undefined && issue.project_id !== projectId)
     if (foreign) {
-      throw new JiraError(400, [`Issue '${foreign.key}' does not belong to the sprint's board.`])
+      throw new JiraError(400, [`Issue '${foreign.key}' does not belong to the board's project.`])
     }
     for (const issue of issues) {
       await emitEditEvents(r, editIssue(r, issue, { fields: { [sprintFieldId(r)]: sprintId } }))
@@ -314,7 +323,7 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
             board_id: board.id,
             name,
             state: 'future',
-            goal: body.goal ?? '',
+            goal: sprintGoal(body.goal),
             start_date: sprintDate('startDate', body.startDate),
             end_date: sprintDate('endDate', body.endDate),
             complete_date: null,
@@ -338,7 +347,7 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
           const next: JiraSprint = {
             ...sprint,
             name: body.name !== undefined ? sprintName(body.name) : sprint.name,
-            goal: typeof body.goal === 'string' ? body.goal : sprint.goal,
+            goal: body.goal !== undefined ? sprintGoal(body.goal) : sprint.goal,
             start_date: body.startDate !== undefined ? sprintDate('startDate', body.startDate) : sprint.start_date,
             end_date: body.endDate !== undefined ? sprintDate('endDate', body.endDate) : sprint.end_date,
           }
@@ -405,12 +414,13 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
       `${P}/sprint/:sprintId/issue`,
       handle(
         async (r) => {
+          requireSprint(r)
+          const body = await readJson(r.c)
           const sprint = requireSprint(r)
           if (sprint.state === 'closed') {
             throw new JiraError(400, ['Issues cannot be moved to a closed sprint.'])
           }
-          const body = await readJson(r.c)
-          await moveIssues(r, body.issues, sprint.id)
+          await moveIssues(r, body.issues, sprint.id, r.js.boards.get(sprint.board_id)?.project_id)
           return r.c.body(null, 204)
         },
         { scopes: WRITE },
@@ -423,7 +433,7 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
           requireBoard(r)
         }
         const body = await readJson(r.c)
-        await moveIssues(r, body.issues, null)
+        await moveIssues(r, body.issues, null, boardScoped ? requireBoard(r).project_id : undefined)
         return r.c.body(null, 204)
       },
       { scopes: WRITE },
@@ -461,6 +471,10 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
 async function closeSprintIssues(r: JiraRequest, sprint: JiraSprint): Promise<void> {
   for (const issue of r.js.issues.findBy('sprint_id', sprint.id)) {
     if (r.js.statuses.get(issue.status_id)?.category === 'done') {
+      r.js.issues.update(issue.id, {
+        sprint_id: null,
+        closed_sprint_ids: [...new Set([...issue.closed_sprint_ids, sprint.id])],
+      })
       continue
     }
     const result = editIssue(r, issue, {}, (draft) => {

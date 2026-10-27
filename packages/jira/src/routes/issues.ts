@@ -16,6 +16,7 @@ import {
 import { allFields } from '../fields.js'
 import {
   formatComponent,
+  formatCustomOption,
   formatIssueType,
   formatPriority,
   formatVersion,
@@ -284,6 +285,11 @@ function createFieldMeta(r: JiraRequest, project: JiraProject, subtask: boolean)
     components: () =>
       r.js.components.findBy('project_id', project.id).map(component => formatComponent(r, component)),
     fixVersions: () => r.js.versions.findBy('project_id', project.id).map(version => formatVersion(r, version)),
+  }
+  for (const custom of r.js.customFields.all()) {
+    if (custom.type === 'option' && custom.options.length > 0) {
+      allowed[custom.field_id] = () => custom.options.map(value => formatCustomOption(r, custom, value))
+    }
   }
   return allFields(r.js)
     .filter((field: FieldDef) => field.custom || editable.has(field.id))

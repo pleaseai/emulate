@@ -153,8 +153,11 @@ export function callFunction(fn: { name: string, args: string[] }, ctx: EvalCont
     case 'unreleasedversions': {
       const released = name === 'releasedversions'
       const project = fn.args[0]
-        ? js.projects.all().find(p => eqi(p.key, fn.args[0]) || String(p.id) === fn.args[0])
+        ? js.projects.all().find(p => eqi(p.key, fn.args[0]) || eqi(p.name, fn.args[0]) || String(p.id) === fn.args[0])
         : undefined
+      if (fn.args[0] && !project) {
+        throw new JqlError(`Project '${fn.args[0]}' could not be found in function '${fn.name}'.`)
+      }
       return js.versions
         .all()
         .filter(v => v.released === released && (!project || v.project_id === project.id))

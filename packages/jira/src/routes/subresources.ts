@@ -22,14 +22,14 @@ import { insertFrom } from '../store.js'
 import { emitCommentEvent, emitIssueEvent } from '../webhooks.js'
 
 function timeSpentSeconds(body: { timeSpent?: unknown, timeSpentSeconds?: unknown }): number | undefined {
-  if (typeof body.timeSpentSeconds === 'number') {
-    if (!Number.isSafeInteger(body.timeSpentSeconds) || body.timeSpentSeconds <= 0) {
+  if (body.timeSpentSeconds !== undefined) {
+    if (!Number.isSafeInteger(body.timeSpentSeconds) || (body.timeSpentSeconds as number) <= 0) {
       throw fieldError('timeLogged', 'You must indicate the time spent working.')
     }
-    return body.timeSpentSeconds
+    return body.timeSpentSeconds as number
   }
-  if (typeof body.timeSpent === 'string') {
-    const seconds = parseDuration(body.timeSpent)
+  if (body.timeSpent !== undefined) {
+    const seconds = typeof body.timeSpent === 'string' ? parseDuration(body.timeSpent) : null
     if (!seconds) {
       throw fieldError('timeLogged', 'Invalid time duration entered.')
     }
@@ -379,6 +379,8 @@ export function subresourceRoutes({ app, store, baseUrl }: RouteContext): void {
       (r) => {
         const link = requireLink(r)
         r.js.issueLinks.delete(link.id)
+        touchIssue(r.js, link.inward_issue_id)
+        touchIssue(r.js, link.outward_issue_id)
         return r.c.body(null, 204)
       },
       { scopes: WRITE },
@@ -398,8 +400,11 @@ function readCommentBody(r: JiraRequest, value: unknown) {
 }
 
 function parseStarted(value: unknown): string {
-  if (typeof value !== 'string') {
+  if (value === undefined) {
     return new Date().toISOString()
+  }
+  if (typeof value !== 'string') {
+    throw fieldError('started', 'Invalid started date.')
   }
   const normalized = value.replace(/([+-]\d{2})(\d{2})$/, '$1:$2')
   const date = new Date(normalized)

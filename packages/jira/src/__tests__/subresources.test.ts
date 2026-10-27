@@ -69,9 +69,13 @@ describe('Jira issue sub-resources', () => {
 
     it('fetches comments across issues by id list', async () => {
       const a = await api(t.app, '/rest/api/3/issue/EMU-1/comment', { method: 'POST', body: { body: adf('a') } })
-      const res = await api(t.app, '/rest/api/3/comment/list', { method: 'POST', body: { ids: [Number(a.json.id)] } })
+      const b = await api(t.app, '/rest/api/3/issue/EMU-2/comment', { method: 'POST', body: { body: adf('b') } })
+      const res = await api(t.app, '/rest/api/3/comment/list', {
+        method: 'POST',
+        body: { ids: [Number(a.json.id), Number(b.json.id)] },
+      })
       expect(res.status).toBe(200)
-      expect(res.json.values.map((c: any) => c.id)).toEqual([a.json.id])
+      expect(res.json.values.map((c: any) => c.id).sort()).toEqual([a.json.id, b.json.id].sort())
     })
   })
 
@@ -95,7 +99,9 @@ describe('Jira issue sub-resources', () => {
         method: 'DELETE',
       })
       expect(remove.status).toBe(204)
-      expect((await api(t.app, '/rest/api/3/issue/EMU-1/watchers')).json.watchCount).toBe(1)
+      const removed = (await api(t.app, '/rest/api/3/issue/EMU-1/watchers')).json
+      expect(removed.watchCount).toBe(1)
+      expect(removed.watchers.map((w: any) => w.accountId)).not.toContain(dev.account_id)
     })
 
     it('adds the current user when the body is empty', async () => {
@@ -284,6 +290,46 @@ describe('Jira issue sub-resources', () => {
       await api(t.app, `/rest/api/3/issue/EMU-1/comment/${created.json.id}`, { method: 'PUT', body: { body: adf('b') } })
       const after = (await api(t.app, '/rest/api/3/issue/EMU-1')).json.fields.updated
       expect(after).not.toBe(before)
+    })
+
+    it('touches both issues when a link is deleted', async () => {
+      const js = getJiraStore(t.store)
+      const other = await api(t.app, '/rest/api/3/issue', {
+        method: 'POST',
+        body: { fields: { project: { key: 'EMU' }, issuetype: { name: 'Task' }, summary: 'Other' } },
+      })
+      await api(t.app, '/rest/api/3/issueLink', {
+        method: 'POST',
+        body: { type: { name: 'Blocks' }, inwardIssue: { key: 'EMU-1' }, outwardIssue: { key: other.json.key } },
+      })
+      const old = '2020-01-01T00:00:00.000Z'
+      for (const key of ['EMU-1', other.json.key]) {
+        js.issues.findOneBy('key', key)!.updated_at = old
+      }
+      const link = js.issueLinks.all()[0]
+      expect((await api(t.app, `/rest/api/3/issueLink/${link.id}`, { method: 'DELETE' })).status).toBe(204)
+      for (const key of ['EMU-1', other.json.key]) {
+        expect(js.issues.findOneBy('key', key)!.updated_at).not.toBe(old)
+      }
+    })
+
+    it('rejects explicitly invalid worklog durations and start dates', async () => {
+      const created = await api(t.app, '/rest/api/3/issue/EMU-1/worklog', {
+        method: 'POST',
+        body: { timeSpentSeconds: 60 },
+      })
+      const url = `/rest/api/3/issue/EMU-1/worklog/${created.json.id}`
+      for (const body of [{ timeSpentSeconds: '60' }, { timeSpentSeconds: null }, { timeSpent: 60 }]) {
+        expect((await api(t.app, url, { method: 'PUT', body })).status).toBe(400)
+      }
+      const badStart = await api(t.app, '/rest/api/3/issue/EMU-1/worklog', {
+        method: 'POST',
+        body: { timeSpentSeconds: 60, started: 1700000000000 },
+      })
+      expect(badStart.status).toBe(400)
+      expect((await api(t.app, url, { method: 'PUT', body: { started: false } })).status).toBe(400)
+      const list = await api(t.app, '/rest/api/3/issue/EMU-1/worklog')
+      expect(list.json.worklogs.map((w: any) => w.timeSpentSeconds)).toEqual([60])
     })
   })
 })

@@ -161,6 +161,34 @@ describe('Jira issue validation', () => {
       expect((await api(t.app, '/rest/api/2/issue/EMU-1')).status).toBe(200)
     })
 
+    it('rejects ADF nodes whose attrs are not objects', async () => {
+      for (const attrs of ['x', [1], null]) {
+        const description = { type: 'doc', version: 1, content: [{ type: 'paragraph', attrs }] }
+        expect((await createIssue(t, { summary: 'Bad attrs', description })).status).toBe(400)
+      }
+    })
+
+    it('renders status and placeholder inline nodes as v2 text', async () => {
+      const description = {
+        type: 'doc',
+        version: 1,
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'status', attrs: { text: 'IN REVIEW', color: 'blue' } },
+              { type: 'text', text: ' ' },
+              { type: 'placeholder', attrs: { text: 'Type here' } },
+            ],
+          },
+        ],
+      }
+      const created = await createIssue(t, { summary: 'Inline nodes', description })
+      expect(created.status).toBe(201)
+      const v2 = (await api(t.app, `/rest/api/2/issue/${created.json.key}`)).json
+      expect(v2.fields.description).toBe('IN REVIEW Type here')
+    })
+
     it('rejects non-object JSON bodies with 400 but keeps string watcher bodies', async () => {
       for (const raw of ['null', '5', '[]', '"x"']) {
         const res = await api(t.app, '/rest/api/3/search/jql', { method: 'POST', body: raw })

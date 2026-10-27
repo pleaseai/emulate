@@ -14,6 +14,7 @@ import { fieldMetadata } from './fields.js'
 import {
 
   formatComponent,
+  formatCustomOption,
   formatIssueType,
   formatPriority,
   formatProjectRef,
@@ -317,7 +318,7 @@ function customFieldValue(r: Fmt, issue: JiraIssue, field: JiraCustomField): unk
     case 'user':
       return formatUserById(r, value as string | null)
     case 'option':
-      return value == null ? null : { self: restUrl(r, `/customFieldOption/${field.id}`), value, id: String(field.id) }
+      return value == null ? null : formatCustomOption(r, field, String(value))
     default:
       return value ?? null
   }

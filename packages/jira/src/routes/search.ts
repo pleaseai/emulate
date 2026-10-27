@@ -16,11 +16,14 @@ interface SearchParams {
   nextPageToken?: string
 }
 
-function bodyInt(value: unknown, fallback: number): number | undefined {
+function bodyInt(value: unknown, fallback: number, name: string): number | undefined {
   if (typeof value !== 'number') {
     return undefined
   }
-  return Number.isFinite(value) && value >= 0 ? Math.trunc(value) : fallback
+  if (!Number.isSafeInteger(value)) {
+    throw new JiraError(400, [`Invalid value '${value}' for ${name}; expected a non-negative integer.`])
+  }
+  return value >= 0 ? value : fallback
 }
 
 async function searchParams(r: JiraRequest): Promise<SearchParams> {
@@ -39,8 +42,8 @@ async function searchParams(r: JiraRequest): Promise<SearchParams> {
       jql: typeof body.jql === 'string' ? body.jql : '',
       fields: list(body.fields),
       expand: list(body.expand),
-      maxResults: bodyInt(body.maxResults, 50),
-      startAt: bodyInt(body.startAt, 0),
+      maxResults: bodyInt(body.maxResults, 50, 'maxResults'),
+      startAt: bodyInt(body.startAt, 0, 'startAt'),
       nextPageToken: typeof body.nextPageToken === 'string' ? body.nextPageToken : undefined,
     }
   }
