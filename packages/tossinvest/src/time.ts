@@ -103,12 +103,16 @@ export function localMidnightMs(dayIdx: number, offsetMinutes: number): number {
   return dayIdx * DAY_MS - offsetMinutes * 60_000
 }
 
-/** Parses an ISO 8601 date-time query value. `+` decoded as a space is restored. */
+/**
+ * Parses an ISO 8601 date-time query value. `+` decoded as a space is restored,
+ * and a value without an offset is read as KST rather than the host time zone.
+ */
 export function parseDateTime(value: string): number | undefined {
   const normalized = value.trim().replace(' ', '+')
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized)) {
     return undefined
   }
-  const ms = Date.parse(normalized)
+  const hasOffset = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i.test(normalized.slice(16))
+  const ms = Date.parse(hasOffset ? normalized : `${normalized}+09:00`)
   return Number.isNaN(ms) ? undefined : ms
 }

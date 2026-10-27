@@ -1,6 +1,7 @@
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { seedFromConfig, tossinvestPlugin } from '../index.js'
+import { parseDateTime } from '../time.js'
 
 const base = 'http://localhost:4000'
 
@@ -377,5 +378,15 @@ describe('tossinvest emulator: trading', () => {
     const { access_token } = (await tokenRes.json()) as { access_token: string }
     const res = await seededApp.request(`${base}/api/v1/accounts`, { headers: { authorization: `Bearer ${access_token}` } })
     expect(((await res.json()) as { result: unknown[] }).result).toEqual([{ accountNo: '12345678901', accountSeq: 1, accountType: 'BROKERAGE' }])
+  })
+})
+
+describe('tossinvest emulator: time parsing', () => {
+  it('reads offset-less date-times as KST and honors explicit offsets', () => {
+    expect(parseDateTime('2026-10-27T10:00:00')).toBe(Date.parse('2026-10-27T01:00:00Z'))
+    expect(parseDateTime('2026-10-27T10:00')).toBe(Date.parse('2026-10-27T01:00:00Z'))
+    expect(parseDateTime('2026-10-27T10:00:00Z')).toBe(Date.parse('2026-10-27T10:00:00Z'))
+    expect(parseDateTime('2026-10-27T10:00:00 09:00')).toBe(Date.parse('2026-10-27T01:00:00Z'))
+    expect(parseDateTime('2026-10-27T10:00:00-05:00')).toBe(Date.parse('2026-10-27T15:00:00Z'))
   })
 })
