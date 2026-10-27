@@ -20,9 +20,9 @@ export function defineServiceEmulator(service: ServiceName, loaded: LoadedServic
       }
       return value
     },
-    setup({ app, state, baseUrl }) {
+    setup({ app, state, baseUrl, webhooks }) {
       const tokens = state.tokens as TokenSeed | undefined
-      const inner = buildServiceServer({ service, loaded, port: 0, baseUrl, tokens, svcSeedConfig: state })
+      const inner = buildServiceServer({ service, loaded, port: 0, baseUrl, tokens, svcSeedConfig: state, webhooks })
       app.use(c => inner.app.fetch(c.req.raw))
     },
   })

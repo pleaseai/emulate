@@ -1,5 +1,6 @@
 import { assertEmulatorDefinition, createCustomRuntime, isEmulatorDefinition } from '@emulators/core'
 import { afterAll, describe, expect, it } from 'bun:test'
+import { defineServiceEmulator } from '../custom-emulator.js'
 import { SERVICE_NAMES, SERVICE_REGISTRY } from '../registry.js'
 
 const BASE_URL = 'http://localhost:4100'
@@ -80,5 +81,42 @@ describe('service custom emulators', () => {
     expect(() => definition.validateSeed(null)).toThrow('expected an object')
     expect(() => definition.validateSeed([])).toThrow('expected an object')
     expect(definition.validateSeed({ apps: [] })).toEqual({ apps: [] })
+  })
+
+  it('aborts a pending inner webhook delivery when the runtime closes', async () => {
+    let received!: () => void
+    const hit = new Promise<void>((resolve) => {
+      received = resolve
+    })
+    const receiver = Bun.serve({
+      port: 0,
+      fetch: () => {
+        received()
+        return new Promise<Response>(() => {})
+      },
+    })
+    const plugin = {
+      name: 'kakao',
+      register(app: any, _store: unknown, webhooks: any) {
+        webhooks.register({ url: `http://localhost:${receiver.port}/hook`, events: ['*'], active: true, owner: 'o' })
+        app.get('/fire', async (c: any) => {
+          await webhooks.dispatch('ping', undefined, {}, 'o')
+          return c.text('done')
+        })
+      },
+    }
+    const runtime = await createCustomRuntime(defineServiceEmulator('kakao', { plugin } as never), { baseUrl: BASE_URL })
+    try {
+      const pending = Promise.resolve(runtime.request('/fire')).then(() => 'settled')
+      await hit
+      const outcome = await Promise.race([
+        runtime.close().then(() => pending),
+        new Promise(resolve => setTimeout(resolve, 4000, 'timeout')),
+      ])
+      expect(outcome).toBe('settled')
+    }
+    finally {
+      receiver.stop(true)
+    }
   })
 })

@@ -1,4 +1,4 @@
-import type { AppKeyResolver, AuthFallback } from '@emulators/core'
+import type { AppKeyResolver, AuthFallback, WebhookDispatcher } from '@emulators/core'
 import type { LoadedService, ServiceName } from './registry.js'
 import { createServer } from '@emulators/core'
 import { SERVICE_REGISTRY } from './registry.js'
@@ -25,6 +25,8 @@ export interface BuildServerOptions {
   baseUrl: string
   tokens?: TokenSeed
   svcSeedConfig?: Record<string, unknown>
+  /** Use this dispatcher instead of the one `createServer` creates (e.g. a generation-scoped one). */
+  webhooks?: WebhookDispatcher
 }
 
 export function buildServiceServer(options: BuildServerOptions) {
@@ -37,13 +39,17 @@ export function buildServiceServer(options: BuildServerOptions) {
 
   const fallbackUser: AuthFallback = SERVICE_REGISTRY[service].defaultFallback(svcSeedConfig)
 
-  const { app, store, webhooks } = createServer(loaded.plugin, {
+  const plugin = options.webhooks
+    ? { ...loaded.plugin, register: (...args: Parameters<typeof loaded.plugin.register>) => loaded.plugin.register(args[0], args[1], options.webhooks!, args[3], args[4]) }
+    : loaded.plugin
+  const { app, store, webhooks: createdWebhooks } = createServer(plugin, {
     port,
     baseUrl,
     tokens: buildTokens(options.tokens),
     appKeyResolver,
     fallbackUser,
   })
+  const webhooks = options.webhooks ?? createdWebhooks
   cachedResolver = loaded.createAppKeyResolver?.(store)
 
   const seed = () => {

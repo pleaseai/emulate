@@ -42,7 +42,6 @@
       "import": "./dist/api.js"
     },
     "./emulators/*": {
-      "bun": "./src/emulators/*.ts",
       "types": "./dist/emulators/*.d.ts",
       "import": "./dist/emulators/*.js"
     },
