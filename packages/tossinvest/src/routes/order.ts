@@ -3,7 +3,7 @@ import type { ConditionalLeg, OrderSide, OrderType, TimeInForce, TossOrder, Toss
 import type { Ctx } from '../helpers.js'
 import type { PlaceError } from '../trading.js'
 import { fail, fmt, invalid, MSG_INVALID, MSG_INVALID_FIELD, ok, requireAccount, round } from '../helpers.js'
-import { countryOf, currencyOf, tickSize, toKrw } from '../market.js'
+import { countryOf, currencyOf, priceLimits, tickSize, toKrw } from '../market.js'
 import { getTossinvestStore, newOrderId } from '../store.js'
 import { kstIso } from '../time.js'
 import { findOrder, OPEN_STATUSES, placeOrder } from '../trading.js'
@@ -81,6 +81,18 @@ export function checkOrderValue(c: Ctx, store: Store, stock: TossStock, notional
       field: 'confirmHighValueOrder',
       limits: { threshold: String(HIGH_VALUE_KRW), currency: 'KRW' },
     })
+  }
+  return undefined
+}
+
+/** KR daily price band (previous close ±30%); US stocks have no band. */
+function checkPriceLimits(c: Ctx, stock: TossStock, price: number | null): Response | undefined {
+  if (price === null) {
+    return undefined
+  }
+  const { upper, lower } = priceLimits(stock)
+  if ((upper !== null && price > upper) || (lower !== null && price < lower)) {
+    return fail(c, 422, 'price-out-of-range', '주문 가격이 허용 범위를 벗어났습니다.')
   }
   return undefined
 }
@@ -225,6 +237,10 @@ export function orderRoutes({ app, store }: RouteContext): void {
       }
     }
 
+    const limitError = checkPriceLimits(c, stock, price)
+    if (limitError) {
+      return limitError
+    }
     const notional = orderAmount ?? (quantity ?? 0) * (price ?? stock.price)
     const valueError = checkOrderValue(c, store, stock, notional, body.confirmHighValueOrder === true)
     if (valueError) {
@@ -295,6 +311,10 @@ export function orderRoutes({ app, store }: RouteContext): void {
     }
     else if (priceRaw !== undefined) {
       return invalid(c)
+    }
+    const limitError = checkPriceLimits(c, stock, price)
+    if (limitError) {
+      return limitError
     }
     const valueError = checkOrderValue(c, store, stock, quantity * (price ?? stock.price), body.confirmHighValueOrder === true)
     if (valueError) {

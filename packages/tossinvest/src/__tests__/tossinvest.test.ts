@@ -382,6 +382,28 @@ describe('tossinvest emulator: trading', () => {
     expect(tiny.res.status).toBe(400)
   })
 
+  it('rejects KR limit prices outside the daily price band on create and modify', async () => {
+    const token = await fetchToken()
+    const limits = (await api(token, '/api/v1/price-limits?symbol=005930')).json.result
+    const upper = Number(limits.upperLimitPrice)
+    const lower = Number(limits.lowerLimitPrice)
+    const limit = (price: number) => order(token, { symbol: '005930', side: 'BUY', orderType: 'LIMIT', quantity: '1', price: String(price) })
+
+    const above = await limit(upper + 1000)
+    expect(above.res.status).toBe(422)
+    expect((above.json as ApiError).error.code).toBe('price-out-of-range')
+    expect((await limit(lower - 1000)).json.error.code).toBe('price-out-of-range')
+
+    const resting = await limit(lower)
+    expect(resting.res.status).toBe(200)
+    const modify = (price: number) => api(token, `/api/v1/orders/${resting.json.result.orderId}/modify`, {
+      method: 'POST',
+      body: { orderType: 'LIMIT', quantity: '1', price: String(price) },
+    })
+    expect((await modify(upper + 1000)).json.error.code).toBe('price-out-of-range')
+    expect((await modify(lower + 1000)).res.status).toBe(200)
+  })
+
   it('counts settlement days from the next business day for weekend fills', async () => {
     const settlementAt = async (iso: string, symbol: string) => {
       setSystemTime(new Date(iso))
