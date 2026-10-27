@@ -1,0 +1,100 @@
+import type { Collection, Entity } from '@emulators/core'
+import type { PageParams } from './context.js'
+import type { JiraStore } from './store.js'
+import { issueNotFound, JiraError } from './context.js'
+
+const eqi = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+const asId = (ref: string | number) => (/^\d+$/.test(String(ref)) ? Number(ref) : undefined)
+
+type Ref = string | number | undefined | null
+
+function findByIdOrName<T extends Entity>(collection: Collection<T>, ref: Ref, names: (item: T) => string[]) {
+  if (ref === undefined || ref === null || ref === '') {
+    return undefined
+  }
+  const id = asId(ref)
+  const byId = id !== undefined ? collection.get(id) : undefined
+  return byId ?? collection.all().find(item => names(item).some(name => eqi(name, String(ref))))
+}
+
+export function findProject(js: JiraStore, ref: Ref) {
+  if (ref === undefined || ref === null || ref === '') {
+    return undefined
+  }
+  const id = asId(ref)
+  return id !== undefined ? js.projects.get(id) : js.projects.findOneBy('key', String(ref).toUpperCase())
+}
+
+export function requireProject(js: JiraStore, ref: string) {
+  const project = findProject(js, ref)
+  if (!project) {
+    throw new JiraError(404, [`No project could be found with key '${ref}'.`])
+  }
+  return project
+}
+
+export function findIssue(js: JiraStore, ref: Ref) {
+  if (ref === undefined || ref === null || ref === '') {
+    return undefined
+  }
+  const id = asId(ref)
+  return id !== undefined ? js.issues.get(id) : js.issues.findOneBy('key', String(ref).toUpperCase())
+}
+
+export function requireIssue(js: JiraStore, ref: string) {
+  const issue = findIssue(js, ref)
+  if (!issue) {
+    throw issueNotFound()
+  }
+  return issue
+}
+
+export function findUser(js: JiraStore, ref: string | undefined | null) {
+  if (!ref) {
+    return undefined
+  }
+  return (
+    js.users.findOneBy('account_id', ref)
+    ?? js.users.all().find(user => eqi(user.email, ref) || eqi(user.display_name, ref))
+  )
+}
+
+export const findIssueType = (js: JiraStore, ref: Ref) => findByIdOrName(js.issueTypes, ref, type => [type.name])
+export const findStatus = (js: JiraStore, ref: Ref) => findByIdOrName(js.statuses, ref, status => [status.name])
+export function findPriority(js: JiraStore, ref: Ref) {
+  return findByIdOrName(js.priorities, ref, priority => [priority.name])
+}
+export function findResolution(js: JiraStore, ref: Ref) {
+  return findByIdOrName(js.resolutions, ref, resolution => [resolution.name])
+}
+
+export function findComponent(js: JiraStore, projectId: number, ref: { id?: string | number, name?: string }) {
+  const components = js.components.findBy('project_id', projectId)
+  const id = ref.id === undefined ? undefined : asId(ref.id)
+  if (id !== undefined) {
+    return components.find(component => component.id === id)
+  }
+  const name = ref.name ?? (ref.id === undefined ? undefined : String(ref.id))
+  return name ? components.find(component => eqi(component.name, name)) : undefined
+}
+
+export function findVersion(js: JiraStore, projectId: number, ref: { id?: string | number, name?: string }) {
+  const versions = js.versions.findBy('project_id', projectId)
+  const id = ref.id === undefined ? undefined : asId(ref.id)
+  if (id !== undefined) {
+    return versions.find(version => version.id === id)
+  }
+  const name = ref.name ?? (ref.id === undefined ? undefined : String(ref.id))
+  return name ? versions.find(version => eqi(version.name, name)) : undefined
+}
+
+export function paginate<T>(items: T[], { startAt, maxResults }: PageParams) {
+  const values = items.slice(startAt, startAt + maxResults)
+  return {
+    startAt,
+    maxResults,
+    total: items.length,
+    isLast: maxResults === 0 || startAt + values.length >= items.length,
+    values,
+  }
+}

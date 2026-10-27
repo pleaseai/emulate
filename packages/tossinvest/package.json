@@ -10,7 +10,7 @@
   },
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
+      "bun": "./dist/index.js",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
@@ -31,7 +31,7 @@
     "type-check": "bun check"
   },
   "dependencies": {
-    "@emulators/core": "^0.12.2"
+    "@emulators/core": "^0.12.3"
   },
   "devDependencies": {
     "tsup": "^9",

@@ -1,0 +1,41 @@
+{
+  "name": "@pleaseai/emulate-jira",
+  "type": "module",
+  "version": "0.3.0",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pleaseai/emulate.git",
+    "directory": "packages/jira"
+  },
+  "exports": {
+    ".": {
+      "bun": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup --clean",
+    "dev": "tsup --watch",
+    "test": "bun test",
+    "clean": "rm -rf dist .turbo",
+    "type-check": "bun check"
+  },
+  "dependencies": {
+    "@emulators/core": "^0.12.3"
+  },
+  "devDependencies": {
+    "jira.js": "^6.2.0",
+    "tsup": "^9",
+    "typescript": "^6"
+  }
+}

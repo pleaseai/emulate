@@ -1,7 +1,7 @@
 {
   "name": "@pleaseai/emulate",
   "type": "module",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Local drop-in replacement services for CI and no-network sandboxes — Korean services (Kakao, Naver, Toss Payments) and BaaS (Firebase, Supabase)",
   "license": "Apache-2.0",
   "repository": {
@@ -33,11 +33,12 @@
     "spotify",
     "tossinvest",
     "workos",
-    "x"
+    "x",
+    "jira"
   ],
   "exports": {
     ".": {
-      "bun": "./src/api.ts",
+      "bun": "./dist/api.js",
       "types": "./dist/api.d.ts",
       "import": "./dist/api.js"
     },
@@ -64,11 +65,12 @@
     "type-check": "bun check"
   },
   "dependencies": {
-    "@emulators/core": "^0.12.2",
+    "@emulators/core": "^0.12.3",
     "@pleaseai/emulate-asana": "workspace:*",
     "@pleaseai/emulate-autumn": "workspace:*",
     "@pleaseai/emulate-firebase": "workspace:*",
     "@pleaseai/emulate-gitlab": "workspace:*",
+    "@pleaseai/emulate-jira": "workspace:*",
     "@pleaseai/emulate-kakao": "workspace:*",
     "@pleaseai/emulate-linear": "workspace:*",
     "@pleaseai/emulate-naver": "workspace:*",

@@ -21,6 +21,7 @@ packages/
   spotify/          # @pleaseai/emulate-spotify — token + catalog
   workos/           # @pleaseai/emulate-workos — User Management + Vault
   x/                # @pleaseai/emulate-x — X API v2
+  jira/             # @pleaseai/emulate-jira — Jira Cloud REST API
   tossinvest/       # @pleaseai/emulate-tossinvest — Toss Invest trading
 docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators

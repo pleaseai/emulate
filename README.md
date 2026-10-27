@@ -33,7 +33,8 @@ using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 | `spotify` | 4010 | OAuth 2.0 client credentials token, catalog search, artists, albums, tracks |
 | `workos` | 4011 | User Management, organizations, memberships, invitations, API keys, OAuth/OIDC, Vault KV (@workos-inc/node compatible) |
 | `x` | 4012 | X API v2: OAuth 2.0 PKCE, tweets, users, timelines |
-| `tossinvest` | 4013 | Toss Invest Open API: client credentials token, market data, sectors, accounts, holdings, orders, conditional orders |
+| `jira` | 4013 | Jira Cloud REST API v2/v3, JQL search, issues, transitions, comments, Agile boards and sprints, webhooks, OAuth 2.0 (3LO) (jira.js compatible) |
+| `tossinvest` | 4014 | Toss Invest Open API: client credentials token, market data, sectors, accounts, holdings, orders, conditional orders |
 
 ## Getting started
 
@@ -103,20 +104,20 @@ curl -X POST http://localhost:4002/v1/payments/confirm \
 
 ```bash
 # Issue an access token
-curl -X POST http://localhost:4013/oauth2/token \
+curl -X POST http://localhost:4014/oauth2/token \
   -d grant_type=client_credentials \
   -d client_id=tsck_example_client_id \
   -d client_secret=tsck_example_client_secret
 
 # Buy 10 shares at market; the order fills at the current price
-curl -X POST http://localhost:4013/api/v1/orders \
+curl -X POST http://localhost:4014/api/v1/orders \
   -H "Authorization: Bearer <access_token>" \
   -H "X-Tossinvest-Account: 1" \
   -H "content-type: application/json" \
   -d '{"symbol":"005930","side":"BUY","orderType":"MARKET","quantity":"10"}'
 
 # Check holdings
-curl http://localhost:4013/api/v1/holdings \
+curl http://localhost:4014/api/v1/holdings \
   -H "Authorization: Bearer <access_token>" \
   -H "X-Tossinvest-Account: 1"
 ```
@@ -162,6 +163,7 @@ packages/
   spotify/          # @pleaseai/emulate-spotify
   workos/           # @pleaseai/emulate-workos
   x/                # @pleaseai/emulate-x
+  jira/             # @pleaseai/emulate-jira
   tossinvest/       # @pleaseai/emulate-tossinvest
 docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators

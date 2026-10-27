@@ -5,23 +5,23 @@
     "": {
       "name": "emulate-monorepo",
       "devDependencies": {
-        "@emulators/apple": "0.12.2",
-        "@emulators/aws": "0.12.2",
-        "@emulators/clerk": "0.12.2",
-        "@emulators/core": "0.12.2",
-        "@emulators/github": "0.12.2",
-        "@emulators/google": "0.12.2",
-        "@emulators/microsoft": "0.12.2",
-        "@emulators/mongoatlas": "0.12.2",
-        "@emulators/okta": "0.12.2",
-        "@emulators/resend": "0.12.2",
-        "@emulators/slack": "0.12.2",
-        "@emulators/stripe": "0.12.2",
-        "@emulators/vercel": "0.12.2",
+        "@emulators/apple": "0.12.3",
+        "@emulators/aws": "0.12.3",
+        "@emulators/clerk": "0.12.3",
+        "@emulators/core": "0.12.3",
+        "@emulators/github": "0.12.3",
+        "@emulators/google": "0.12.3",
+        "@emulators/microsoft": "0.12.3",
+        "@emulators/mongoatlas": "0.12.3",
+        "@emulators/okta": "0.12.3",
+        "@emulators/resend": "0.12.3",
+        "@emulators/slack": "0.12.3",
+        "@emulators/stripe": "0.12.3",
+        "@emulators/vercel": "0.12.3",
         "@pleaseai/emulate": "workspace:*",
         "@pleaseai/eslint-config": "^0.1.0",
         "@types/bun": "^1.4.3",
-        "emulate": "0.12.2",
+        "emulate": "0.12.3",
         "eslint": "^10.13.0",
         "jiti": "^2.7.0",
         "picocolors": "^1.1.1",
@@ -32,9 +32,9 @@
     },
     "packages/asana": {
       "name": "@pleaseai/emulate-asana",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -43,9 +43,9 @@
     },
     "packages/autumn": {
       "name": "@pleaseai/emulate-autumn",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "autumn-js": "1.5.8",
@@ -55,16 +55,17 @@
     },
     "packages/emulate": {
       "name": "@pleaseai/emulate",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "bin": {
         "emulate": "./dist/index.js",
       },
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
         "@pleaseai/emulate-asana": "workspace:*",
         "@pleaseai/emulate-autumn": "workspace:*",
         "@pleaseai/emulate-firebase": "workspace:*",
         "@pleaseai/emulate-gitlab": "workspace:*",
+        "@pleaseai/emulate-jira": "workspace:*",
         "@pleaseai/emulate-kakao": "workspace:*",
         "@pleaseai/emulate-linear": "workspace:*",
         "@pleaseai/emulate-naver": "workspace:*",
@@ -86,9 +87,9 @@
     },
     "packages/firebase": {
       "name": "@pleaseai/emulate-firebase",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -97,9 +98,9 @@
     },
     "packages/gitlab": {
       "name": "@pleaseai/emulate-gitlab",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
         "graphql": "^16.13.2",
       },
       "devDependencies": {
@@ -107,11 +108,23 @@
         "typescript": "^6",
       },
     },
-    "packages/kakao": {
-      "name": "@pleaseai/emulate-kakao",
+    "packages/jira": {
+      "name": "@pleaseai/emulate-jira",
       "version": "0.3.0",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
+      },
+      "devDependencies": {
+        "jira.js": "^6.2.0",
+        "tsup": "^9",
+        "typescript": "^6",
+      },
+    },
+    "packages/kakao": {
+      "name": "@pleaseai/emulate-kakao",
+      "version": "0.3.1",
+      "dependencies": {
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -120,9 +133,9 @@
     },
     "packages/linear": {
       "name": "@pleaseai/emulate-linear",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
         "graphql": "^16.13.2",
       },
       "devDependencies": {
@@ -132,9 +145,9 @@
     },
     "packages/naver": {
       "name": "@pleaseai/emulate-naver",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -143,9 +156,9 @@
     },
     "packages/posthog": {
       "name": "@pleaseai/emulate-posthog",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -154,9 +167,9 @@
     },
     "packages/spotify": {
       "name": "@pleaseai/emulate-spotify",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -165,9 +178,9 @@
     },
     "packages/supabase": {
       "name": "@pleaseai/emulate-supabase",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -176,9 +189,9 @@
     },
     "packages/toss-payments": {
       "name": "@pleaseai/emulate-toss-payments",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -189,7 +202,7 @@
       "name": "@pleaseai/emulate-tossinvest",
       "version": "0.3.0",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -198,9 +211,9 @@
     },
     "packages/workos": {
       "name": "@pleaseai/emulate-workos",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
         "jose": "^6.2.12",
       },
       "devDependencies": {
@@ -211,9 +224,9 @@
     },
     "packages/x": {
       "name": "@pleaseai/emulate-x",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.2",
+        "@emulators/core": "^0.12.3",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -250,31 +263,31 @@
 
     "@e18e/eslint-plugin": ["@e18e/eslint-plugin@0.8.1", "", { "dependencies": { "empathic": "^2.0.1", "module-replacements": "^3.3.0", "verkit": "^0.4.0" }, "peerDependencies": { "eslint": "^9.0.0 || ^10.0.0", "oxlint": "^1.72.0" }, "optionalPeers": ["eslint", "oxlint"] }, "sha512-OV3T7l0r52/IglskdAuoO+BJyzsCs7AcIHpwpBMlIMO0+3RHskM2h5MuHdLuesIhSRhwCURGMKtp/XwnfXrfxg=="],
 
-    "@emulators/apple": ["@emulators/apple@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2", "jose": "^6" } }, "sha512-gNLs1Zu+xP32z3PFpmGI+bcpS3TYJzOaFjGeBQ7uuUmtNdTtQcHHdVQty42PlFZzVAyz4gD48j3a3X5dw5JknQ=="],
+    "@emulators/apple": ["@emulators/apple@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-GZgmaf/G3tjnNtcsYqdycBv9ZOv2xaJIzs9pGGlyzT5nW/giyUnZY+7xpN234lSoE5NJipyXIZ6eN92WzP3C7w=="],
 
-    "@emulators/aws": ["@emulators/aws@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-cSHEeUOkZvs3lopdKSyoNgej9b9ZXQE3nHoPFDtBKXCZHd+osXm4sQo2XUyX/2efG29F3jFGHR4u5z2c53kL4A=="],
+    "@emulators/aws": ["@emulators/aws@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6.2.12" } }, "sha512-fcUmb4zxC6siud1KSI4dy9/o8WxruChTWPmS2ajINU30mHiDY2YymM550sLtyNkrFnHbY1wpjUyAp5xynuZtKg=="],
 
-    "@emulators/clerk": ["@emulators/clerk@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2", "jose": "^6" } }, "sha512-/as3qiAwt2vXnsENGP/BOQS08ad4spqn7vZDzmhCU1750a+xGMDDmUnppzJwg7Xi3z7fVsGOQOoQbP1DdAPx9g=="],
+    "@emulators/clerk": ["@emulators/clerk@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-njCAAJ3mMkixxXKRGSc29/xlzkbJpZQ/4a5IrKrq0awa3tePqORUQjtxOfdOY1Ta+dzIEESMDFzl1eD6rPry9g=="],
 
-    "@emulators/core": ["@emulators/core@0.12.2", "", { "dependencies": { "jose": "^6.2.2" } }, "sha512-/nJ2AJGW3T8Hzy15yu2xrRVEkgTWMVSxYP2IgiUBc45bSAqUQFfJKCaaO3JkVqap+8hNUEfUNxvkHgL3uFC3Dg=="],
+    "@emulators/core": ["@emulators/core@0.12.3", "", { "dependencies": { "jose": "^6.2.2" } }, "sha512-xbKgJKyk8inuyVDv/um8/M5FowgA7xI1UJVZYbIcRL1JxRWyPBnbo5n+EEQcypVDoZTLrXdJZ/STGBthbek2YA=="],
 
-    "@emulators/github": ["@emulators/github@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-g+CK7eu6nZlZIyn5+vYgjx0GC55fvNHYFOOGOkRMKsCBJp4kQ/sinsftJ6SI2uYJjN8uGY67jIeyJMnYPlH1yA=="],
+    "@emulators/github": ["@emulators/github@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-HkCTL93ftLYDPtbvhoQNmXF9PI/HPwzR7DfOUR1KXFJtNxaj+45ovJ9jST8nYaJAXRVxE7/TvfbyqBf88Gg+/g=="],
 
-    "@emulators/google": ["@emulators/google@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2", "jose": "^6" } }, "sha512-dLzXRXIsvNXOof6sFpk/uIw/TBgf7EVnwMiKzu5KLfVCekDeSmznjGnIFfPfbY/FWtAud4vu5BOiAEChGZIjbA=="],
+    "@emulators/google": ["@emulators/google@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-X+YUkR6tjJFYscdsL9+UeUTlKpzdxCUfW2jKU4+yhU5s/qjI4qTikFy20yUy88FUq/0hDRBPk9H3AdeUM7Hn9w=="],
 
-    "@emulators/microsoft": ["@emulators/microsoft@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2", "jose": "^6" } }, "sha512-alMKsW7kj11VKvRmQZ0YBJjINnGrxZbimd7W4vlNgRvTzm7HTiShsWQlww6LiZ1P1dxiZx2GpLIKxZMBzYFolQ=="],
+    "@emulators/microsoft": ["@emulators/microsoft@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-vT5u8dJjO7vA8YrUp8GN7J/n3AHCsBX8THuLyi30cuJ8chYyVtxGokHtUd6YfN9CYs6D1w7TV2Gi8gyACo+nxw=="],
 
-    "@emulators/mongoatlas": ["@emulators/mongoatlas@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-KBQUo3NrcYZ+//njc7iuHhF77Eo1S91bhmORZ+6oOofBlz85BXLf1Uj5sgbep+JvLGstPuVjVuMRxWcEZRw5Ew=="],
+    "@emulators/mongoatlas": ["@emulators/mongoatlas@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-GQuc5sPUGFTuu5QozlZ2s8l5QcBJgJrLMlxHfCZ2JVWM+e174h/cKDXcahb8uOsDdTVrlrET2+Ekc/F1aEjGUw=="],
 
-    "@emulators/okta": ["@emulators/okta@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2", "jose": "^6" } }, "sha512-2O99N1uDZI3KOlIdmdA3ySgYtgJ54vfijFmLiVtTF6pvAooyeAB0MWKbSmPmf8jd/ZkfqGZbx4l0HH7RASaelA=="],
+    "@emulators/okta": ["@emulators/okta@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-v2G6IItrAsi++2CfDmbySu0/+u0CD8cyBbJFooruJ9i4bYIt18QQ3bb0qXdQkoUhEw17RLlq+TKN0+SQokIo1A=="],
 
-    "@emulators/resend": ["@emulators/resend@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-P7ZgiVx7vu5awF/sxNiIwuJHWmVi/NP776KFTF9m0lTQ35azLwmmEFGkdOQCMOxTu1j2/XdjirGVw8cP+QBVng=="],
+    "@emulators/resend": ["@emulators/resend@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-aRo8Qh1pDQ2WOrNM+Gu/a7BN9T7jAUpOkmNxyAFpCgwbcy+8wy+723cyicdPaU5uTC2IZOmoqH8JfYeH0FayPQ=="],
 
-    "@emulators/slack": ["@emulators/slack@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-vR+RDPzIGNwT2h7vZi8qiatB7SXQE+y0zjBS3SN7SyWMKZ/iwEHhDKfd/iq4ktjoTnGIwn7XXMVHP+SHF/aL/Q=="],
+    "@emulators/slack": ["@emulators/slack@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-nNwoYqA1/Na5w3E1mAw2d/OX8nJz96Uf7h3jvIGr2I1+FghUtMzgH432fBplalcY+SviBw6RLYGy2R2cO/ep2A=="],
 
-    "@emulators/stripe": ["@emulators/stripe@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-TlpfDvikGRSC+sBiebr/n7WU7ZsKXN4N7f+Rlso3qOTBvcPTxLN3WfTftfRWv5DEhyaqckp0ZTmsehJiVN6Ung=="],
+    "@emulators/stripe": ["@emulators/stripe@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-rnBpfzl/Sdu3mTTqqELOigciUM90hjxXSOQ3R1sA9RMkWcCf+Iui2DHqtTchnKhX8yksYUi/D+vfiR252m98Kg=="],
 
-    "@emulators/vercel": ["@emulators/vercel@0.12.2", "", { "dependencies": { "@emulators/core": "0.12.2" } }, "sha512-3ncjOW56UMJeMidUfAg+0tOnz0UcBVC1OMVxOun7v6QgnuTmh+cYOBejPHFlr9DdwsDjExv/OQ2+xk1afB/apA=="],
+    "@emulators/vercel": ["@emulators/vercel@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-53b7Kr4feRweHoukC8Y1c14Nl+5z14VQSCvNVREwv366eqhIIVb8iJ5et3OT5HahTI/yuNmky/RubOlpnnIQKw=="],
 
     "@es-joy/jsdoccomment": ["@es-joy/jsdoccomment@0.92.0", "", { "dependencies": { "@types/estree": "^1.0.9", "@typescript-eslint/types": "^8.65.0", "comment-parser": "1.4.7", "esquery": "^1.7.0", "jsdoc-type-pratt-parser": "~9.0.0" } }, "sha512-WivZqV5jPTYDQJgIMp0hTsyQESKYNY6yCJr4b0l84tYtQntkAMkc6zARh2vlRQyeg4aYHPUkCUDpvr2IWAiGpQ=="],
 
@@ -391,6 +404,8 @@
     "@pleaseai/emulate-firebase": ["@pleaseai/emulate-firebase@workspace:packages/firebase"],
 
     "@pleaseai/emulate-gitlab": ["@pleaseai/emulate-gitlab@workspace:packages/gitlab"],
+
+    "@pleaseai/emulate-jira": ["@pleaseai/emulate-jira@workspace:packages/jira"],
 
     "@pleaseai/emulate-kakao": ["@pleaseai/emulate-kakao@workspace:packages/kakao"],
 
@@ -622,7 +637,7 @@
 
     "empathic": ["empathic@2.0.1", "", {}, "sha512-YGRs8knHhKHVShLkFET/rWAU8kmHbOV5LwN938RHI0pljAJ1Gf6SzXsSmRaEzcXTtOOmVqJ5+WtQPL5uigY50Q=="],
 
-    "emulate": ["emulate@0.12.2", "", { "dependencies": { "commander": "^14", "picocolors": "^1.1.1", "yaml": "^2" }, "bin": { "emulate": "dist/index.js" } }, "sha512-cHz1ITT3xm3HJM6qSks7+ME5Bw/W7zp7ky2Ve4M4ANls46EfeAy0m/nWOjTLJEgLEQcA9gW+L3cWjuUcklJxtQ=="],
+    "emulate": ["emulate@0.12.3", "", { "dependencies": { "commander": "^14", "picocolors": "^1.1.1", "yaml": "^2" }, "bin": { "emulate": "dist/index.js" } }, "sha512-kYESyCh3jTvcLAk7Do4g38AHZu7YyWvlRzDq8/V9o8DPGCHealCt5AmNHgntAI8yZSYm/JVJI+JZyr8zP7J6IQ=="],
 
     "enhanced-resolve": ["enhanced-resolve@5.22.2", "", { "dependencies": { "graceful-fs": "^4.2.4", "tapable": "^2.3.3" } }, "sha512-0rxICaFZ7NQho/sHely2bvOPRP0Eu2B0NZ9zM54YvRvWMn7jfz3DmnOZDR9LlXDdDcqntAVc6Hfy4gr/tdH/Ag=="],
 
@@ -781,6 +796,8 @@
     "is-plain-obj": ["is-plain-obj@4.1.0", "", {}, "sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg=="],
 
     "isexe": ["isexe@2.0.0", "", {}, "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw=="],
+
+    "jira.js": ["jira.js@6.4.0", "", { "dependencies": { "zod": "^4.6.5" } }, "sha512-ufnPt3OhLW8B+4sT89E/uqC0k8MOWe8xlCZLmPLNIX9sypeSUPdG1J2V8+hBspcfV3kq9mTqSnJZru8WLHGM6Q=="],
 
     "jiti": ["jiti@2.7.0", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ=="],
 
@@ -1132,18 +1149,6 @@
 
     "@antfu/eslint-config/cac": ["cac@7.0.0", "", {}, "sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ=="],
 
-    "@emulators/apple/jose": ["jose@6.2.9", "", {}, "sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA=="],
-
-    "@emulators/clerk/jose": ["jose@6.2.9", "", {}, "sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA=="],
-
-    "@emulators/core/jose": ["jose@6.2.9", "", {}, "sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA=="],
-
-    "@emulators/google/jose": ["jose@6.2.9", "", {}, "sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA=="],
-
-    "@emulators/microsoft/jose": ["jose@6.2.9", "", {}, "sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA=="],
-
-    "@emulators/okta/jose": ["jose@6.2.9", "", {}, "sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA=="],
-
     "@es-joy/jsdoccomment/@typescript-eslint/types": ["@typescript-eslint/types@8.71.2", "", {}, "sha512-y5Ukl3oVp7e/VGxqIoEXoeb/Roj71PAJ4WG/N/RGj+eeDvKRLM15kGr9MijLbN0i03S52zxu31Z98E5gWChJKw=="],
 
     "@es-joy/jsdoccomment/comment-parser": ["comment-parser@1.4.7", "", {}, "sha512-0h+uSNtQGW3D98eQt3jJ8L06Fves8hncB4V/PKdw/Qb8Hnk19VaKuTr55UNRYiSoVa7WwrFls+rh3ux9agmkeQ=="],
@@ -1209,6 +1214,8 @@
     "eslint-plugin-yml/escape-string-regexp": ["escape-string-regexp@5.0.0", "", {}, "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw=="],
 
     "fix-dts-default-cjs-exports/rollup": ["rollup@4.61.1", "", { "dependencies": { "@types/estree": "1.0.9" }, "optionalDependencies": { "@rollup/rollup-android-arm-eabi": "4.61.1", "@rollup/rollup-android-arm64": "4.61.1", "@rollup/rollup-darwin-arm64": "4.61.1", "@rollup/rollup-darwin-x64": "4.61.1", "@rollup/rollup-freebsd-arm64": "4.61.1", "@rollup/rollup-freebsd-x64": "4.61.1", "@rollup/rollup-linux-arm-gnueabihf": "4.61.1", "@rollup/rollup-linux-arm-musleabihf": "4.61.1", "@rollup/rollup-linux-arm64-gnu": "4.61.1", "@rollup/rollup-linux-arm64-musl": "4.61.1", "@rollup/rollup-linux-loong64-gnu": "4.61.1", "@rollup/rollup-linux-loong64-musl": "4.61.1", "@rollup/rollup-linux-ppc64-gnu": "4.61.1", "@rollup/rollup-linux-ppc64-musl": "4.61.1", "@rollup/rollup-linux-riscv64-gnu": "4.61.1", "@rollup/rollup-linux-riscv64-musl": "4.61.1", "@rollup/rollup-linux-s390x-gnu": "4.61.1", "@rollup/rollup-linux-x64-gnu": "4.61.1", "@rollup/rollup-linux-x64-musl": "4.61.1", "@rollup/rollup-openbsd-x64": "4.61.1", "@rollup/rollup-openharmony-arm64": "4.61.1", "@rollup/rollup-win32-arm64-msvc": "4.61.1", "@rollup/rollup-win32-ia32-msvc": "4.61.1", "@rollup/rollup-win32-x64-gnu": "4.61.1", "@rollup/rollup-win32-x64-msvc": "4.61.1", "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-I4KW6iuRpuu2uHBLraZ1wNZe0DP7lnRha+VJ9tNaYVaVgKhW0aI3h4RYnoRPeql0flHm/Co55b7snEDcOfOJrA=="],
+
+    "jira.js/zod": ["zod@4.6.7", "", {}, "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg=="],
 
     "mdast-util-find-and-replace/escape-string-regexp": ["escape-string-regexp@5.0.0", "", {}, "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw=="],
 
