@@ -31,8 +31,8 @@ async function searchParams(r: JiraRequest): Promise<SearchParams> {
       jql: typeof body.jql === 'string' ? body.jql : '',
       fields: list(body.fields),
       expand: list(body.expand),
-      maxResults: typeof body.maxResults === 'number' ? body.maxResults : undefined,
-      startAt: typeof body.startAt === 'number' ? body.startAt : undefined,
+      maxResults: typeof body.maxResults === 'number' ? intParam(String(body.maxResults), 50) : undefined,
+      startAt: typeof body.startAt === 'number' ? intParam(String(body.startAt), 0) : undefined,
       nextPageToken: typeof body.nextPageToken === 'string' ? body.nextPageToken : undefined,
     }
   }

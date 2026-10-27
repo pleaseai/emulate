@@ -276,6 +276,28 @@ describe('Jira webhooks', () => {
       expect((await api(t.app, '/rest/api/3/webhook', { auth: oauth })).json.total).toBe(0)
     })
 
+    it('honors fieldIdsFilter for issue_updated events', async () => {
+      const created = await api(t.app, '/rest/api/3/webhook', {
+        method: 'POST',
+        auth: oauth,
+        body: {
+          url: 'https://app.test/webhook',
+          webhooks: [{ events: ['jira:issue_updated'], jqlFilter: 'project = EMU', fieldIdsFilter: ['summary'] }],
+        },
+      })
+      expect(created.json.webhookRegistrationResult[0].createdWebhookId).toBeTruthy()
+
+      const summaryEdit = await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { fields: { summary: 'Changed' } } })
+      expect(summaryEdit.status).toBe(204)
+      expect(captured).toHaveLength(1)
+
+      const priorities = (await api(t.app, '/rest/api/3/priority')).json
+      const other = priorities.find((p: any) => p.name !== 'Medium') ?? priorities[0]
+      const priorityEdit = await api(t.app, '/rest/api/3/issue/EMU-1', { method: 'PUT', body: { fields: { priority: { id: other.id } } } })
+      expect(priorityEdit.status).toBe(204)
+      expect(captured).toHaveLength(1)
+    })
+
     it('rejects dynamic webhook registration from API token users', async () => {
       const res = await api(t.app, '/rest/api/3/webhook', {
         method: 'POST',

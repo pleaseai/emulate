@@ -188,6 +188,7 @@ export interface JiraWebhook extends Entity {
   url: string
   events: string[]
   jql_filter: string | null
+  field_ids_filter?: string[]
   enabled: boolean
   exclude_body: boolean
   secret: string | null

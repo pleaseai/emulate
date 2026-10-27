@@ -179,7 +179,11 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
     const contentType = c.req.header('Content-Type') ?? ''
     let body: Record<string, unknown>
     if (contentType.includes('application/json')) {
-      body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+      const parsed: unknown = await c.req.json().catch(() => ({}))
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return oauthError(c, 400, 'invalid_request', 'Request body must be a JSON object.')
+      }
+      body = parsed as Record<string, unknown>
     }
     else {
       body = await c.req.parseBody()
@@ -252,7 +256,10 @@ export function oauthRoutes({ app, store, baseUrl }: RouteContext): void {
 
   app.get('/me', (c) => {
     try {
-      const { user } = requireOAuthUser(c)
+      const { user, scopes } = requireOAuthUser(c)
+      if (scopes && store.getData<boolean>('jira.strict_scopes') && !scopes.includes('read:me')) {
+        throw new JiraError(401, ['Unauthorized; scope does not match. Required one of: read:me'])
+      }
       return c.json({
         account_type: user.account_type,
         account_id: user.account_id,

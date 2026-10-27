@@ -45,6 +45,20 @@ describe('Jira Agile API', () => {
     expect(deleted.status).toBe(204)
   })
 
+  it('excludes done issues and epics from the backlog', async () => {
+    const done = (await api(t.app, '/rest/api/3/issue/EMU-2/transitions')).json.transitions.find(
+      (tr: any) => tr.name === 'Done',
+    )
+    await api(t.app, '/rest/api/3/issue/EMU-2/transitions', { method: 'POST', body: { transition: { id: done.id } } })
+    const epic = await api(t.app, '/rest/api/3/issue', {
+      method: 'POST',
+      body: { fields: { project: { key: 'EMU' }, issuetype: { name: 'Epic' }, summary: 'An epic' } },
+    })
+    expect(epic.status).toBe(201)
+    const backlog = await api(t.app, `${A}/board/1/backlog`)
+    expect(backlog.json.issues.map((i: any) => i.key)).toEqual(['EMU-3'])
+  })
+
   it('lists board issues, backlog, and sprints', async () => {
     const issues = await api(t.app, `${A}/board/1/issue?fields=summary`)
     expect(issues.status).toBe(200)

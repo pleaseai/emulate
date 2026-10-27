@@ -226,6 +226,30 @@ describe('Atlassian OAuth 2.0 (3LO) and the API gateway', () => {
     expect((await api(t.app, '/rest/api/3/myself', { auth: `Bearer ${tokens.access_token}` })).status).toBe(401)
   })
 
+  it('rejects a null JSON token request with invalid_request', async () => {
+    const res = await api(t.app, '/oauth/token', { method: 'POST', auth: null, body: 'null' })
+    expect(res.status).toBe(400)
+    expect(res.json.error).toBe('invalid_request')
+  })
+
+  it('requires read:me for /me when strict scopes are enabled', async () => {
+    t.store.setData('jira.strict_scopes', true)
+    const exchangeFor = async (scope: string) =>
+      `Bearer ${
+        (
+          await exchange({
+            grant_type: 'authorization_code',
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            code: await authorize(scope),
+            redirect_uri: REDIRECT,
+          })
+        ).json.access_token
+      }`
+    expect((await api(t.app, '/me', { auth: await exchangeFor('read:jira-work') })).status).toBe(401)
+    expect((await api(t.app, '/me', { auth: await exchangeFor('read:me') })).status).toBe(200)
+  })
+
   it('enforces OAuth scopes when strict scopes are enabled', async () => {
     t.store.setData('jira.strict_scopes', true)
     const { access_token } = (

@@ -68,6 +68,26 @@ describe('Jira issues', () => {
       expect(typeof res.json.fields.comment.comments[0].body).toBe('string')
     })
 
+    it('rejects malformed ADF marks instead of persisting them', async () => {
+      for (const marks of [[null], 'bold', [{ attrs: {} }], [{ type: 'strong', attrs: [] }]]) {
+        const res = await api(t.app, '/rest/api/3/issue/EMU-1', {
+          method: 'PUT',
+          body: {
+            fields: {
+              description: {
+                type: 'doc',
+                version: 1,
+                content: [{ type: 'paragraph', content: [{ type: 'text', text: 'x', marks }] }],
+              },
+            },
+          },
+        })
+        expect(res.status).toBe(400)
+      }
+      const ok = await api(t.app, '/rest/api/3/issue/EMU-1?expand=renderedFields')
+      expect(ok.status).toBe(200)
+    })
+
     it('returns 404 for unknown issues', async () => {
       const res = await api(t.app, '/rest/api/3/issue/EMU-999')
       expect(res.status).toBe(404)

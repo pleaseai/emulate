@@ -20,7 +20,21 @@ function isAdfNode(value: unknown): boolean {
   if (node.text !== undefined && typeof node.text !== 'string') {
     return false
   }
+  if (node.marks !== undefined && !(Array.isArray(node.marks) && node.marks.every(isAdfMark))) {
+    return false
+  }
   return node.content === undefined || (Array.isArray(node.content) && node.content.every(isAdfNode))
+}
+
+function isAdfMark(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+  const mark = value as { type?: unknown, attrs?: unknown }
+  if (typeof mark.type !== 'string') {
+    return false
+  }
+  return mark.attrs === undefined || (!!mark.attrs && typeof mark.attrs === 'object' && !Array.isArray(mark.attrs))
 }
 
 export function textToAdf(text: string): AdfNode {

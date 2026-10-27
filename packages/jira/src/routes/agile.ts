@@ -236,7 +236,12 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
           const board = requireBoard(r)
           const backlog = r.js.issues
             .findBy('project_id', board.project_id)
-            .filter(issue => issue.sprint_id === null)
+            .filter(
+              issue =>
+                issue.sprint_id === null
+                && r.js.statuses.get(issue.status_id)?.category !== 'done'
+                && r.js.issueTypes.get(issue.issue_type_id)?.hierarchy_level !== 1,
+            )
           return r.c.json(issuePage(r, backlog))
         },
         { scopes: READ },

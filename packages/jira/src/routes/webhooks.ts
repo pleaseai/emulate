@@ -185,6 +185,9 @@ export function webhookRoutes({ app, store, baseUrl }: RouteContext): void {
             url: body.url,
             events: spec.events as string[],
             jql_filter: spec.jqlFilter ?? null,
+            ...(Array.isArray(spec.fieldIdsFilter) && spec.fieldIdsFilter.length > 0
+              ? { field_ids_filter: spec.fieldIdsFilter.map(String) }
+              : {}),
             enabled: true,
             exclude_body: false,
             secret: null,

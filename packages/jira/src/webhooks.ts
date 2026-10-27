@@ -63,7 +63,20 @@ function matchesFilter(actor: Actor, webhook: JiraWebhook, issue: JiraIssue): bo
   }
 }
 
-function matchingWebhooks(actor: Actor, event: string, issue: JiraIssue): JiraWebhook[] {
+function matchesFieldIds(webhook: JiraWebhook, event: string, changelog?: JiraChangelog | null): boolean {
+  if (event !== 'jira:issue_updated' || !webhook.field_ids_filter?.length) {
+    return true
+  }
+  const touched = new Set((changelog?.items ?? []).map(item => item.fieldId))
+  return webhook.field_ids_filter.some(id => touched.has(id))
+}
+
+function matchingWebhooks(
+  actor: Actor,
+  event: string,
+  issue: JiraIssue,
+  changelog?: JiraChangelog | null,
+): JiraWebhook[] {
   const now = Date.now()
   return actor.js.webhooks.all().filter((webhook) => {
     if (!webhook.enabled || !webhook.events.includes(event)) {
@@ -72,7 +85,7 @@ function matchingWebhooks(actor: Actor, event: string, issue: JiraIssue): JiraWe
     if (webhook.expiration_date && new Date(webhook.expiration_date).getTime() <= now) {
       return false
     }
-    return matchesFilter(actor, webhook, issue)
+    return matchesFieldIds(webhook, event, changelog) && matchesFilter(actor, webhook, issue)
   })
 }
 
@@ -82,7 +95,7 @@ export async function emitIssueEvent(
   issue: JiraIssue,
   opts: IssueEventOptions = {},
 ): Promise<void> {
-  const webhooks = matchingWebhooks(actor, event, issue)
+  const webhooks = matchingWebhooks(actor, event, issue, opts.changelog)
   if (webhooks.length === 0) {
     return
   }

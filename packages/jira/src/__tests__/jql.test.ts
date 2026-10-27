@@ -236,6 +236,16 @@ describe('search endpoints', () => {
     expect(second.json.nextPageToken).toBeUndefined()
   })
 
+  it('clamps negative startAt in POST legacy search', async () => {
+    const res = await api(t.app, '/rest/api/3/search', {
+      method: 'POST',
+      body: { jql: 'project = EMU ORDER BY key ASC', startAt: -1, maxResults: 2 },
+    })
+    expect(res.status).toBe(200)
+    expect(res.json.startAt).toBe(0)
+    expect(res.json.issues).toHaveLength(2)
+  })
+
   it('returns only ids by default from /search/jql', async () => {
     const res = await api(t.app, '/rest/api/3/search/jql?jql=project%3DEMU')
     expect(res.json.issues[0].id).toBeTruthy()
