@@ -1,0 +1,37 @@
+# Upstream rejects a custom instance that reuses a built-in name, so our
+# linear emulator is keyed `pleaseai-linear` (upstream ships its own `linear`).
+services:
+  kakao:
+    emulator: '@pleaseai/emulate/emulators/kakao'
+    port: 4100
+    seed:
+      apps:
+        - client_id: kakao_rest_api_key_example
+          client_secret: kakao_client_secret_example
+          redirect_uris:
+            - http://localhost:3000/api/auth/callback/kakao
+      users:
+        - user_id: 1001
+          nickname: Gildong
+          email: hong@example.com
+
+  pleaseai-linear:
+    emulator: '@pleaseai/emulate/emulators/linear'
+    port: 4101
+    seed:
+      api_keys:
+        - lin_api_test
+      organizations:
+        - {id: org-1, name: My Org}
+      teams:
+        - {id: team-1, name: Engineering, key: ENG, organization: org-1}
+      users:
+        - {id: user-1, name: Developer, email: dev@example.com, organization: org-1}
+
+  github:
+    emulator: github
+    port: 4102
+
+  stripe:
+    emulator: stripe
+    port: 4103

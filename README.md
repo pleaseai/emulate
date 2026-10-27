@@ -122,6 +122,26 @@ To point an SDK at an emulator, only the base URL needs to change.
 For example: `FIREBASE_AUTH_EMULATOR_HOST=localhost:4003`, or a Supabase client
 created with `createClient("http://localhost:4004", anonKey)`.
 
+## Use with upstream emulate
+
+Every service is also a [custom emulator](https://emulate.dev/docs/custom-emulators)
+for [vercel-labs/emulate](https://github.com/vercel-labs/emulate) 0.12+, so you
+can run it next to upstream's GitHub, Stripe, and other built-ins from one
+config file:
+
+```yaml
+services:
+  kakao:
+    emulator: '@pleaseai/emulate/emulators/kakao'
+    port: 4100
+  github:
+    emulator: github
+    port: 4102
+```
+
+See the [guide](https://emulate.pleaseai.dev/guides/emulate-dev/) and the
+[sample config](./examples/emulate-dev/emulate.config.yaml).
+
 ## Package layout
 
 ```
