@@ -52,6 +52,18 @@ describe('service custom emulators', () => {
     expect(unknown.status).toBeGreaterThanOrEqual(400)
   })
 
+  it('exposes inner service routes on the upstream route listing', async () => {
+    const runtime = await createCustomRuntime(await loadDefinition('kakao'), {
+      baseUrl: BASE_URL,
+      seed: SERVICE_REGISTRY.kakao.initConfig.kakao as Record<string, unknown>,
+      inspector: true,
+    })
+    runtimes.push(runtime)
+    const res = await runtime.request('/_emulate?tab=routes')
+    expect(res.status).toBe(200)
+    expect(await res.text()).toContain('/oauth/authorize')
+  })
+
   it('reset restores the seed state', async () => {
     const runtime = await createCustomRuntime(await loadDefinition('asana'), {
       baseUrl: BASE_URL,

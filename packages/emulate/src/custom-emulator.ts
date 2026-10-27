@@ -23,7 +23,17 @@ export function defineServiceEmulator(service: ServiceName, loaded: LoadedServic
     setup({ app, state, baseUrl, webhooks }) {
       const tokens = state.tokens as TokenSeed | undefined
       const inner = buildServiceServer({ service, loaded, port: 0, baseUrl, tokens, svcSeedConfig: state, webhooks })
-      app.use(c => inner.app.fetch(c.req.raw))
+      const forward = (c: { req: { raw: Request } }) => inner.app.fetch(c.req.raw)
+      const seen = new Set<string>()
+      for (const { method, path } of inner.app.routeTable) {
+        const key = `${method} ${path}`
+        if (seen.has(key) || path === '/_emulate' || path.startsWith('/_emulate/')) {
+          continue
+        }
+        seen.add(key)
+        app.on(method, path, forward)
+      }
+      app.notFound(forward)
     },
   })
 }
