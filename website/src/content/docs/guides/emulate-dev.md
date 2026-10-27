@@ -59,7 +59,8 @@ services:
 The full sample is
 [`examples/emulate-dev/emulate.config.yaml`](https://github.com/pleaseai/emulate/blob/main/examples/emulate-dev/emulate.config.yaml).
 Available modules: `kakao`, `naver`, `tosspayments`, `firebase`, `supabase`,
-`asana`, `linear`, `autumn`, `gitlab`, `posthog`, `spotify`, `workos`, `x`.
+`asana`, `linear`, `autumn`, `gitlab`, `posthog`, `spotify`, `workos`, `x`,
+`jira`.
 
 **Naming rule for Linear.** Upstream does not let a custom instance reuse a
 built-in name, and it ships its own `linear`. Key our Linear emulator
