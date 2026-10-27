@@ -95,6 +95,15 @@ describe('service custom emulators', () => {
     expect(definition.validateSeed({ apps: [] })).toEqual({ apps: [] })
   })
 
+  it('validateSeed rejects a malformed tokens map', async () => {
+    const definition = await loadDefinition('kakao')
+    expect(() => definition.validateSeed({ tokens: ['t'] })).toThrow('tokens must be an object')
+    expect(() => definition.validateSeed({ tokens: { t: 'admin' } })).toThrow('tokens.t must be')
+    expect(() => definition.validateSeed({ tokens: { t: { login: 'a', scopes: 'read' } } })).toThrow('tokens.t must be')
+    const seed = { tokens: { t: { login: 'a', scopes: ['read'] } } }
+    expect(definition.validateSeed(seed)).toEqual(seed)
+  })
+
   it('aborts a pending inner webhook delivery when the runtime closes', async () => {
     let received!: () => void
     const hit = new Promise<void>((resolve) => {
