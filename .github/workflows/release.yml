@@ -61,25 +61,62 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # On Bun 1.4.3 (pinned in mise.toml), `bun pm pack` takes the version it
+      # writes for a `workspace:*` dep from the workspace entry in bun.lock, not
+      # from that package's package.json. release-please bumps package.json
+      # only, and `--frozen-lockfile` does not flag the drift, so the lock still
+      # carries the previous versions. That shipped @pleaseai/emulate@0.4.0
+      # pinned to 0.3.1/0.3.0 deps, two of which were never published. A
+      # non-frozen install rewrites only those version entries.
+      - name: Sync workspace versions into bun.lock
+        run: bun install
+
       - name: Build
         run: bun run build
 
-      - name: Publish released packages
-        # bash runs with pipefail, so a failed jq fails the step instead of
-        # publishing nothing
+      - name: Pack and verify released packages
+        # bash runs with -e and pipefail, so a failed jq, tar or pack fails the
+        # step instead of packing nothing
         shell: bash
         env:
           # release-please emits the dirs it released as a JSON array, e.g.
           # ["packages/asana","packages/emulate"].
           PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
         run: |
-          echo "$PATHS_RELEASED" | jq -r '.[]' | while read -r pkg; do
-            echo "::group::publish $pkg"
+          pkgs="$(echo "$PATHS_RELEASED" | jq -r '.[]')"
+          # name -> version of every workspace package, from package.json
+          versions="$(jq -n '[inputs | {(.name): .version}] | add' packages/*/package.json)"
+          : > "$RUNNER_TEMP/tarballs"
+          failed=0
+          while read -r pkg; do
+            [ -n "$pkg" ] || continue
             # `bun pm pack` rewrites `workspace:*` deps to the concrete version
-            # in the tarball (npm pack/publish on its own would not). npm then
-            # publishes that tarball, authenticating via OIDC (Trusted Publisher
-            # configured on npmjs.com) and attaching provenance automatically.
+            # in the tarball (npm pack/publish on its own would not).
             tarball="$(cd "$pkg" && bun pm pack --quiet)"
-            npm publish "$pkg/$tarball" --access public
+            # Every in-repo dep in the packed manifest must equal the version in
+            # that package's package.json. All tarballs are checked before the
+            # publish step runs, so a mismatch publishes nothing.
+            mismatches="$(tar -xOzf "$pkg/$tarball" package/package.json | jq -r --argjson want "$versions" '
+              [.dependencies, .optionalDependencies] | add // {} | to_entries[]
+              | select(.key | in($want))
+              | select((.value | ltrimstr("^") | ltrimstr("~")) != $want[.key])
+              | "\(.key): packed \(.value), package.json \($want[.key])"')"
+            if [ -n "$mismatches" ]; then
+              echo "::error::$pkg/$tarball pins workspace deps that differ from their package.json versions"
+              echo "$mismatches"
+              failed=1
+            fi
+            echo "$pkg/$tarball" >> "$RUNNER_TEMP/tarballs"
+          done <<< "$pkgs"
+          exit "$failed"
+
+      - name: Publish released packages
+        shell: bash
+        run: |
+          while read -r tarball; do
+            echo "::group::publish $tarball"
+            # npm authenticates via OIDC (Trusted Publisher configured on
+            # npmjs.com) and attaches provenance automatically.
+            npm publish "$tarball" --access public
             echo "::endgroup::"
-          done
+          done < "$RUNNER_TEMP/tarballs"
