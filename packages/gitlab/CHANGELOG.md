@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/pleaseai/emulate/compare/emulate-gitlab-v0.3.1...emulate-gitlab-v0.3.2) (2026-10-28)
+
+
+### Bug Fixes
+
+* point exports.bun at the built dist output ([#52](https://github.com/pleaseai/emulate/issues/52)) ([53da58b](https://github.com/pleaseai/emulate/commit/53da58beceeab931e96b2e26e564452ff8abf056)), closes [#23](https://github.com/pleaseai/emulate/issues/23)
+
 ## [0.3.1](https://github.com/pleaseai/emulate/compare/emulate-gitlab-v0.3.0...emulate-gitlab-v0.3.1) (2026-10-27)
 
 
