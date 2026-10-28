@@ -85,7 +85,7 @@ Add a `tossinvest:` section to `emulate.config.yaml` (or pass `--seed <file>`):
 
 ```yaml
 tossinvest:
-  holidays: # optional; a listed country replaces its built-in 2026 holiday set
+  holidays: # optional; a listed country (KR or US) replaces its built-in 2026 holiday set; null or [] clears it
     KR: [2026-05-05, 2026-10-09]
     US: [2026-07-03]
   clients:

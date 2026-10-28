@@ -102,7 +102,7 @@ Units and formats:
 - `holdings[].quantity`: number of shares.
 - `accounts[].client_id` (optional): limits the account to one client; omit it to show the account to every client.
 - `accounts[].commission.kr_start_date` (optional): the KR rate's `startDate` in `GET /api/v1/commissions` (`YYYY-MM-DD` or `null`). Defaults to `2026-01-01`.
-- `holidays` (optional): market holidays per country as `YYYY-MM-DD` strings. A holiday is closed in the market calendars and is skipped by daily candles, previous closes and price limits, rankings, trend data, and settlement dates. A country you list replaces its built-in 2026 holiday set; a country you leave out keeps it.
+- `holidays` (optional): market holidays per country as `YYYY-MM-DD` strings. A holiday is closed in the market calendars and is skipped by daily candles, previous closes and price limits, rankings, trend data, and settlement dates. A country you list replaces its built-in 2026 holiday set (`null` or `[]` leaves it with none); a country you leave out keeps it. Only `KR` and `US` are accepted.
 
 ## Not emulated
 

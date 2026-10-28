@@ -322,15 +322,20 @@ export const DEFAULT_HOLIDAYS: Record<MarketCountry, readonly string[]> = {
 }
 
 /** Replaces the market holiday list of each given country; the others keep theirs. */
-export function setHolidays(store: Store, holidays: Partial<Record<MarketCountry, readonly string[]>>): void {
+export function setHolidays(store: Store, holidays: Partial<Record<MarketCountry, readonly string[] | null>>): void {
+  const normalized: Partial<Record<MarketCountry, readonly string[]>> = {}
   for (const [country, dates] of Object.entries(holidays)) {
+    if (!Object.hasOwn(DEFAULT_HOLIDAYS, country)) {
+      throw new Error(`tossinvest.holidays: unknown country ${JSON.stringify(country)} (expected ${Object.keys(DEFAULT_HOLIDAYS).join(' or ')})`)
+    }
     const bad = (dates ?? []).find(d => dateToDayIdx(d) === undefined)
     if (bad !== undefined) {
       throw new Error(`tossinvest.holidays.${country}: invalid date ${JSON.stringify(bad)} (expected an existing YYYY-MM-DD date)`)
     }
+    normalized[country as MarketCountry] = dates ?? []
   }
   const current = store.getData<Partial<Record<MarketCountry, readonly string[]>>>(HOLIDAYS_KEY) ?? {}
-  store.setData(HOLIDAYS_KEY, { ...current, ...holidays })
+  store.setData(HOLIDAYS_KEY, { ...current, ...normalized })
 }
 
 const HOLIDAY_SETS = new WeakMap<readonly string[], Holidays>()

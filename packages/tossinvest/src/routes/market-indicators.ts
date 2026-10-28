@@ -3,7 +3,6 @@ import type { Holidays } from '../time.js'
 import { fail, fmt, intQuery, invalid, noise, ok } from '../helpers.js'
 import { candlePage, holidaysOf, indicatorCandleSpec, indicatorLevel, MARKET_INDICATOR_SYMBOLS, MARKET_INDICATORS } from '../market.js'
 import {
-  addBusinessDays,
   businessDayOnOrBefore,
   dateToDayIdx,
   dayIdxToDate,
@@ -64,6 +63,19 @@ function previousBucket(interval: InvestorInterval, bucket: number, holidays: Ho
 
 const BUCKET_DAYS: Record<InvestorInterval, number> = { '1d': 1, '1w': 5, '1mo': 21, '1y': 250 }
 
+function bucketEnd(interval: InvestorInterval, bucket: number): number {
+  if (interval === '1d') {
+    return bucket
+  }
+  if (interval === '1w') {
+    return bucket + 6
+  }
+  const date = new Date(bucket * 86_400_000)
+  return interval === '1mo'
+    ? Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1) / 86_400_000) - 1
+    : Math.floor(Date.UTC(date.getUTCFullYear() + 1, 0, 1) / 86_400_000) - 1
+}
+
 function investorRecord(symbol: string, interval: InvestorInterval, bucket: number, today: number, holidays: Holidays) {
   const n = (k: string) => noise(`${symbol}:mi:${interval}:${k}:${bucket}`)
   const scale = (symbol === 'KOSPI' ? 12e12 : 8e12) * BUCKET_DAYS[interval] * (0.8 + 0.4 * n('t'))
@@ -79,7 +91,7 @@ function investorRecord(symbol: string, interval: InvestorInterval, bucket: numb
   const individualBuy = round(scale * 0.46 * (0.9 + 0.2 * n('ib')))
   const individualSell = individualBuy + instBuy + foreignBuy + otherBuy - (instSell + foreignSell + otherSell)
   const pair = (b: number, s: number) => ({ buyAmount: fmt(b, 0), sellAmount: fmt(s, 0) })
-  const lastDay = Math.min(today, addBusinessDays(bucket, Math.max(0, BUCKET_DAYS[interval] - 1), holidays))
+  const lastDay = Math.min(today, Math.max(bucket, businessDayOnOrBefore(bucketEnd(interval, bucket), holidays)))
   const updatedAt = lastDay >= today
     ? kstIso(Date.now())
     : isoWithOffset(localMidnightMs(lastDay, 540) + 18 * 3_600_000 + 10 * 60_000, 540)

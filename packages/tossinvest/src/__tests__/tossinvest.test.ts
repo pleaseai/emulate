@@ -629,6 +629,11 @@ describe('tossinvest emulator: trading', () => {
     expect((await api(token, '/api/v1/commissions', { account: 3 })).json.result[0].startDate).toBeNull()
   })
 
+  it('rejects a malformed seeded KR commission start date', () => {
+    const { store } = createTestApp()
+    expect(() => seedFromConfig(store, base, { accounts: [{ account_seq: 4, commission: { kr_start_date: '2026/1/1' } }] })).toThrow(/kr_start_date.*"2026\/1\/1"/)
+  })
+
   it('replays a conditional create retried after the KST date rolled over', async () => {
     try {
       setSystemTime(new Date('2026-11-02T14:55:00Z')) // 23:55 KST
@@ -723,5 +728,32 @@ describe('tossinvest emulator: holidays in market data', () => {
     const { store } = createTestApp()
     expect(() => seedFromConfig(store, base, { holidays: { KR: ['2026-2-16'] } })).toThrow(/KR.*"2026-2-16"/)
     expect(() => seedFromConfig(store, base, { holidays: { US: ['2026-02-30'] } })).toThrow(/US.*"2026-02-30"/)
+    expect(() => seedFromConfig(store, base, { holidays: { kr: ['2026-02-16'] } as never })).toThrow(/unknown country "kr"/)
+  })
+
+  it('clears a country\'s holidays when the seed lists it as null', async () => {
+    const test = createTestApp()
+    app = test.app
+    seedFromConfig(test.store, base, { holidays: { KR: null } })
+    const token = await fetchToken()
+    expect((await api(token, '/api/v1/market-calendar/KR?date=2026-05-05')).json.result.today.integrated).not.toBeNull()
+  })
+
+  it('keeps a monthly investor record\'s updatedAt on its month\'s last trading day', async () => {
+    try {
+      setSystemTime(new Date('2026-04-01T03:00:00Z'))
+      const token = await fetchToken()
+      const res = await api(token, '/api/v1/market-indicators/KOSPI/investor-trading?interval=1mo&until=2026-02-15&count=1')
+      expect(res.json.result.records[0].date).toBe('2026-02-01')
+      expect(res.json.result.records[0].updatedAt.slice(0, 7)).toBe('2026-02')
+      setSystemTime(new Date('2027-04-01T03:00:00Z'))
+      const feb27 = await api(await fetchToken(), '/api/v1/market-indicators/KOSPI/investor-trading?interval=1mo&until=2027-02-15&count=1')
+      expect(feb27.json.result.records[0].updatedAt.slice(0, 10)).toBe('2027-02-26')
+      const chuseok = await api(await fetchToken(), '/api/v1/market-indicators/KOSPI/investor-trading?interval=1w&until=2026-09-23&count=1')
+      expect(chuseok.json.result.records[0].updatedAt.slice(0, 10)).toBe('2026-09-23')
+    }
+    finally {
+      setSystemTime()
+    }
   })
 })

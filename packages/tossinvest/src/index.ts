@@ -16,6 +16,7 @@ import { rankingRoutes } from './routes/ranking.js'
 import { sectorRoutes } from './routes/sector.js'
 import { stockInfoRoutes } from './routes/stock-info.js'
 import { getTossinvestStore } from './store.js'
+import { dateToDayIdx } from './time.js'
 
 export * from './entities.js'
 export { getTossinvestStore, type TossinvestStore } from './store.js'
@@ -24,8 +25,8 @@ export interface TossinvestSeedConfig {
   clients?: Array<{ client_id: string, client_secret: string, name?: string }>
   /** USD→KRW interbank rate the exchange-rate series moves around. */
   usd_krw?: number
-  /** Market holidays (YYYY-MM-DD) per country; a listed country replaces the built-in 2026 set. */
-  holidays?: Partial<Record<MarketCountry, string[]>>
+  /** Market holidays (YYYY-MM-DD) per country; a listed country replaces the built-in 2026 set (null or [] clears it). */
+  holidays?: Partial<Record<MarketCountry, string[] | null>>
   stocks?: Array<{
     symbol: string
     name: string
@@ -144,6 +145,9 @@ export function seedFromConfig(store: Store, _baseUrl: string, config: Tossinves
     const existing = ts.accounts.findOneBy('account_seq', a.account_seq)
     // An explicit null start date survives reseeding; only a missing one takes the default.
     const krStart = a.commission?.kr_start_date !== undefined ? a.commission.kr_start_date : existing?.commission_kr_start_date
+    if (krStart != null && (typeof krStart !== 'string' || dateToDayIdx(krStart) === undefined)) {
+      throw new Error(`tossinvest.accounts[${a.account_seq}].commission.kr_start_date: invalid date ${JSON.stringify(krStart)} (expected an existing YYYY-MM-DD date or null)`)
+    }
     const data = {
       account_seq: a.account_seq,
       account_no: a.account_no ?? existing?.account_no ?? String(10_000_000_000 + a.account_seq),
