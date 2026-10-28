@@ -107,13 +107,14 @@ export function agileRoutes({ app, store, baseUrl }: RouteContext): void {
     }
     const { startAt, maxResults } = pageParams(r.c, 50, 100)
     const options = { fields: parseFieldSelection(listParam(r.c, 'fields'), true), expand: listParam(r.c, 'expand') }
+    const page = issues.slice(startAt, startAt + maxResults)
     return {
       expand: 'schema,names',
       startAt,
       maxResults,
       total: issues.length,
-      isLast: startAt + maxResults >= issues.length,
-      issues: issues.slice(startAt, startAt + maxResults).map(issue => formatIssue(r, issue, options)),
+      isLast: maxResults === 0 || startAt + page.length >= issues.length,
+      issues: page.map(issue => formatIssue(r, issue, options)),
     }
   }
 
