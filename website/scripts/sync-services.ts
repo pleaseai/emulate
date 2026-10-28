@@ -24,6 +24,7 @@ const SERVICES: Record<string, { label: string, port: number, order: number }> =
   workos: { label: 'WorkOS', port: 4011, order: 12 },
   x: { label: 'X (Twitter)', port: 4012, order: 13 },
   jira: { label: 'Jira', port: 4013, order: 14 },
+  tossinvest: { label: 'Toss Invest', port: 4014, order: 15 },
 }
 
 function firstSentence(text: string): string {

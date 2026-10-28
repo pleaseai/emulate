@@ -32,7 +32,7 @@
     },
     "packages/asana": {
       "name": "@pleaseai/emulate-asana",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -43,7 +43,7 @@
     },
     "packages/autumn": {
       "name": "@pleaseai/emulate-autumn",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -55,7 +55,7 @@
     },
     "packages/emulate": {
       "name": "@pleaseai/emulate",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "bin": {
         "emulate": "./dist/index.js",
       },
@@ -73,6 +73,7 @@
         "@pleaseai/emulate-spotify": "workspace:*",
         "@pleaseai/emulate-supabase": "workspace:*",
         "@pleaseai/emulate-toss-payments": "workspace:*",
+        "@pleaseai/emulate-tossinvest": "workspace:*",
         "@pleaseai/emulate-workos": "workspace:*",
         "@pleaseai/emulate-x": "workspace:*",
         "commander": "^15",
@@ -86,7 +87,7 @@
     },
     "packages/firebase": {
       "name": "@pleaseai/emulate-firebase",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -97,7 +98,7 @@
     },
     "packages/gitlab": {
       "name": "@pleaseai/emulate-gitlab",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
         "graphql": "^16.13.2",
@@ -121,7 +122,7 @@
     },
     "packages/kakao": {
       "name": "@pleaseai/emulate-kakao",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -132,7 +133,7 @@
     },
     "packages/linear": {
       "name": "@pleaseai/emulate-linear",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
         "graphql": "^16.13.2",
@@ -144,7 +145,7 @@
     },
     "packages/naver": {
       "name": "@pleaseai/emulate-naver",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -155,7 +156,7 @@
     },
     "packages/posthog": {
       "name": "@pleaseai/emulate-posthog",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -166,7 +167,7 @@
     },
     "packages/spotify": {
       "name": "@pleaseai/emulate-spotify",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -177,7 +178,7 @@
     },
     "packages/supabase": {
       "name": "@pleaseai/emulate-supabase",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -188,6 +189,17 @@
     },
     "packages/toss-payments": {
       "name": "@pleaseai/emulate-toss-payments",
+      "version": "0.3.1",
+      "dependencies": {
+        "@emulators/core": "^0.12.3",
+      },
+      "devDependencies": {
+        "tsup": "^9",
+        "typescript": "^6",
+      },
+    },
+    "packages/tossinvest": {
+      "name": "@pleaseai/emulate-tossinvest",
       "version": "0.3.0",
       "dependencies": {
         "@emulators/core": "^0.12.3",
@@ -199,7 +211,7 @@
     },
     "packages/workos": {
       "name": "@pleaseai/emulate-workos",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
         "jose": "^6.2.12",
@@ -212,7 +224,7 @@
     },
     "packages/x": {
       "name": "@pleaseai/emulate-x",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@emulators/core": "^0.12.3",
       },
@@ -408,6 +420,8 @@
     "@pleaseai/emulate-supabase": ["@pleaseai/emulate-supabase@workspace:packages/supabase"],
 
     "@pleaseai/emulate-toss-payments": ["@pleaseai/emulate-toss-payments@workspace:packages/toss-payments"],
+
+    "@pleaseai/emulate-tossinvest": ["@pleaseai/emulate-tossinvest@workspace:packages/tossinvest"],
 
     "@pleaseai/emulate-workos": ["@pleaseai/emulate-workos@workspace:packages/workos"],
 

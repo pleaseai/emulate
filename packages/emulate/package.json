@@ -31,6 +31,7 @@
     "gitlab",
     "posthog",
     "spotify",
+    "tossinvest",
     "workos",
     "x",
     "jira"
@@ -77,6 +78,7 @@
     "@pleaseai/emulate-spotify": "workspace:*",
     "@pleaseai/emulate-supabase": "workspace:*",
     "@pleaseai/emulate-toss-payments": "workspace:*",
+    "@pleaseai/emulate-tossinvest": "workspace:*",
     "@pleaseai/emulate-workos": "workspace:*",
     "@pleaseai/emulate-x": "workspace:*",
     "commander": "^15",
