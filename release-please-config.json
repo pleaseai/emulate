@@ -9,9 +9,7 @@
   "packages": {
     "packages/asana": {},
     "packages/autumn": {},
-    "packages/emulate": {
-      "release-as": "0.4.1"
-    },
+    "packages/emulate": {},
     "packages/firebase": {},
     "packages/gitlab": {},
     "packages/jira": {},
