@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/pleaseai/emulate/compare/emulate-v0.4.0...emulate-v0.4.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* **release:** verify packed workspace dep versions before publishing ([#61](https://github.com/pleaseai/emulate/issues/61)) ([b1f2d71](https://github.com/pleaseai/emulate/commit/b1f2d71fda086f70bf0415d38e9bd7907babe3ce))
+
 ## [0.4.0](https://github.com/pleaseai/emulate/compare/emulate-v0.3.1...emulate-v0.4.0) (2026-10-28)
 
 
