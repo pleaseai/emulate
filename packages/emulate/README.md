@@ -29,8 +29,9 @@ npx @pleaseai/emulate init
 ```
 
 When an `emulate.config.yaml` (or `--seed <file>`) is present, the emulators
-start pre-seeded with app keys, users, and table data. Only the services
-present in the config are started.
+start pre-seeded with app keys, users, and table data. `--service` chooses
+which services start. Without it, the services named in the config start;
+if the config names no recognized services, every service starts.
 
 ## Programmatic use in tests
 
