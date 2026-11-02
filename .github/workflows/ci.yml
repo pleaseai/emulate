@@ -34,7 +34,7 @@ jobs:
           gh actions-lock --verify-local
 
       # Installs the tool versions pinned in mise.toml (bun, node)
-      - uses: jdx/mise-action@v5.2.1
+      - uses: jdx/mise-action@v5.2.3
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -75,4 +75,4 @@ jobs:
           persist-credentials: false
       # Lints the whole repository from its root (workflows, dependabot.yml,
       # actions.lock) with .github/jactionlint.yaml
-      - uses: jdx/jactionlint@v2.2.0
+      - uses: jdx/jactionlint@v2.3.0

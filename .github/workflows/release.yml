@@ -54,7 +54,7 @@ jobs:
       # (bun + node, which provides the npm CLI used to publish). No tool
       # cache: this job publishes to npm, so a poisoned cache entry could end
       # up in the published packages.
-      - uses: jdx/mise-action@v5.2.1
+      - uses: jdx/mise-action@v5.2.3
         with:
           cache: false
 

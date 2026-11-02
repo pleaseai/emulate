@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
       # No tool cache: this job deploys with wrangler, so a poisoned cache
       # entry could end up in the published site
-      - uses: jdx/mise-action@v5.2.1
+      - uses: jdx/mise-action@v5.2.3
         with:
           cache: false
       - run: bun install --frozen-lockfile
