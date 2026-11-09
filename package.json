@@ -21,7 +21,7 @@
     "@emulators/apple": "0.12.3",
     "@emulators/aws": "0.12.3",
     "@emulators/clerk": "0.12.3",
-    "@emulators/core": "0.12.3",
+    "@emulators/core": "0.13.0",
     "@emulators/github": "0.12.3",
     "@emulators/google": "0.12.3",
     "@emulators/microsoft": "0.12.3",

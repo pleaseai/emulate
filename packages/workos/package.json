@@ -31,8 +31,8 @@
     "type-check": "bun check"
   },
   "dependencies": {
-    "@emulators/core": "^0.12.3",
-    "jose": "^6.2.12"
+    "@emulators/core": "^0.13.0",
+    "jose": "^6.2.15"
   },
   "devDependencies": {
     "@workos-inc/node": "^11.0.0",
