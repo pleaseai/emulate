@@ -6,18 +6,18 @@ workflows:
     '.github/workflows/ci.yml':
         - 'actions/checkout@v7.0.1'
         - 'codecov/codecov-action@v7.1.1'
-        - 'jdx/jactionlint@v2.2.0'
-        - 'jdx/mise-action@v5.2.1'
-        - 'sonarsource/sonarqube-scan-action@v8.3.0'
+        - 'jdx/jactionlint@v2.4.0'
+        - 'jdx/mise-action@v5.2.6'
+        - 'sonarsource/sonarqube-scan-action@v8.4.0'
     '.github/workflows/docs.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/github-script@v9.0.0'
         - 'cloudflare/wrangler-action@v4.1.3'
-        - 'jdx/mise-action@v5.2.1'
+        - 'jdx/mise-action@v5.2.6'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
         - 'googleapis/release-please-action@v5.0.0'
-        - 'jdx/mise-action@v5.2.1'
+        - 'jdx/mise-action@v5.2.6'
 dependencies:
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
@@ -56,20 +56,20 @@ dependencies:
         commit: 'sha1-45996ed1f6d02564a971a2fa1b5860e934307cf7'
         owner_id: 16785467
         repo_id: 262236530
-    'jdx/jactionlint@v2.2.0':
-        ref: 'v2.2.0'
-        commit: 'sha1-1027f0a131ab98bc7e191d995bfa15dbed5bbf8f'
+    'jdx/jactionlint@v2.4.0':
+        ref: 'v2.4.0'
+        commit: 'sha1-baa8d685e2b27ff5821558c9eeabb2051c1da61b'
         owner_id: 216188
         repo_id: 1404951382
         uses:
             - 'github/codeql-action@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2'
-    'jdx/mise-action@v5.2.1':
-        ref: 'v5.2.1'
-        commit: 'sha1-fc42bcc7ddbf51124c30f95a877a0c5168a3bfde'
+    'jdx/mise-action@v5.2.6':
+        ref: 'v5.2.6'
+        commit: 'sha1-f5be966e4a917d54244728e6a5fdcd1d93a35e6c'
         owner_id: 216188
         repo_id: 738284564
-    'sonarsource/sonarqube-scan-action@v8.3.0':
-        ref: 'v8.3.0'
-        commit: 'sha1-d209202bc7d53ff1cc128f7f907dac145c9d6ae9'
+    'sonarsource/sonarqube-scan-action@v8.4.0':
+        ref: 'v8.4.0'
+        commit: 'sha1-4d1dc0c91ee400dcf8a6dddf2f705ac36542e304'
         owner_id: 545988
         repo_id: 366408409

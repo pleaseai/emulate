@@ -34,7 +34,7 @@ jobs:
           gh actions-lock --verify-local
 
       # Installs the tool versions pinned in mise.toml (bun, node)
-      - uses: jdx/mise-action@v5.2.1
+      - uses: jdx/mise-action@v5.2.6
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -62,7 +62,7 @@ jobs:
         # Skipped until the SONAR_TOKEN secret is configured
         # (secrets aren't readable in step `if`, so check via env)
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarqube-scan-action@v8.3.0
+        uses: SonarSource/sonarqube-scan-action@v8.4.0
         env:
           SONAR_HOST_URL: https://sonarcloud.io
 
@@ -75,4 +75,4 @@ jobs:
           persist-credentials: false
       # Lints the whole repository from its root (workflows, dependabot.yml,
       # actions.lock) with .github/jactionlint.yaml
-      - uses: jdx/jactionlint@v2.2.0
+      - uses: jdx/jactionlint@v2.4.0
