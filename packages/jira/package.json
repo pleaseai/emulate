@@ -36,6 +36,6 @@
   "devDependencies": {
     "jira.js": "^6.2.0",
     "tsup": "^9",
-    "typescript": "^6"
+    "typescript": "^7"
   }
 }
