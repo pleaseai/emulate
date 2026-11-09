@@ -31,8 +31,8 @@
     "type-check": "bun check"
   },
   "dependencies": {
-    "@emulators/core": "^0.12.3",
-    "graphql": "^16.13.2"
+    "@emulators/core": "^0.13.0",
+    "graphql": "^17.0.2"
   },
   "devDependencies": {
     "tsup": "^9",
