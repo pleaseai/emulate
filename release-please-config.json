@@ -7,21 +7,53 @@
     "node-workspace"
   ],
   "packages": {
-    "packages/asana": {},
-    "packages/autumn": {},
-    "packages/emulate": {},
-    "packages/firebase": {},
-    "packages/gitlab": {},
-    "packages/jira": {},
-    "packages/kakao": {},
-    "packages/linear": {},
-    "packages/naver": {},
-    "packages/posthog": {},
-    "packages/spotify": {},
-    "packages/supabase": {},
-    "packages/toss-payments": {},
-    "packages/tossinvest": {},
-    "packages/workos": {},
-    "packages/x": {}
+    "packages/asana": {
+      "release-as": "0.4.0"
+    },
+    "packages/autumn": {
+      "release-as": "0.4.0"
+    },
+    "packages/emulate": {
+      "release-as": "0.5.0"
+    },
+    "packages/firebase": {
+      "release-as": "0.4.0"
+    },
+    "packages/gitlab": {
+      "release-as": "0.4.0"
+    },
+    "packages/jira": {
+      "release-as": "0.4.0"
+    },
+    "packages/kakao": {
+      "release-as": "0.4.0"
+    },
+    "packages/linear": {
+      "release-as": "0.4.0"
+    },
+    "packages/naver": {
+      "release-as": "0.4.0"
+    },
+    "packages/posthog": {
+      "release-as": "0.4.0"
+    },
+    "packages/spotify": {
+      "release-as": "0.4.0"
+    },
+    "packages/supabase": {
+      "release-as": "0.4.0"
+    },
+    "packages/toss-payments": {
+      "release-as": "0.4.0"
+    },
+    "packages/tossinvest": {
+      "release-as": "0.4.0"
+    },
+    "packages/workos": {
+      "release-as": "0.4.0"
+    },
+    "packages/x": {
+      "release-as": "0.4.0"
+    }
   }
 }
