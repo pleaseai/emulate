@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/pleaseai/emulate/compare/emulate-toss-payments-v0.3.2...emulate-toss-payments-v0.4.0) (2026-11-20)
+
+
+### Miscellaneous Chores
+
+* **deps:** bump vercel-labs emulate core to 0.14.0 ([#70](https://github.com/pleaseai/emulate/issues/70)) ([d1300f8](https://github.com/pleaseai/emulate/commit/d1300f8e442cace9e82f55bcf0e1f0c1b1098314))
+
 ## [0.3.2](https://github.com/pleaseai/emulate/compare/emulate-toss-payments-v0.3.1...emulate-toss-payments-v0.3.2) (2026-10-28)
 
 
