@@ -18,6 +18,7 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "@emulators/ai": "0.14.0",
     "@emulators/apple": "0.14.0",
     "@emulators/aws": "0.14.0",
     "@emulators/clerk": "0.14.0",
@@ -30,6 +31,7 @@
     "@emulators/resend": "0.14.0",
     "@emulators/slack": "0.14.0",
     "@emulators/stripe": "0.14.0",
+    "@emulators/twilio": "0.14.0",
     "@emulators/vercel": "0.14.0",
     "@pleaseai/emulate": "workspace:*",
     "@pleaseai/eslint-config": "^0.1.0",
