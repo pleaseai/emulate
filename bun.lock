@@ -5,6 +5,7 @@
     "": {
       "name": "emulate-monorepo",
       "devDependencies": {
+        "@emulators/ai": "0.14.0",
         "@emulators/apple": "0.14.0",
         "@emulators/aws": "0.14.0",
         "@emulators/clerk": "0.14.0",
@@ -17,6 +18,7 @@
         "@emulators/resend": "0.14.0",
         "@emulators/slack": "0.14.0",
         "@emulators/stripe": "0.14.0",
+        "@emulators/twilio": "0.14.0",
         "@emulators/vercel": "0.14.0",
         "@pleaseai/emulate": "workspace:*",
         "@pleaseai/eslint-config": "^0.1.0",
@@ -263,6 +265,8 @@
 
     "@e18e/eslint-plugin": ["@e18e/eslint-plugin@0.8.1", "", { "dependencies": { "empathic": "^2.0.1", "module-replacements": "^3.3.0", "verkit": "^0.4.0" }, "peerDependencies": { "eslint": "^9.0.0 || ^10.0.0", "oxlint": "^1.72.0" }, "optionalPeers": ["eslint", "oxlint"] }, "sha512-OV3T7l0r52/IglskdAuoO+BJyzsCs7AcIHpwpBMlIMO0+3RHskM2h5MuHdLuesIhSRhwCURGMKtp/XwnfXrfxg=="],
 
+    "@emulators/ai": ["@emulators/ai@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-pevzlDMdd6YNN2CKDpz71OSxj3HZZMwi6Jb/+IvzRlTw/KmPeNJIPnm3w+ZvMPK1gbn0/nSjZ7R+EaluYBfn7A=="],
+
     "@emulators/apple": ["@emulators/apple@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6" } }, "sha512-R7sNDDRaNg2xq/HQhUKtRerxRbGid/IPIXJH/Pp/7wLRxa1un+AKwJaIdbNjzxhUy2ARnSnSynjQLGRNH0cx4Q=="],
 
     "@emulators/aws": ["@emulators/aws@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6.2.12" } }, "sha512-Akh462TleUNhvbrOy+Vg/vcNLZm2O9hks+OSmkt9kY0x6dbeqezMlK/89Thr/wQsqC27ZnQus/nIrCgKZQcfFQ=="],
@@ -286,6 +290,8 @@
     "@emulators/slack": ["@emulators/slack@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-y/fB47bGho3ckzqy4ea9+gaxIFIM8CU4Gvims4+3SdNXCJRHTwKEquI4evG66wjkEpfw2iyUEbKFSP+CtQmcGQ=="],
 
     "@emulators/stripe": ["@emulators/stripe@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-nXXQ9VlXcDyh5phq3kSxwO3Jv62THqTsBEGir8L27ysMtDHlxH2czRljLFtTsETQ2t0QeEcoL2VMo1BF54OtaQ=="],
+
+    "@emulators/twilio": ["@emulators/twilio@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-RqrIjeGuNkskoOYOT3bbqdpw230j/++xnFSiH6KzYUybFjj2q1H8RFL4U+7PNeDpO+a5otaCpppL7ywD406DIw=="],
 
     "@emulators/vercel": ["@emulators/vercel@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-zYFqMI+Ma4tITLHZ0IbJjH5PsL1gLqLMjukYpWNZm3KLbxNkhdri6f6isPAI/rOxjGVN6wDEGAVWeqEGZWbGAA=="],
 
