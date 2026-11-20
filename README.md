@@ -96,7 +96,7 @@ bun run emulate:all                                 # every service
 bun run emulate:all -- --service kakao,ai,twilio    # a subset
 bun run emulate:all -- --port 5000 --vercel-port 6000
 
-# Point the OpenAI or Anthropic SDK at http://localhost:4112/v1
+# Point the OpenAI SDK at http://localhost:4112/v1 or the Anthropic SDK at http://localhost:4112
 curl -X POST http://localhost:4112/v1/chat/completions \
   -H "Authorization: Bearer sk-test" -H "content-type: application/json" \
   -d '{"model":"gpt-4o","messages":[{"role":"user","content":"hi"}]}'
@@ -110,9 +110,10 @@ curl -X POST http://localhost:4113/2010-04-01/Accounts/AC00000000000000000000000
 
 Each service's port comes from its fixed place in the catalog, so starting a
 subset never renumbers anything. Without `--vercel-port` (or
-`EMULATE_VERCEL_PORT`), the vercel-labs range starts 100 above `--port`. An
-`emulate.config.yaml` works the same way as with the CLI: only the services
-keyed in it start.
+`EMULATE_VERCEL_PORT`), the vercel-labs range starts 100 above `--port`. With
+an `emulate.config.yaml` (or `--config <file>`), only the services keyed in it
+start, and their sections seed them. If the config has no recognized service
+keys, every service starts. An explicit `--service` list overrides the config.
 
 ## Usage examples
 
