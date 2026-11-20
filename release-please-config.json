@@ -3,109 +3,25 @@
   "release-type": "node",
   "include-component-in-tag": true,
   "separate-pull-requests": false,
-  "changelog-sections": [
-    {
-      "type": "feat",
-      "section": "Features"
-    },
-    {
-      "type": "fix",
-      "section": "Bug Fixes"
-    },
-    {
-      "type": "perf",
-      "section": "Performance Improvements"
-    },
-    {
-      "type": "revert",
-      "section": "Reverts"
-    },
-    {
-      "type": "chore",
-      "section": "Miscellaneous Chores"
-    },
-    {
-      "type": "docs",
-      "section": "Documentation",
-      "hidden": true
-    },
-    {
-      "type": "style",
-      "section": "Styles",
-      "hidden": true
-    },
-    {
-      "type": "refactor",
-      "section": "Code Refactoring",
-      "hidden": true
-    },
-    {
-      "type": "test",
-      "section": "Tests",
-      "hidden": true
-    },
-    {
-      "type": "build",
-      "section": "Build System",
-      "hidden": true
-    },
-    {
-      "type": "ci",
-      "section": "Continuous Integration",
-      "hidden": true
-    }
-  ],
   "plugins": [
     "node-workspace"
   ],
   "packages": {
-    "packages/asana": {
-      "release-as": "0.4.0"
-    },
-    "packages/autumn": {
-      "release-as": "0.4.0"
-    },
-    "packages/emulate": {
-      "release-as": "0.5.0"
-    },
-    "packages/firebase": {
-      "release-as": "0.4.0"
-    },
-    "packages/gitlab": {
-      "release-as": "0.4.0"
-    },
-    "packages/jira": {
-      "release-as": "0.4.0"
-    },
-    "packages/kakao": {
-      "release-as": "0.4.0"
-    },
-    "packages/linear": {
-      "release-as": "0.4.0"
-    },
-    "packages/naver": {
-      "release-as": "0.4.0"
-    },
-    "packages/posthog": {
-      "release-as": "0.4.0"
-    },
-    "packages/spotify": {
-      "release-as": "0.4.0"
-    },
-    "packages/supabase": {
-      "release-as": "0.4.0"
-    },
-    "packages/toss-payments": {
-      "release-as": "0.4.0"
-    },
-    "packages/tossinvest": {
-      "release-as": "0.4.0"
-    },
-    "packages/workos": {
-      "release-as": "0.4.0"
-    },
-    "packages/x": {
-      "release-as": "0.4.0"
-    }
+    "packages/asana": {},
+    "packages/autumn": {},
+    "packages/emulate": {},
+    "packages/firebase": {},
+    "packages/gitlab": {},
+    "packages/jira": {},
+    "packages/kakao": {},
+    "packages/linear": {},
+    "packages/naver": {},
+    "packages/posthog": {},
+    "packages/spotify": {},
+    "packages/supabase": {},
+    "packages/toss-payments": {},
+    "packages/tossinvest": {},
+    "packages/workos": {},
+    "packages/x": {}
   }
 }
