@@ -158,7 +158,9 @@ seedFromConfig(store, baseUrl, {
 Importing the `@emulators/core` root reads font files from disk at load time,
 which fails in workerd. This package bundles `Hono`, `Store` and
 `WebhookDispatcher` without that code, so import them from here instead.
-`authMiddleware` is not re-exported, so set `authUser` yourself:
+The bundle imports `crypto`, so enable the `nodejs_compat` compatibility flag
+in your Wrangler config. `authMiddleware` is not re-exported, so set
+`authUser` yourself:
 
 ```ts
 import { asanaPlugin, Hono, Store, WebhookDispatcher } from '@pleaseai/emulate-asana'

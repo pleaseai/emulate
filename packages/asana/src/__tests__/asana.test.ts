@@ -1,7 +1,11 @@
 import type { TokenMap } from '@emulators/core'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { build } from 'tsup'
 import * as asanaModule from '../index.js'
 import { asanaPlugin, getAsanaStore, seedFromConfig } from '../index.js'
 
@@ -1027,4 +1031,25 @@ describe('Asana - runtime imports', () => {
     expect(res.status).toBe(200)
     expect((await res.json() as any).data.email).toBe('dev@example.com')
   })
+
+  it('build output bundles core without importing its root or reading fonts', async () => {
+    const configPath = fileURLToPath(new URL('../../tsup.config.ts', import.meta.url))
+    const { default: tsupConfig } = await import(configPath)
+    const outDir = await mkdtemp(join(tmpdir(), 'asana-build-'))
+    try {
+      await build({
+        ...tsupConfig,
+        entry: [fileURLToPath(new URL('../index.ts', import.meta.url))],
+        outDir,
+        dts: false,
+        silent: true,
+      })
+      const bundle = await readFile(join(outDir, 'index.js'), 'utf8')
+      expect(bundle).not.toMatch(/from ["']@emulators\/core["']/)
+      expect(bundle).not.toContain('readFileSync')
+    }
+    finally {
+      await rm(outDir, { recursive: true, force: true })
+    }
+  }, 30_000)
 })
