@@ -1,4 +1,5 @@
 import type { TokenMap } from '@emulators/core'
+import { fileURLToPath } from 'node:url'
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { asanaPlugin, getAsanaStore, seedFromConfig } from '../index.js'
@@ -1000,7 +1001,7 @@ describe('Asana - Validation', () => {
 
 describe('Asana - runtime imports', () => {
   it('source files import only types from @emulators/core', async () => {
-    const srcDir = new URL('..', import.meta.url).pathname
+    const srcDir = fileURLToPath(new URL('..', import.meta.url))
     const offenders: string[] = []
     for await (const file of new Bun.Glob('**/*.ts').scan(srcDir)) {
       if (file.startsWith('__tests__/')) {
