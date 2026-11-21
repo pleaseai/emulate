@@ -87,7 +87,7 @@
         "typescript": "^6",
       },
       "peerDependencies": {
-        "emulate": "^0.12.0",
+        "emulate": "^0.14.0",
       },
       "optionalPeers": [
         "emulate",

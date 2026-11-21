@@ -7,7 +7,11 @@ import { buildServiceServer } from './build-server.js'
 type ServiceSeed = Record<string, unknown>
 
 function isPlainObject(value: unknown): value is ServiceSeed {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false
+  }
+  const prototype = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
 }
 
 // Mirrors @emulators/core's compilePath, which keys strict-route duplicates on the compiled regex.

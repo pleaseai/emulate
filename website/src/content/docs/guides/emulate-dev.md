@@ -19,7 +19,7 @@ Toss Payments, Supabase, and the upstream services together.
 npm i -D emulate @pleaseai/emulate
 ```
 
-`emulate` (version 0.12 or newer) is an optional peer dependency of
+`emulate` 0.14.x is an optional peer dependency of
 `@pleaseai/emulate`. You install it yourself; the `@pleaseai/emulate` CLI and
 programmatic API work without it.
 
@@ -60,7 +60,7 @@ The full sample is
 [`examples/emulate-dev/emulate.config.yaml`](https://github.com/pleaseai/emulate/blob/main/examples/emulate-dev/emulate.config.yaml).
 Available modules: `kakao`, `naver`, `tosspayments`, `firebase`, `supabase`,
 `asana`, `linear`, `autumn`, `gitlab`, `posthog`, `spotify`, `workos`, `x`,
-`jira`.
+`jira`, `tossinvest`.
 
 **Naming rule for Linear.** Upstream does not let a custom instance reuse a
 built-in name, and it ships its own `linear`. Key our Linear emulator
@@ -106,7 +106,7 @@ Our emulators advertise the base URL upstream computes, so `--base-url` and
   (and `--watch` reloads) do work: upstream rebuilds each emulator from the
   seed, which restores a clean state.
 - **You install `emulate` yourself.** It is an optional peer dependency, and
-  version 0.12 or newer is required.
+  version 0.14.x is required.
 - **Bin name clash.** Use `node node_modules/emulate/dist/index.js` as shown
   above.
 - **Single seed object.** A custom instance takes one service's seed (and an

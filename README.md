@@ -195,7 +195,7 @@ created with `createClient("http://localhost:4004", anonKey)`.
 ## Use with upstream emulate
 
 Every service is also a [custom emulator](https://emulate.dev/docs/custom-emulators)
-for [vercel-labs/emulate](https://github.com/vercel-labs/emulate) 0.12+, so you
+for [vercel-labs/emulate](https://github.com/vercel-labs/emulate) 0.14.x, so you
 can run it next to upstream's GitHub, Stripe, and other built-ins from one
 config file:
 

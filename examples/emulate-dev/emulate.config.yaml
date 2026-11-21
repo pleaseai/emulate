@@ -18,15 +18,12 @@ services:
   pleaseai-linear:
     emulator: '@pleaseai/emulate/emulators/linear'
     port: 4101
+    # Linear always seeds org-1, team-1, and user-1 (plus a sample issue), and
+    # config entries that reuse those IDs are skipped, so only the API key is set.
+    # Add organizations, teams, or users here with new IDs to seed more.
     seed:
       api_keys:
         - lin_api_test
-      organizations:
-        - {id: org-1, name: My Org}
-      teams:
-        - {id: team-1, name: Engineering, key: ENG, organization: org-1}
-      users:
-        - {id: user-1, name: Developer, email: dev@example.com, organization: org-1}
 
   github:
     emulator: github

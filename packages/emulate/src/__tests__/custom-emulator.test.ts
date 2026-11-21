@@ -49,7 +49,7 @@ describe('service custom emulators', () => {
     expect(new URL(ok.headers.get('location')!).searchParams.get('code')).toBeTruthy()
 
     const unknown = await authorize(runtime, 'unknown_client')
-    expect(unknown.status).toBeGreaterThanOrEqual(400)
+    expect(unknown.status).toBe(401)
   })
 
   it('exposes inner service routes on the upstream route listing', async () => {
