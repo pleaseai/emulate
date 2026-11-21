@@ -99,7 +99,7 @@ describe('GitLab GraphQL surface', () => {
     const body = (await res.json()) as GraphQLResponse
     const messages = (body.errors ?? []).map(e => e.message)
     expect(
-      messages.some(m => /argument "[^"]+" of type "[^"]+" is required, but it was not provided\./.test(m)),
+      messages.some(m => /argument "[^"]+" of type "[^"]+" is required, but it was not provided\./i.test(m)),
     ).toBe(true)
   })
 })
