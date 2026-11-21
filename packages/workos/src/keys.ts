@@ -17,6 +17,7 @@ export async function jwksResponse(): Promise<{ keys: Record<string, unknown>[] 
 export interface AccessTokenClaims {
   sub: string // user id
   sid: string // session id
+  auth_time?: number // seconds since epoch; defaults to the issue time
   org_id?: string
   role?: string
   permissions?: string[]
@@ -28,10 +29,12 @@ export async function signAccessToken(
   options: { issuer: string, audience?: string, expiresIn?: string },
 ): Promise<string> {
   const { privateKey } = await keyPairPromise
-  let jwt = new SignJWT(claims)
+  const issuedAt = Math.floor(Date.now() / 1000)
+  // @workos-inc/node >= 12 rejects user access tokens without `auth_time`.
+  let jwt = new SignJWT({ auth_time: issuedAt, ...claims })
     .setProtectedHeader({ alg: 'RS256', kid: KID, typ: 'JWT' })
     .setIssuer(options.issuer)
-    .setIssuedAt()
+    .setIssuedAt(issuedAt)
     .setJti(`jti_${randomUUID()}`)
     .setExpirationTime(options.expiresIn ?? '1h')
   if (options.audience) {
