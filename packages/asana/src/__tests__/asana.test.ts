@@ -515,6 +515,24 @@ describe('Asana - Tasks', () => {
     const listBody = await listRes.json() as any
     expect(listBody.data.length).toBe(1)
   })
+
+  it('stories - escapes comment text into html_text', async () => {
+    const taskRes = await app.request(`${base}/api/1.0/tasks`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { name: 'Escaping', workspace: workspaceGid } }),
+    })
+    const taskGid = (await taskRes.json() as any).data.gid
+
+    const res = await app.request(`${base}/api/1.0/tasks/${taskGid}/stories`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ data: { text: '<b>"a" & b</b>' } }),
+    })
+    expect(res.status).toBe(201)
+    const body = await res.json() as any
+    expect(body.data.html_text).toBe('<body>&lt;b&gt;&quot;a&quot; &amp; b&lt;/b&gt;</body>')
+  })
 })
 
 // ── Tags ───────────────────────────────────────────────────
@@ -975,5 +993,24 @@ describe('Asana - Validation', () => {
     const body = await res.json() as any
     expect(body.data.num_milestones).toBeGreaterThanOrEqual(1)
     expect(body.data.num_completed_milestones).toBeGreaterThanOrEqual(1)
+  })
+})
+
+// ── Runtime imports ────────────────────────────────────────
+
+describe('Asana - runtime imports', () => {
+  it('source files import only types from @emulators/core', async () => {
+    const srcDir = new URL('..', import.meta.url).pathname
+    const offenders: string[] = []
+    for await (const file of new Bun.Glob('**/*.ts').scan(srcDir)) {
+      if (file.startsWith('__tests__/')) {
+        continue
+      }
+      const source = await Bun.file(`${srcDir}${file}`).text()
+      if (/^import (?!type )[^;']*'@emulators\/core'/m.test(source)) {
+        offenders.push(file)
+      }
+    }
+    expect(offenders).toEqual([])
   })
 })

@@ -13,9 +13,12 @@ import type {
 } from './entities.js'
 import type { AsanaStore } from './store.js'
 import { randomBytes } from 'node:crypto'
-import { escapeHtml } from '@emulators/core'
 
-export { escapeHtml }
+// Kept local: a value import from the upstream @emulators/core root runs its top-level font reads,
+// which throw in workerd (#79).
+export function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
 
 export function generateGid(): string {
   const bytes = randomBytes(8)
