@@ -34,6 +34,7 @@ using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 | `workos` | 4011 | User Management, organizations, memberships, invitations, API keys, OAuth/OIDC, Vault KV (@workos-inc/node compatible) |
 | `x` | 4012 | X API v2: OAuth 2.0 PKCE, tweets, users, timelines |
 | `jira` | 4013 | Jira Cloud REST API v2/v3, JQL search, issues, transitions, comments, Agile boards and sprints, webhooks, OAuth 2.0 (3LO) (jira.js compatible) |
+| `tossinvest` | 4014 | Toss Invest Open API: client credentials token, market data, sectors, accounts, holdings, orders, conditional orders |
 
 ## Getting started
 
@@ -67,6 +68,53 @@ When an `emulate.config.yaml` (or `--seed <file>`) is present, the emulators
 start pre-seeded with app keys, users, and table data. Only the services
 present in the config are started.
 
+## Running with the vercel-labs emulators (`emulate:all`)
+
+`bun run emulate:all` starts this repo's services and the upstream
+[vercel-labs/emulate](https://github.com/vercel-labs/emulate) `@emulators/*`
+services together in one process. This repo's services keep the ports listed
+above. The vercel-labs services use their own range from 4100:
+
+| Service | Default port | Service | Default port |
+| --- | --- | --- | --- |
+| `vercel` | 4100 | `aws` | 4107 |
+| `github` | 4101 | `resend` | 4108 |
+| `google` | 4102 | `stripe` | 4109 |
+| `slack` | 4103 | `clerk` | 4110 |
+| `apple` | 4104 | `mongoatlas` | 4111 |
+| `microsoft` | 4105 | `ai` | 4112 |
+| `okta` | 4106 | `twilio` | 4113 |
+
+`ai` is a deterministic OpenAI (Chat Completions, Responses) and Anthropic
+Messages emulator: rules script the replies, so the same request returns the
+same answer on every run. `twilio` emulates Twilio Messaging, Voice, Verify,
+and Conversations.
+
+```bash
+bun run build
+bun run emulate:all                                 # every service
+bun run emulate:all -- --service kakao,ai,twilio    # a subset
+bun run emulate:all -- --port 5000 --vercel-port 6000
+
+# Point the OpenAI SDK at http://localhost:4112/v1 or the Anthropic SDK at http://localhost:4112
+curl -X POST http://localhost:4112/v1/chat/completions \
+  -H "Authorization: Bearer sk-test" -H "content-type: application/json" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"hi"}]}'
+
+# Send an SMS with the default test account
+curl -X POST http://localhost:4113/2010-04-01/Accounts/AC00000000000000000000000000000000/Messages.json \
+  -u AC00000000000000000000000000000000:twilio_test_auth_token \
+  --data-urlencode "To=+15559876543" --data-urlencode "From=+15551234567" \
+  --data-urlencode "Body=hello"
+```
+
+Each service's port comes from its fixed place in the catalog, so starting a
+subset never renumbers anything. Without `--vercel-port` (or
+`EMULATE_VERCEL_PORT`), the vercel-labs range starts 100 above `--port`. With
+an `emulate.config.yaml` (or `--config <file>`), only the services keyed in it
+start, and their sections seed them. If the config has no recognized service
+keys, every service starts. An explicit `--service` list overrides the config.
+
 ## Usage examples
 
 ### Kakao OAuth flow
@@ -97,6 +145,28 @@ curl -X POST http://localhost:4002/v1/payments/confirm \
   -H "Authorization: Basic $(echo -n 'test_sk_example:' | base64)" \
   -H "content-type: application/json" \
   -d '{"paymentKey":"<paymentKey>","orderId":"order-1","amount":11000}'
+```
+
+### Toss Invest trading
+
+```bash
+# Issue an access token
+curl -X POST http://localhost:4014/oauth2/token \
+  -d grant_type=client_credentials \
+  -d client_id=tsck_example_client_id \
+  -d client_secret=tsck_example_client_secret
+
+# Buy 10 shares at market; the order fills at the current price
+curl -X POST http://localhost:4014/api/v1/orders \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-Tossinvest-Account: 1" \
+  -H "content-type: application/json" \
+  -d '{"symbol":"005930","side":"BUY","orderType":"MARKET","quantity":"10"}'
+
+# Check holdings
+curl http://localhost:4014/api/v1/holdings \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-Tossinvest-Account: 1"
 ```
 
 ### Programmatic use in tests
@@ -161,6 +231,7 @@ packages/
   workos/           # @pleaseai/emulate-workos
   x/                # @pleaseai/emulate-x
   jira/             # @pleaseai/emulate-jira
+  tossinvest/       # @pleaseai/emulate-tossinvest
 docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators
 ```

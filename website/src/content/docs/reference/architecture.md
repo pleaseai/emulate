@@ -22,6 +22,7 @@ packages/
   workos/           # @pleaseai/emulate-workos — User Management + Vault
   x/                # @pleaseai/emulate-x — X API v2
   jira/             # @pleaseai/emulate-jira — Jira Cloud REST API
+  tossinvest/       # @pleaseai/emulate-tossinvest — Toss Invest trading
 docs/
   EMULATOR-CONVENTIONS.md   # guide for adding new emulators
 website/            # this documentation site (Astro Starlight)
@@ -51,7 +52,7 @@ Each service is a `ServicePlugin` that:
 4. Uses shared middleware for auth, error handling, and webhooks
 
 The CLI's registry (`packages/emulate/src/registry.ts`) lazily loads each
-plugin, so starting one service does not import the other twelve. Multiple
+plugin, so starting one service does not import the other services. Multiple
 services run simultaneously, each on its own port (auto-incremented from the
 base port).
 

@@ -1,5 +1,74 @@
 # Changelog
 
+## [0.5.0](https://github.com/pleaseai/emulate/compare/emulate-v0.4.1...emulate-v0.5.0) (2026-11-20)
+
+
+### Miscellaneous Chores
+
+* **deps:** bump vercel-labs emulate core to 0.14.0 ([#70](https://github.com/pleaseai/emulate/issues/70)) ([d1300f8](https://github.com/pleaseai/emulate/commit/d1300f8e442cace9e82f55bcf0e1f0c1b1098314))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @pleaseai/emulate-asana bumped to 0.4.0
+    * @pleaseai/emulate-autumn bumped to 0.4.0
+    * @pleaseai/emulate-firebase bumped to 0.4.0
+    * @pleaseai/emulate-gitlab bumped to 0.4.0
+    * @pleaseai/emulate-jira bumped to 0.4.0
+    * @pleaseai/emulate-kakao bumped to 0.4.0
+    * @pleaseai/emulate-linear bumped to 0.4.0
+    * @pleaseai/emulate-naver bumped to 0.4.0
+    * @pleaseai/emulate-posthog bumped to 0.4.0
+    * @pleaseai/emulate-spotify bumped to 0.4.0
+    * @pleaseai/emulate-supabase bumped to 0.4.0
+    * @pleaseai/emulate-toss-payments bumped to 0.4.0
+    * @pleaseai/emulate-tossinvest bumped to 0.4.0
+    * @pleaseai/emulate-workos bumped to 0.4.0
+    * @pleaseai/emulate-x bumped to 0.4.0
+
+## [0.4.1](https://github.com/pleaseai/emulate/compare/emulate-v0.4.0...emulate-v0.4.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* **release:** verify packed workspace dep versions before publishing ([#61](https://github.com/pleaseai/emulate/issues/61)) ([b1f2d71](https://github.com/pleaseai/emulate/commit/b1f2d71fda086f70bf0415d38e9bd7907babe3ce))
+
+## [0.4.0](https://github.com/pleaseai/emulate/compare/emulate-v0.3.1...emulate-v0.4.0) (2026-10-28)
+
+
+### Features
+
+* **jira:** add Jira Cloud REST API emulator ([#49](https://github.com/pleaseai/emulate/issues/49)) ([4f9385c](https://github.com/pleaseai/emulate/commit/4f9385c43090b725878345d527518a0ee6b6ecd4))
+* **tossinvest:** add Toss Invest Open API emulator ([#50](https://github.com/pleaseai/emulate/issues/50)) ([5847757](https://github.com/pleaseai/emulate/commit/5847757e1c6d5e60e54b930330ca10561d2c5cd0))
+
+
+### Bug Fixes
+
+* point exports.bun at the built dist output ([#52](https://github.com/pleaseai/emulate/issues/52)) ([53da58b](https://github.com/pleaseai/emulate/commit/53da58beceeab931e96b2e26e564452ff8abf056)), closes [#23](https://github.com/pleaseai/emulate/issues/23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @pleaseai/emulate-asana bumped to 0.3.2
+    * @pleaseai/emulate-autumn bumped to 0.3.2
+    * @pleaseai/emulate-firebase bumped to 0.3.2
+    * @pleaseai/emulate-gitlab bumped to 0.3.2
+    * @pleaseai/emulate-jira bumped to 0.3.1
+    * @pleaseai/emulate-kakao bumped to 0.3.2
+    * @pleaseai/emulate-linear bumped to 0.3.2
+    * @pleaseai/emulate-naver bumped to 0.3.2
+    * @pleaseai/emulate-posthog bumped to 0.3.2
+    * @pleaseai/emulate-spotify bumped to 0.3.2
+    * @pleaseai/emulate-supabase bumped to 0.3.2
+    * @pleaseai/emulate-toss-payments bumped to 0.3.2
+    * @pleaseai/emulate-tossinvest bumped to 0.3.1
+    * @pleaseai/emulate-workos bumped to 0.3.2
+    * @pleaseai/emulate-x bumped to 0.3.2
+
 ## [0.3.1](https://github.com/pleaseai/emulate/compare/emulate-v0.3.0...emulate-v0.3.1) (2026-10-27)
 
 

@@ -55,6 +55,18 @@ describe('Jira Agile API', () => {
     expect(ranked.json.issues.map((i: any) => i.key)).toEqual(['EMU-1'])
   })
 
+  it('reports the last page when board issue pages request maxResults=0', async () => {
+    const empty = await api(t.app, `${A}/board/1/issue?maxResults=0`)
+    expect(empty.status).toBe(200)
+    expect(empty.json).toMatchObject({ startAt: 0, maxResults: 0, issues: [], isLast: true })
+    expect(empty.json.total).toBeGreaterThan(0)
+
+    const first = await api(t.app, `${A}/board/1/issue?maxResults=1`)
+    expect(first.json.isLast).toBe(false)
+    const last = await api(t.app, `${A}/board/1/issue?startAt=${first.json.total - 1}&maxResults=1`)
+    expect(last.json.isLast).toBe(true)
+  })
+
   it('rejects moving issues from another project into a sprint', async () => {
     await api(t.app, '/rest/api/3/project', { method: 'POST', body: { key: 'OPS', name: 'Operations' } })
     const ops = await api(t.app, '/rest/api/3/issue', {

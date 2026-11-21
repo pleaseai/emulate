@@ -5,23 +5,25 @@
     "": {
       "name": "emulate-monorepo",
       "devDependencies": {
-        "@emulators/apple": "0.12.3",
-        "@emulators/aws": "0.12.3",
-        "@emulators/clerk": "0.12.3",
-        "@emulators/core": "0.12.3",
-        "@emulators/github": "0.12.3",
-        "@emulators/google": "0.12.3",
-        "@emulators/microsoft": "0.12.3",
-        "@emulators/mongoatlas": "0.12.3",
-        "@emulators/okta": "0.12.3",
-        "@emulators/resend": "0.12.3",
-        "@emulators/slack": "0.12.3",
-        "@emulators/stripe": "0.12.3",
-        "@emulators/vercel": "0.12.3",
+        "@emulators/ai": "0.14.0",
+        "@emulators/apple": "0.14.0",
+        "@emulators/aws": "0.14.0",
+        "@emulators/clerk": "0.14.0",
+        "@emulators/core": "0.14.0",
+        "@emulators/github": "0.14.0",
+        "@emulators/google": "0.14.0",
+        "@emulators/microsoft": "0.14.0",
+        "@emulators/mongoatlas": "0.14.0",
+        "@emulators/okta": "0.14.0",
+        "@emulators/resend": "0.14.0",
+        "@emulators/slack": "0.14.0",
+        "@emulators/stripe": "0.14.0",
+        "@emulators/twilio": "0.14.0",
+        "@emulators/vercel": "0.14.0",
         "@pleaseai/emulate": "workspace:*",
         "@pleaseai/eslint-config": "^0.1.0",
         "@types/bun": "^1.4.3",
-        "emulate": "0.12.3",
+        "emulate": "0.14.0",
         "eslint": "^10.13.0",
         "jiti": "^2.7.0",
         "picocolors": "^1.1.1",
@@ -32,9 +34,9 @@
     },
     "packages/asana": {
       "name": "@pleaseai/emulate-asana",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -43,9 +45,9 @@
     },
     "packages/autumn": {
       "name": "@pleaseai/emulate-autumn",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "autumn-js": "1.5.8",
@@ -55,12 +57,12 @@
     },
     "packages/emulate": {
       "name": "@pleaseai/emulate",
-      "version": "0.3.0",
+      "version": "0.4.1",
       "bin": {
         "emulate": "./dist/index.js",
       },
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
         "@pleaseai/emulate-asana": "workspace:*",
         "@pleaseai/emulate-autumn": "workspace:*",
         "@pleaseai/emulate-firebase": "workspace:*",
@@ -73,6 +75,7 @@
         "@pleaseai/emulate-spotify": "workspace:*",
         "@pleaseai/emulate-supabase": "workspace:*",
         "@pleaseai/emulate-toss-payments": "workspace:*",
+        "@pleaseai/emulate-tossinvest": "workspace:*",
         "@pleaseai/emulate-workos": "workspace:*",
         "@pleaseai/emulate-x": "workspace:*",
         "commander": "^15",
@@ -92,9 +95,9 @@
     },
     "packages/firebase": {
       "name": "@pleaseai/emulate-firebase",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -103,9 +106,9 @@
     },
     "packages/gitlab": {
       "name": "@pleaseai/emulate-gitlab",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
         "graphql": "^16.13.2",
       },
       "devDependencies": {
@@ -115,9 +118,9 @@
     },
     "packages/jira": {
       "name": "@pleaseai/emulate-jira",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "jira.js": "^6.2.0",
@@ -127,9 +130,9 @@
     },
     "packages/kakao": {
       "name": "@pleaseai/emulate-kakao",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -138,9 +141,9 @@
     },
     "packages/linear": {
       "name": "@pleaseai/emulate-linear",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
         "graphql": "^16.13.2",
       },
       "devDependencies": {
@@ -150,9 +153,9 @@
     },
     "packages/naver": {
       "name": "@pleaseai/emulate-naver",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -161,9 +164,9 @@
     },
     "packages/posthog": {
       "name": "@pleaseai/emulate-posthog",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -172,9 +175,9 @@
     },
     "packages/spotify": {
       "name": "@pleaseai/emulate-spotify",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -183,9 +186,9 @@
     },
     "packages/supabase": {
       "name": "@pleaseai/emulate-supabase",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -194,9 +197,20 @@
     },
     "packages/toss-payments": {
       "name": "@pleaseai/emulate-toss-payments",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
+      },
+      "devDependencies": {
+        "tsup": "^9",
+        "typescript": "^6",
+      },
+    },
+    "packages/tossinvest": {
+      "name": "@pleaseai/emulate-tossinvest",
+      "version": "0.3.1",
+      "dependencies": {
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -205,9 +219,9 @@
     },
     "packages/workos": {
       "name": "@pleaseai/emulate-workos",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
         "jose": "^6.2.12",
       },
       "devDependencies": {
@@ -218,9 +232,9 @@
     },
     "packages/x": {
       "name": "@pleaseai/emulate-x",
-      "version": "0.3.0",
+      "version": "0.3.2",
       "dependencies": {
-        "@emulators/core": "^0.12.3",
+        "@emulators/core": "^0.14.0",
       },
       "devDependencies": {
         "tsup": "^9",
@@ -257,31 +271,35 @@
 
     "@e18e/eslint-plugin": ["@e18e/eslint-plugin@0.8.1", "", { "dependencies": { "empathic": "^2.0.1", "module-replacements": "^3.3.0", "verkit": "^0.4.0" }, "peerDependencies": { "eslint": "^9.0.0 || ^10.0.0", "oxlint": "^1.72.0" }, "optionalPeers": ["eslint", "oxlint"] }, "sha512-OV3T7l0r52/IglskdAuoO+BJyzsCs7AcIHpwpBMlIMO0+3RHskM2h5MuHdLuesIhSRhwCURGMKtp/XwnfXrfxg=="],
 
-    "@emulators/apple": ["@emulators/apple@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-GZgmaf/G3tjnNtcsYqdycBv9ZOv2xaJIzs9pGGlyzT5nW/giyUnZY+7xpN234lSoE5NJipyXIZ6eN92WzP3C7w=="],
+    "@emulators/ai": ["@emulators/ai@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-pevzlDMdd6YNN2CKDpz71OSxj3HZZMwi6Jb/+IvzRlTw/KmPeNJIPnm3w+ZvMPK1gbn0/nSjZ7R+EaluYBfn7A=="],
 
-    "@emulators/aws": ["@emulators/aws@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6.2.12" } }, "sha512-fcUmb4zxC6siud1KSI4dy9/o8WxruChTWPmS2ajINU30mHiDY2YymM550sLtyNkrFnHbY1wpjUyAp5xynuZtKg=="],
+    "@emulators/apple": ["@emulators/apple@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6" } }, "sha512-R7sNDDRaNg2xq/HQhUKtRerxRbGid/IPIXJH/Pp/7wLRxa1un+AKwJaIdbNjzxhUy2ARnSnSynjQLGRNH0cx4Q=="],
 
-    "@emulators/clerk": ["@emulators/clerk@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-njCAAJ3mMkixxXKRGSc29/xlzkbJpZQ/4a5IrKrq0awa3tePqORUQjtxOfdOY1Ta+dzIEESMDFzl1eD6rPry9g=="],
+    "@emulators/aws": ["@emulators/aws@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6.2.12" } }, "sha512-Akh462TleUNhvbrOy+Vg/vcNLZm2O9hks+OSmkt9kY0x6dbeqezMlK/89Thr/wQsqC27ZnQus/nIrCgKZQcfFQ=="],
 
-    "@emulators/core": ["@emulators/core@0.12.3", "", { "dependencies": { "jose": "^6.2.2" } }, "sha512-xbKgJKyk8inuyVDv/um8/M5FowgA7xI1UJVZYbIcRL1JxRWyPBnbo5n+EEQcypVDoZTLrXdJZ/STGBthbek2YA=="],
+    "@emulators/clerk": ["@emulators/clerk@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6" } }, "sha512-9ER/ZMAeQYpYCT7gFxA/xxA1dPkoI7HOZFLkv70jhxTGsmMMMViJU2ApH/Xafwp04Ee8hoDr1GTzr83ptv1Rdw=="],
 
-    "@emulators/github": ["@emulators/github@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-HkCTL93ftLYDPtbvhoQNmXF9PI/HPwzR7DfOUR1KXFJtNxaj+45ovJ9jST8nYaJAXRVxE7/TvfbyqBf88Gg+/g=="],
+    "@emulators/core": ["@emulators/core@0.14.0", "", { "dependencies": { "jose": "^6.2.2" } }, "sha512-3XAxtzFh1quWqyFur/Ufcz+Z+kdODWDrfjoxMYtaBiYQrwaa7EWmIQ2W3KjDKiZ7tox+KxRa9F4d7DJoVqHSKw=="],
 
-    "@emulators/google": ["@emulators/google@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-X+YUkR6tjJFYscdsL9+UeUTlKpzdxCUfW2jKU4+yhU5s/qjI4qTikFy20yUy88FUq/0hDRBPk9H3AdeUM7Hn9w=="],
+    "@emulators/github": ["@emulators/github@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-okYUnxKKLWfOxjssGXbM7b9PUUPLdGA6UFwcPsH/lYJA2MaeEQRVa7WmACuMGI6SkaIkhWaIkxBW6q828GbLFA=="],
 
-    "@emulators/microsoft": ["@emulators/microsoft@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-vT5u8dJjO7vA8YrUp8GN7J/n3AHCsBX8THuLyi30cuJ8chYyVtxGokHtUd6YfN9CYs6D1w7TV2Gi8gyACo+nxw=="],
+    "@emulators/google": ["@emulators/google@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6" } }, "sha512-OnAKLrpv9mfeuR2ev+R8EysIvi4XLRkQlGootxpi3B95rCpAm4NTogzS24jFHqpH4/hDK8+LTlEGF9Gv+uuWHw=="],
 
-    "@emulators/mongoatlas": ["@emulators/mongoatlas@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-GQuc5sPUGFTuu5QozlZ2s8l5QcBJgJrLMlxHfCZ2JVWM+e174h/cKDXcahb8uOsDdTVrlrET2+Ekc/F1aEjGUw=="],
+    "@emulators/microsoft": ["@emulators/microsoft@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6" } }, "sha512-+wShhEIOaaSYOk1yy8siZF31Bn8k5nUfsNY5EJKh0as34d0f6UKUlgXzFReqwgX9QvSnioX3lIP3OeZUp4v79g=="],
 
-    "@emulators/okta": ["@emulators/okta@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3", "jose": "^6" } }, "sha512-v2G6IItrAsi++2CfDmbySu0/+u0CD8cyBbJFooruJ9i4bYIt18QQ3bb0qXdQkoUhEw17RLlq+TKN0+SQokIo1A=="],
+    "@emulators/mongoatlas": ["@emulators/mongoatlas@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-J/RueFW++G80b1ZQc+gEYKM0wQmJFmtahHtzsQvz0XloPBaQj+sZAdGqq93eTxNE7LqqKGTbspyWErhbQV7OQg=="],
 
-    "@emulators/resend": ["@emulators/resend@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-aRo8Qh1pDQ2WOrNM+Gu/a7BN9T7jAUpOkmNxyAFpCgwbcy+8wy+723cyicdPaU5uTC2IZOmoqH8JfYeH0FayPQ=="],
+    "@emulators/okta": ["@emulators/okta@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0", "jose": "^6" } }, "sha512-011mJw4Z8Vlng3T44IRJ2sL2/iCVaYSRCG0FyebRvw8jaX48CD65Vl3oA6ra/oGFyIX598hcQOfUHVNQLX60HA=="],
 
-    "@emulators/slack": ["@emulators/slack@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-nNwoYqA1/Na5w3E1mAw2d/OX8nJz96Uf7h3jvIGr2I1+FghUtMzgH432fBplalcY+SviBw6RLYGy2R2cO/ep2A=="],
+    "@emulators/resend": ["@emulators/resend@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-J9eXOW3RKe8uliFA+JBSKnI5WgAdEDQCnwhiEoQm7KdKSiFee0Hrks+JE5IsVVD5jYpJIlLXoqEd2XnPFLIViA=="],
 
-    "@emulators/stripe": ["@emulators/stripe@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-rnBpfzl/Sdu3mTTqqELOigciUM90hjxXSOQ3R1sA9RMkWcCf+Iui2DHqtTchnKhX8yksYUi/D+vfiR252m98Kg=="],
+    "@emulators/slack": ["@emulators/slack@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-y/fB47bGho3ckzqy4ea9+gaxIFIM8CU4Gvims4+3SdNXCJRHTwKEquI4evG66wjkEpfw2iyUEbKFSP+CtQmcGQ=="],
 
-    "@emulators/vercel": ["@emulators/vercel@0.12.3", "", { "dependencies": { "@emulators/core": "0.12.3" } }, "sha512-53b7Kr4feRweHoukC8Y1c14Nl+5z14VQSCvNVREwv366eqhIIVb8iJ5et3OT5HahTI/yuNmky/RubOlpnnIQKw=="],
+    "@emulators/stripe": ["@emulators/stripe@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-nXXQ9VlXcDyh5phq3kSxwO3Jv62THqTsBEGir8L27ysMtDHlxH2czRljLFtTsETQ2t0QeEcoL2VMo1BF54OtaQ=="],
+
+    "@emulators/twilio": ["@emulators/twilio@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-RqrIjeGuNkskoOYOT3bbqdpw230j/++xnFSiH6KzYUybFjj2q1H8RFL4U+7PNeDpO+a5otaCpppL7ywD406DIw=="],
+
+    "@emulators/vercel": ["@emulators/vercel@0.14.0", "", { "dependencies": { "@emulators/core": "0.14.0" } }, "sha512-zYFqMI+Ma4tITLHZ0IbJjH5PsL1gLqLMjukYpWNZm3KLbxNkhdri6f6isPAI/rOxjGVN6wDEGAVWeqEGZWbGAA=="],
 
     "@es-joy/jsdoccomment": ["@es-joy/jsdoccomment@0.92.0", "", { "dependencies": { "@types/estree": "^1.0.9", "@typescript-eslint/types": "^8.65.0", "comment-parser": "1.4.7", "esquery": "^1.7.0", "jsdoc-type-pratt-parser": "~9.0.0" } }, "sha512-WivZqV5jPTYDQJgIMp0hTsyQESKYNY6yCJr4b0l84tYtQntkAMkc6zARh2vlRQyeg4aYHPUkCUDpvr2IWAiGpQ=="],
 
@@ -414,6 +432,8 @@
     "@pleaseai/emulate-supabase": ["@pleaseai/emulate-supabase@workspace:packages/supabase"],
 
     "@pleaseai/emulate-toss-payments": ["@pleaseai/emulate-toss-payments@workspace:packages/toss-payments"],
+
+    "@pleaseai/emulate-tossinvest": ["@pleaseai/emulate-tossinvest@workspace:packages/tossinvest"],
 
     "@pleaseai/emulate-workos": ["@pleaseai/emulate-workos@workspace:packages/workos"],
 
@@ -629,7 +649,7 @@
 
     "empathic": ["empathic@2.0.1", "", {}, "sha512-YGRs8knHhKHVShLkFET/rWAU8kmHbOV5LwN938RHI0pljAJ1Gf6SzXsSmRaEzcXTtOOmVqJ5+WtQPL5uigY50Q=="],
 
-    "emulate": ["emulate@0.12.3", "", { "dependencies": { "commander": "^14", "picocolors": "^1.1.1", "yaml": "^2" }, "bin": { "emulate": "dist/index.js" } }, "sha512-kYESyCh3jTvcLAk7Do4g38AHZu7YyWvlRzDq8/V9o8DPGCHealCt5AmNHgntAI8yZSYm/JVJI+JZyr8zP7J6IQ=="],
+    "emulate": ["emulate@0.14.0", "", { "dependencies": { "commander": "^14", "picocolors": "^1.1.1", "yaml": "^2" }, "bin": { "emulate": "dist/index.js" } }, "sha512-mlM/PJ34ynD2OTGVBvy+8/F7gEDwkHWmpqLG/JetaDmaqifkHtCw2VMmXTKBy6Zwa5yvCziLvyyvmAoVeuPZoA=="],
 
     "enhanced-resolve": ["enhanced-resolve@5.22.2", "", { "dependencies": { "graceful-fs": "^4.2.4", "tapable": "^2.3.3" } }, "sha512-0rxICaFZ7NQho/sHely2bvOPRP0Eu2B0NZ9zM54YvRvWMn7jfz3DmnOZDR9LlXDdDcqntAVc6Hfy4gr/tdH/Ag=="],
 

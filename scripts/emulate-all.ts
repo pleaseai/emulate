@@ -16,7 +16,7 @@ import type { ServicePlugin, Store, WebhookDispatcher } from '@emulators/core'
  * ranges so selecting a subset never renumbers anything and the ranges can't
  * overlap:
  *   - this repo:   base 4000  (kakao 4000, naver 4001, … x 4012, jira 4013)
- *   - vercel-labs: base 4100  (vercel 4100, github 4101, … mongoatlas 4111)
+ *   - vercel-labs: base 4100  (vercel 4100, github 4101, … twilio 4113)
  *
  *   bun run emulate:all                            # every service, both ranges
  *   bun run emulate:all -- --service kakao,github,stripe
@@ -49,6 +49,8 @@ const VERCEL_CATALOG: Record<string, { pkg: string, label: string }> = {
   stripe: { pkg: '@emulators/stripe', label: 'Stripe payments' },
   clerk: { pkg: '@emulators/clerk', label: 'Clerk auth / user management' },
   mongoatlas: { pkg: '@emulators/mongoatlas', label: 'MongoDB Atlas Admin + Data API' },
+  ai: { pkg: '@emulators/ai', label: 'OpenAI / Anthropic APIs (deterministic)' },
+  twilio: { pkg: '@emulators/twilio', label: 'Twilio Messaging / Voice / Verify' },
 }
 
 // Canonical order = the stable per-service port index within each range.
