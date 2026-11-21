@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/pleaseai/emulate/compare/emulate-asana-v0.4.1...emulate-asana-v0.4.2) (2026-11-21)
+
+
+### Bug Fixes
+
+* **asana:** re-export Hono, Store and WebhookDispatcher so consumers can run in workerd ([#83](https://github.com/pleaseai/emulate/issues/83)) ([b6054de](https://github.com/pleaseai/emulate/commit/b6054dea09acfe8c725849dcf2e0343728aa5cf9))
+
 ## [0.4.1](https://github.com/pleaseai/emulate/compare/emulate-asana-v0.4.0...emulate-asana-v0.4.1) (2026-11-21)
 
 
