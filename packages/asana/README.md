@@ -173,6 +173,7 @@ app.use('*', async (c, next) => {
 })
 const store = new Store()
 asanaPlugin.register(app, store, new WebhookDispatcher(), baseUrl)
+asanaPlugin.seed?.(store, baseUrl)
 seedFromConfig(store, baseUrl, {
   users: [{ name: 'Developer', email: 'dev@example.com' }],
 })
