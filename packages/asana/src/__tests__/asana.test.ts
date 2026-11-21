@@ -1,7 +1,11 @@
 import type { TokenMap } from '@emulators/core'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
+import * as asanaModule from '../index.js'
 import { asanaPlugin, getAsanaStore, seedFromConfig } from '../index.js'
 
 const base = 'http://localhost:4000'
@@ -1014,4 +1018,35 @@ describe('Asana - runtime imports', () => {
     }
     expect(offenders).toEqual([])
   })
+
+  it('exports Hono, Store and WebhookDispatcher so consumers can register without the core root', async () => {
+    const app = new asanaModule.Hono()
+    const store = new asanaModule.Store()
+    app.use('*', async (c, next) => {
+      c.set('authUser', { login: 'dev@example.com', id: 1, scopes: [] })
+      await next()
+    })
+    asanaModule.asanaPlugin.register(app, store, new asanaModule.WebhookDispatcher(), base)
+    asanaModule.seedFromConfig(store, base, { users: [{ name: 'Developer', email: 'dev@example.com' }] })
+
+    const res = await app.request(`${base}/api/1.0/users/me`)
+    expect(res.status).toBe(200)
+    const body = await res.json() as { data: { email: string } }
+    expect(body.data.email).toBe('dev@example.com')
+  })
+
+  it('build output bundles core without importing its root or reading fonts', async () => {
+    const packageDir = fileURLToPath(new URL('../..', import.meta.url))
+    const outDir = await mkdtemp(join(tmpdir(), 'asana-build-'))
+    try {
+      const tsup = Bun.spawn([process.execPath, 'x', 'tsup', '--out-dir', outDir, '--no-dts', '--silent'], { cwd: packageDir })
+      expect(await tsup.exited).toBe(0)
+      const bundle = await readFile(join(outDir, 'index.js'), 'utf8')
+      expect(bundle).not.toMatch(/from ["']@emulators\/core["']/)
+      expect(bundle).not.toContain('readFileSync')
+    }
+    finally {
+      await rm(outDir, { recursive: true, force: true })
+    }
+  }, 30_000)
 })

@@ -153,6 +153,32 @@ seedFromConfig(store, baseUrl, {
 `getAsanaStore(store)` exposes the typed collections (`users`, `workspaces`,
 `tasks`, …) for direct inspection in tests.
 
+### Cloudflare Workers (workerd)
+
+Importing the `@emulators/core` root reads font files from disk at load time,
+which fails in workerd. This package bundles `Hono`, `Store` and
+`WebhookDispatcher` without that code, so import them from here instead.
+The bundle imports `crypto`, so enable the `nodejs_compat` compatibility flag
+in your Wrangler config. `authMiddleware` is not re-exported, so set
+`authUser` yourself:
+
+```ts
+import { asanaPlugin, Hono, seedFromConfig, Store, WebhookDispatcher } from '@pleaseai/emulate-asana'
+
+const baseUrl = 'http://localhost:4005'
+const app = new Hono()
+app.use('*', async (c, next) => {
+  c.set('authUser', { login: 'dev@example.com', id: 1, scopes: [] })
+  await next()
+})
+const store = new Store()
+asanaPlugin.register(app, store, new WebhookDispatcher(), baseUrl)
+asanaPlugin.seed?.(store, baseUrl)
+seedFromConfig(store, baseUrl, {
+  users: [{ name: 'Developer', email: 'dev@example.com' }],
+})
+```
+
 ## License
 
 Apache-2.0
