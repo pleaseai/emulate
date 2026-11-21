@@ -163,7 +163,7 @@ in your Wrangler config. `authMiddleware` is not re-exported, so set
 `authUser` yourself:
 
 ```ts
-import { asanaPlugin, Hono, Store, WebhookDispatcher } from '@pleaseai/emulate-asana'
+import { asanaPlugin, Hono, seedFromConfig, Store, WebhookDispatcher } from '@pleaseai/emulate-asana'
 
 const baseUrl = 'http://localhost:4005'
 const app = new Hono()
@@ -171,7 +171,11 @@ app.use('*', async (c, next) => {
   c.set('authUser', { login: 'dev@example.com', id: 1, scopes: [] })
   await next()
 })
-asanaPlugin.register(app, new Store(), new WebhookDispatcher(), baseUrl)
+const store = new Store()
+asanaPlugin.register(app, store, new WebhookDispatcher(), baseUrl)
+seedFromConfig(store, baseUrl, {
+  users: [{ name: 'Developer', email: 'dev@example.com' }],
+})
 ```
 
 ## License

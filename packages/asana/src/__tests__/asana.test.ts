@@ -5,7 +5,6 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { build } from 'tsup'
 import * as asanaModule from '../index.js'
 import { asanaPlugin, getAsanaStore, seedFromConfig } from '../index.js'
 
@@ -1023,27 +1022,25 @@ describe('Asana - runtime imports', () => {
   it('exports Hono, Store and WebhookDispatcher so consumers can register without the core root', async () => {
     const app = new asanaModule.Hono()
     const store = new asanaModule.Store()
-    app.use('*', authMiddleware(new Map([['t', { login: 'dev@example.com', id: 1, scopes: [] }]])))
-    asanaModule.asanaPlugin.register(app as any, store, new asanaModule.WebhookDispatcher(), base)
+    app.use('*', async (c, next) => {
+      c.set('authUser', { login: 'dev@example.com', id: 1, scopes: [] })
+      await next()
+    })
+    asanaModule.asanaPlugin.register(app, store, new asanaModule.WebhookDispatcher(), base)
     asanaModule.seedFromConfig(store, base, { users: [{ name: 'Developer', email: 'dev@example.com' }] })
 
-    const res = await app.request(`${base}/api/1.0/users/me`, { headers: { Authorization: 'Bearer t' } })
+    const res = await app.request(`${base}/api/1.0/users/me`)
     expect(res.status).toBe(200)
-    expect((await res.json() as any).data.email).toBe('dev@example.com')
+    const body = await res.json() as { data: { email: string } }
+    expect(body.data.email).toBe('dev@example.com')
   })
 
   it('build output bundles core without importing its root or reading fonts', async () => {
-    const configPath = fileURLToPath(new URL('../../tsup.config.ts', import.meta.url))
-    const { default: tsupConfig } = await import(configPath)
+    const packageDir = fileURLToPath(new URL('../..', import.meta.url))
     const outDir = await mkdtemp(join(tmpdir(), 'asana-build-'))
     try {
-      await build({
-        ...tsupConfig,
-        entry: [fileURLToPath(new URL('../index.ts', import.meta.url))],
-        outDir,
-        dts: false,
-        silent: true,
-      })
+      const tsup = Bun.spawn([process.execPath, 'x', 'tsup', '--out-dir', outDir, '--no-dts', '--silent'], { cwd: packageDir })
+      expect(await tsup.exited).toBe(0)
       const bundle = await readFile(join(outDir, 'index.js'), 'utf8')
       expect(bundle).not.toMatch(/from ["']@emulators\/core["']/)
       expect(bundle).not.toContain('readFileSync')
