@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.6.0](https://github.com/pleaseai/emulate/compare/emulate-v0.5.0...emulate-v0.6.0) (2026-11-21)
+
+
+### Features
+
+* **emulate:** expose services as upstream emulate custom emulators ([#51](https://github.com/pleaseai/emulate/issues/51)) ([816ba7a](https://github.com/pleaseai/emulate/commit/816ba7a595132ff56fdef1db79d0008e83a5374f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @pleaseai/emulate-asana bumped to 0.4.1
+    * @pleaseai/emulate-autumn bumped to 0.4.1
+    * @pleaseai/emulate-jira bumped to 0.4.1
+    * @pleaseai/emulate-kakao bumped to 0.4.1
+    * @pleaseai/emulate-naver bumped to 0.4.1
+    * @pleaseai/emulate-posthog bumped to 0.4.1
+    * @pleaseai/emulate-spotify bumped to 0.4.1
+    * @pleaseai/emulate-toss-payments bumped to 0.4.1
+    * @pleaseai/emulate-tossinvest bumped to 0.4.1
+    * @pleaseai/emulate-workos bumped to 0.4.1
+    * @pleaseai/emulate-x bumped to 0.4.1
+
 ## [0.5.0](https://github.com/pleaseai/emulate/compare/emulate-v0.4.1...emulate-v0.5.0) (2026-11-20)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/pleaseai/emulate/compare/emulate-posthog-v0.4.0...emulate-posthog-v0.4.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* let service packages load in workerd ([#81](https://github.com/pleaseai/emulate/issues/81)) ([73b4526](https://github.com/pleaseai/emulate/commit/73b4526f63f4f840bbf62b89f03c372d0e57fce3))
+
 ## [0.4.0](https://github.com/pleaseai/emulate/compare/emulate-posthog-v0.3.2...emulate-posthog-v0.4.0) (2026-11-20)
 
 
