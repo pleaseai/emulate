@@ -8,7 +8,7 @@ export interface LoadedService {
 
 // Each service types its seedFromConfig with its own config shape; the registry
 // hands configs around as `unknown`, so widen the parameter type here.
-function widenSeed(seed: (store: Store, baseUrl: string, config: never, webhooks?: WebhookDispatcher) => void): LoadedService['seedFromConfig'] {
+export function widenSeed(seed: (store: Store, baseUrl: string, config: never, webhooks?: WebhookDispatcher) => void): LoadedService['seedFromConfig'] {
   return seed as LoadedService['seedFromConfig']
 }
 

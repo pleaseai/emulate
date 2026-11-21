@@ -4,8 +4,9 @@ import type { ServicePlugin, Store, WebhookDispatcher } from '@emulators/core'
  * Single-process launcher that runs THIS repo's emulators and the upstream
  * vercel-labs `@emulators/*` emulators together — one command, one process.
  *
- * Both sides now target the same `@emulators/core` (0.9.x), which is hoisted to
- * a single physical module. That lets this one process host every service:
+ * Both sides target the same `@emulators/core` version (pinned in the root
+ * package.json), which is hoisted to a single physical module. That lets this
+ * one process host every service:
  *   - this repo's services go through `@pleaseai/emulate`'s `createEmulator`
  *   - vercel-labs services are mounted directly on the shared core via
  *     `createServer` + `serve`.
