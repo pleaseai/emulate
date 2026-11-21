@@ -2,6 +2,7 @@ import type { TokenMap } from '@emulators/core'
 import { fileURLToPath } from 'node:url'
 import { authMiddleware, createApiErrorHandler, createErrorHandler, Hono, Store, WebhookDispatcher } from '@emulators/core'
 import { beforeEach, describe, expect, it } from 'bun:test'
+import * as asanaModule from '../index.js'
 import { asanaPlugin, getAsanaStore, seedFromConfig } from '../index.js'
 
 const base = 'http://localhost:4000'
@@ -1013,5 +1014,17 @@ describe('Asana - runtime imports', () => {
       }
     }
     expect(offenders).toEqual([])
+  })
+
+  it('exports Hono, Store and WebhookDispatcher so consumers can register without the core root', async () => {
+    const app = new asanaModule.Hono()
+    const store = new asanaModule.Store()
+    app.use('*', authMiddleware(new Map([['t', { login: 'dev@example.com', id: 1, scopes: [] }]])))
+    asanaModule.asanaPlugin.register(app as any, store, new asanaModule.WebhookDispatcher(), base)
+    asanaModule.seedFromConfig(store, base, { users: [{ name: 'Developer', email: 'dev@example.com' }] })
+
+    const res = await app.request(`${base}/api/1.0/users/me`, { headers: { Authorization: 'Bearer t' } })
+    expect(res.status).toBe(200)
+    expect((await res.json() as any).data.email).toBe('dev@example.com')
   })
 })
