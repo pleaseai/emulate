@@ -145,6 +145,9 @@ export function projectRoutes({ app, store, baseUrl }: RouteContext): void {
     for (const section of as().sections.findBy('project_gid', gid)) {
       as().sections.delete(section.id)
     }
+    for (const setting of as().customFieldSettings.findBy('project_gid', gid)) {
+      as().customFieldSettings.delete(setting.id)
+    }
 
     as().projects.delete(project.id)
     return c.json(asanaData({}))

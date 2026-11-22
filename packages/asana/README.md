@@ -4,8 +4,10 @@ Asana REST API (v1.0) emulator for local development and CI.
 
 A stateful, in-memory implementation of the Asana API surface — no network and
 no real Asana account required. It covers users, workspaces, teams, projects,
-sections, tasks, tags, stories, and webhooks, including subtasks, dependencies,
-followers, project/section membership, and offset-based pagination.
+sections, tasks, tags, stories, webhooks, and text custom fields, including
+subtasks, dependencies, followers, project/section membership, and offset-based
+pagination. Failure rules make chosen requests return errors such as `429` with
+`Retry-After`, so client back-off paths can be tested.
 
 OAuth 2.0 and an inspector UI are follow-up work.
 
@@ -83,6 +85,7 @@ curl "http://localhost:4005/api/1.0/tasks?project=<project_gid>&limit=50" \
 | Teams | `POST /teams`, `GET /teams/:gid`, `GET /workspaces/:gid/teams`, `GET /teams/:gid/users`, `GET /teams/:gid/projects`, `POST /teams/:gid/addUser`, `POST /teams/:gid/removeUser` |
 | Projects | `GET/POST /projects`, `GET/PUT/DELETE /projects/:gid`, `GET /projects/:gid/tasks`, `GET /projects/:gid/sections`, `GET /projects/:gid/task_counts` |
 | Sections | `POST /projects/:gid/sections`, `GET/PUT/DELETE /sections/:gid`, `GET /sections/:gid/tasks`, `POST /sections/:gid/addTask` |
+| Custom fields | `POST /custom_fields`, `GET /workspaces/:gid/custom_fields`, `POST /projects/:gid/addCustomFieldSetting`, `GET /projects/:gid/custom_field_settings` |
 | Tasks | `GET/POST /tasks`, `GET/PUT/DELETE /tasks/:gid`, subtasks, stories, tags, projects, dependencies/dependents, `addProject`/`removeProject`, `addTag`/`removeTag`, `addDependencies`/`removeDependencies`, `addFollowers`/`removeFollowers`, `setParent` |
 | Tags | `GET/POST /tags`, `GET/PUT/DELETE /tags/:gid`, `GET /tags/:gid/tasks`, `GET/POST /workspaces/:gid/tags` |
 | Stories | `GET/PUT/DELETE /stories/:gid` (comments created via `POST /tasks/:gid/stories`) |
@@ -124,10 +127,64 @@ asana:
       section: To Do
       assignee: Developer
       due_on: 2026-01-31
+  custom_fields:
+    - name: External ID # text is the only supported resource_subtype
+      workspace: My Workspace
+  custom_field_settings:
+    - project: My Project
+      custom_field: External ID
+  failures:
+    - method: POST
+      path: /tasks
+      status: 429
+      headers:
+        Retry-After: '2'
 ```
 
 Without any seed config, the plugin seeds a single `My Workspace` so the
 emulator is usable immediately.
+
+## Custom fields
+
+Only text custom fields are emulated; enum, number and date fields are not.
+Create a field in a workspace, attach it to a project, then set values on tasks
+in that project with a `custom_fields` map of field gid to text:
+
+```bash
+curl -X POST http://localhost:4005/api/1.0/tasks \
+  -H "Authorization: Bearer test-token" \
+  -H "Content-Type: application/json" \
+  -d '{"data":{"name":"Synced task","projects":["<project_gid>"],"custom_fields":{"<field_gid>":"ext-42"}}}'
+```
+
+Task responses include `custom_fields: [{ gid, name, resource_subtype, text_value, … }]`
+for every field on the task's projects. As in Asana, a `custom_fields` entry for a
+field that is not on one of the task's projects returns `400`; `null` clears a value.
+
+## Failure rules
+
+A failure rule makes the next matching request(s) return an error in Asana's
+shape (`{"errors": [{"message": "..."}]}`) instead of reaching the route. Add
+rules under `failures` in seed config, or at runtime:
+
+```ts
+import { clearFailures, failNext } from '@pleaseai/emulate-asana'
+
+failNext(store, { method: 'POST', path: '/tasks', status: 429, times: 2, headers: { 'Retry-After': '2' } })
+failNext(store, { path: '/projects/:project_gid/*', status: 503 })
+clearFailures(store)
+```
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `method` | any | HTTP method to match |
+| `path` | any | Path with or without `/api/1.0`; `:name` matches one segment, a trailing `*` the rest |
+| `status` | `429` | Response status, 400–599 |
+| `times` | `1` | Number of matching requests that fail before the rule is used up |
+| `headers` | — | Extra response headers; a `429` without `Retry-After` gets `Retry-After: 1` |
+| `message` | per status | Error message |
+
+Rules are checked in the order they were added, and the first match fires.
 
 ## Programmatic use
 

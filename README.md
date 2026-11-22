@@ -25,7 +25,7 @@ using [`@emulators/core`](https://www.npmjs.com/package/@emulators/core).
 | `tosspayments` | 4002 | Payment confirm/lookup/cancel, order lookup, checkout simulation, webhooks |
 | `firebase` | 4003 | Auth (Identity Toolkit REST), Secure Token, FCM v1 |
 | `supabase` | 4004 | GoTrue Auth (signup/token/user), PostgREST table CRUD + filters |
-| `asana` | 4005 | Workspaces, teams, projects, sections, tasks, tags, stories, webhooks (REST API v1.0) |
+| `asana` | 4005 | Workspaces, teams, projects, sections, tasks, tags, stories, webhooks, text custom fields, failure rules (REST API v1.0) |
 | `linear` | 4006 | Linear GraphQL API (read-only): issues, projects, teams, users, orgs, labels, workflow states, Relay pagination |
 | `autumn` | 4007 | Autumn billing: customers, balances track/check, plans, billing attach, hosted checkout (autumn-js compatible) |
 | `gitlab` | 4008 | GitLab GraphQL endpoint with real-schema introspection |
