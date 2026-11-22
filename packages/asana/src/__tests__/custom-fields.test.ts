@@ -82,6 +82,10 @@ describe('Asana - Custom fields', () => {
     expect(updated.status).toBe(200)
     const fetched = await call(ctx.app, 'GET', `/tasks/${taskGid}`)
     expect(fetched.body.data.custom_fields[0].text_value).toBe('ext-2')
+
+    await call(ctx.app, 'PUT', `/tasks/${taskGid}`, { custom_fields: { [fieldGid]: null } })
+    const cleared = await call(ctx.app, 'GET', `/tasks/${taskGid}`)
+    expect(cleared.body.data.custom_fields[0]).toEqual(expect.objectContaining({ text_value: null, display_value: null }))
   })
 
   it('returns 400 and creates nothing when the field is not on the task\'s projects', async () => {
@@ -100,6 +104,18 @@ describe('Asana - Custom fields', () => {
     expect(res.status).toBe(400)
     const fetched = await call(ctx.app, 'GET', `/tasks/${created.body.data.gid}`)
     expect(fetched.body.data.name).toBe('T')
+  })
+
+  it('keeps a value readable but rejects writes after the task leaves the field\'s project', async () => {
+    await call(ctx.app, 'POST', `/projects/${ctx.project('Alpha')}/addCustomFieldSetting`, { custom_field: fieldGid })
+    const created = await call(ctx.app, 'POST', '/tasks', { name: 'T', projects: [ctx.project('Alpha')], custom_fields: { [fieldGid]: 'ext-1' } })
+    const taskGid = created.body.data.gid
+    await call(ctx.app, 'POST', `/tasks/${taskGid}/removeProject`, { project: ctx.project('Alpha') })
+
+    const res = await call(ctx.app, 'PUT', `/tasks/${taskGid}`, { custom_fields: { [fieldGid]: 'ext-2' } })
+    expect(res.status).toBe(400)
+    const fetched = await call(ctx.app, 'GET', `/tasks/${taskGid}`)
+    expect(fetched.body.data.custom_fields[0].text_value).toBe('ext-1')
   })
 })
 

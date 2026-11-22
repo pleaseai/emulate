@@ -15,6 +15,7 @@ import type {
 } from './entities.js'
 import type { AsanaStore } from './store.js'
 import { randomBytes } from 'node:crypto'
+import { projectCustomFieldGids } from './custom-field-values.js'
 
 // Kept local: a value import from the upstream @emulators/core root runs its top-level font reads,
 // which throw in workerd (#79).
@@ -254,13 +255,8 @@ export function formatCustomFieldSetting(setting: AsanaCustomFieldSetting, as: A
   }
 }
 
-export function taskCustomFieldGids(taskGid: string, as: AsanaStore): string[] {
-  const gids = new Set<string>()
-  for (const tp of as.taskProjects.findBy('task_gid', taskGid)) {
-    for (const setting of as.customFieldSettings.findBy('project_gid', tp.project_gid)) {
-      gids.add(setting.custom_field_gid)
-    }
-  }
+function taskCustomFieldGids(taskGid: string, as: AsanaStore): string[] {
+  const gids = projectCustomFieldGids(as, as.taskProjects.findBy('task_gid', taskGid).map(tp => tp.project_gid))
   for (const value of as.taskCustomFieldValues.findBy('task_gid', taskGid)) {
     gids.add(value.custom_field_gid)
   }

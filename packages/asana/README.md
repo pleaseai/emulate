@@ -165,7 +165,8 @@ field that is not on one of the task's projects returns `400`; `null` clears a v
 
 A failure rule makes the next matching request(s) return an error in Asana's
 shape (`{"errors": [{"message": "..."}]}`) instead of reaching the route. Add
-rules under `failures` in seed config, or at runtime:
+rules under `failures` in seed config, or at runtime on the `Store` you passed
+to `asanaPlugin.register` (see [Programmatic use](#programmatic-use)):
 
 ```ts
 import { clearFailures, failNext } from '@pleaseai/emulate-asana'

@@ -13,7 +13,6 @@ import {
   parseAsanaBody,
   parsePagination,
   resolveUser,
-  taskCustomFieldGids,
 } from '../helpers.js'
 import { getAsanaStore } from '../store.js'
 
@@ -206,7 +205,11 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     }
 
     const body = await parseAsanaBody(c)
-    const customFields = parseCustomFieldValues(as(), body.custom_fields, taskCustomFieldGids(gid, as()))
+    const customFields = parseCustomFieldValues(
+      as(),
+      body.custom_fields,
+      projectCustomFieldGids(as(), as().taskProjects.findBy('task_gid', gid).map(tp => tp.project_gid)),
+    )
     if (!customFields.ok) {
       return asanaError(c, 400, customFields.message)
     }
