@@ -117,6 +117,19 @@ describe('Asana - Custom fields', () => {
     const fetched = await call(ctx.app, 'GET', `/tasks/${taskGid}`)
     expect(fetched.body.data.custom_fields[0].text_value).toBe('ext-1')
   })
+
+  it('clears a stored value with null after the task leaves the field\'s project', async () => {
+    await call(ctx.app, 'POST', `/projects/${ctx.project('Alpha')}/addCustomFieldSetting`, { custom_field: fieldGid })
+    const created = await call(ctx.app, 'POST', '/tasks', { name: 'T', projects: [ctx.project('Alpha')], custom_fields: { [fieldGid]: 'ext-1' } })
+    const taskGid = created.body.data.gid
+    await call(ctx.app, 'POST', `/tasks/${taskGid}/removeProject`, { project: ctx.project('Alpha') })
+
+    const res = await call(ctx.app, 'PUT', `/tasks/${taskGid}`, { custom_fields: { [fieldGid]: null } })
+    expect(res.status).toBe(200)
+    expect(res.body.data.custom_fields).toEqual([])
+    const again = await call(ctx.app, 'PUT', `/tasks/${taskGid}`, { custom_fields: { [fieldGid]: null } })
+    expect(again.status).toBe(400)
+  })
 })
 
 describe('Asana - Custom fields seed config', () => {
