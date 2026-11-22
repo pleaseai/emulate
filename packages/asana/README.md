@@ -158,8 +158,11 @@ curl -X POST http://localhost:4005/api/1.0/tasks \
 ```
 
 Task responses include `custom_fields: [{ gid, name, resource_subtype, text_value, … }]`
-for every field on the task's projects. As in Asana, a `custom_fields` entry for a
-field that is not on one of the task's projects returns `400`; `null` clears a value.
+for every field on the task's projects, plus any field the task still has a value
+for after leaving that field's project. As in Asana, a `custom_fields` entry for a
+field that is not on one of the task's projects returns `400`. The exception is
+`null`, which clears a stored value even after the task has left the field's
+project; the field then drops off the task.
 
 ## Failure rules
 

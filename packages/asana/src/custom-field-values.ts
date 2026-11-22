@@ -8,6 +8,7 @@ export function parseCustomFieldValues(
   as: AsanaStore,
   input: unknown,
   allowedFieldGids: Iterable<string>,
+  clearableFieldGids: Iterable<string> = [],
 ): CustomFieldValueResult {
   const values = new Map<string, string | null>()
   if (input === undefined || input === null) {
@@ -18,8 +19,10 @@ export function parseCustomFieldValues(
   }
 
   const allowed = new Set(allowedFieldGids)
+  const clearable = new Set(clearableFieldGids)
   for (const [gid, value] of Object.entries(input as Record<string, unknown>)) {
-    if (!as.customFields.findOneBy('gid', gid) || !allowed.has(gid)) {
+    const writable = allowed.has(gid) || (value === null && clearable.has(gid))
+    if (!as.customFields.findOneBy('gid', gid) || !writable) {
       return { ok: false, message: `custom_fields: Custom field with ID ${gid} is not on given object` }
     }
     if (value !== null && typeof value !== 'string') {
@@ -43,7 +46,12 @@ export function projectCustomFieldGids(as: AsanaStore, projectGids: Iterable<str
 export function applyCustomFieldValues(as: AsanaStore, taskGid: string, values: Map<string, string | null>): void {
   for (const [fieldGid, textValue] of values) {
     const existing = as.taskCustomFieldValues.findBy('task_gid', taskGid).find(v => v.custom_field_gid === fieldGid)
-    if (existing) {
+    if (textValue === null) {
+      if (existing) {
+        as.taskCustomFieldValues.delete(existing.id)
+      }
+    }
+    else if (existing) {
       as.taskCustomFieldValues.update(existing.id, { text_value: textValue })
     }
     else {

@@ -209,6 +209,7 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
       as(),
       body.custom_fields,
       projectCustomFieldGids(as(), as().taskProjects.findBy('task_gid', gid).map(tp => tp.project_gid)),
+      as().taskCustomFieldValues.findBy('task_gid', gid).map(v => v.custom_field_gid),
     )
     if (!customFields.ok) {
       return asanaError(c, 400, customFields.message)
