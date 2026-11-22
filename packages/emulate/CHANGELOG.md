@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.1](https://github.com/pleaseai/emulate/compare/emulate-v0.6.0...emulate-v0.6.1) (2026-11-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @pleaseai/emulate-asana bumped to 0.5.0
+    * @pleaseai/emulate-gitlab bumped to 0.5.0
+    * @pleaseai/emulate-linear bumped to 0.5.0
+
 ## [0.6.0](https://github.com/pleaseai/emulate/compare/emulate-v0.5.0...emulate-v0.6.0) (2026-11-21)
 
 

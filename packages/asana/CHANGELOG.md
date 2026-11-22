@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/pleaseai/emulate/compare/emulate-asana-v0.4.1...emulate-asana-v0.5.0) (2026-11-22)
+
+
+### Features
+
+* **asana:** support text custom fields and injectable failure responses ([#86](https://github.com/pleaseai/emulate/issues/86)) ([4a8f9ae](https://github.com/pleaseai/emulate/commit/4a8f9ae1ea2d6b7e34273abad90549d172e1d5ac))
+
+
+### Bug Fixes
+
+* **asana:** let null clear a custom field value after the task leaves its project ([#88](https://github.com/pleaseai/emulate/issues/88)) ([2ae442a](https://github.com/pleaseai/emulate/commit/2ae442af076a6ab81e22ab83d348675ab75f44c1)), closes [#87](https://github.com/pleaseai/emulate/issues/87)
+* **asana:** re-export Hono, Store and WebhookDispatcher so consumers can run in workerd ([#83](https://github.com/pleaseai/emulate/issues/83)) ([b6054de](https://github.com/pleaseai/emulate/commit/b6054dea09acfe8c725849dcf2e0343728aa5cf9))
+
 ## [0.4.1](https://github.com/pleaseai/emulate/compare/emulate-asana-v0.4.0...emulate-asana-v0.4.1) (2026-11-21)
 
 
