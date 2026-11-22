@@ -4,10 +4,6 @@ export type CustomFieldValueResult
   = | { ok: true, values: Map<string, string | null> }
     | { ok: false, message: string }
 
-/**
- * Validates a task write's `custom_fields` map (`{ "<field gid>": "<text>" }`) against the fields the
- * task may carry. Asana rejects a field that is not on one of the task's projects with 400.
- */
 export function parseCustomFieldValues(
   as: AsanaStore,
   input: unknown,
@@ -34,7 +30,6 @@ export function parseCustomFieldValues(
   return { ok: true, values }
 }
 
-/** Fields attached to any of the given projects. */
 export function projectCustomFieldGids(as: AsanaStore, projectGids: Iterable<string>): Set<string> {
   const gids = new Set<string>()
   for (const projectGid of projectGids) {

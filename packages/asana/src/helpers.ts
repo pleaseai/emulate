@@ -254,7 +254,6 @@ export function formatCustomFieldSetting(setting: AsanaCustomFieldSetting, as: A
   }
 }
 
-/** Gids of the custom fields a task carries: those set on any of its projects, then any with a stored value. */
 export function taskCustomFieldGids(taskGid: string, as: AsanaStore): string[] {
   const gids = new Set<string>()
   for (const tp of as.taskProjects.findBy('task_gid', taskGid)) {

@@ -317,7 +317,6 @@ export const asanaPlugin: ServicePlugin = {
   name: 'asana',
   register(app: Hono<AppEnv>, store: Store, webhooks: WebhookDispatcher, baseUrl: string, tokenMap?: TokenMap): void {
     const ctx: RouteContext = { app, store, webhooks, baseUrl, tokenMap }
-    // Registered before the routes so a matching failure rule answers instead of the route handler.
     app.use('/api/1.0/*', failureMiddleware(store))
     userRoutes(ctx)
     workspaceRoutes(ctx)
