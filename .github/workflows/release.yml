@@ -17,16 +17,29 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      contents: write
-      pull-requests: write
+    # Every GitHub call below uses the app token, so GITHUB_TOKEN needs no scopes.
+    permissions: {}
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
+      # A release PR pushed with GITHUB_TOKEN is authored by github-actions[bot],
+      # and its CI run is held at action_required until a maintainer approves
+      # it. Pushing as the org release app (pleaseai-release-bot) runs CI on the
+      # release PR like any other PR.
+      - name: Create app token
+        id: app-token
+        uses: actions/create-github-app-token@v3.2.0
+        with:
+          app-id: ${{ vars.RELEASE_GITHUB_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
       - uses: googleapis/release-please-action@v5.0.0
         id: release
         with:
+          token: ${{ steps.app-token.outputs.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
