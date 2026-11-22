@@ -34,7 +34,7 @@
     },
     "packages/asana": {
       "name": "@pleaseai/emulate-asana",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -45,7 +45,7 @@
     },
     "packages/autumn": {
       "name": "@pleaseai/emulate-autumn",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -57,7 +57,7 @@
     },
     "packages/emulate": {
       "name": "@pleaseai/emulate",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "bin": {
         "emulate": "./dist/index.js",
       },
@@ -118,7 +118,7 @@
     },
     "packages/jira": {
       "name": "@pleaseai/emulate-jira",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -130,7 +130,7 @@
     },
     "packages/kakao": {
       "name": "@pleaseai/emulate-kakao",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -153,7 +153,7 @@
     },
     "packages/naver": {
       "name": "@pleaseai/emulate-naver",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -164,7 +164,7 @@
     },
     "packages/posthog": {
       "name": "@pleaseai/emulate-posthog",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -175,7 +175,7 @@
     },
     "packages/spotify": {
       "name": "@pleaseai/emulate-spotify",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -197,7 +197,7 @@
     },
     "packages/toss-payments": {
       "name": "@pleaseai/emulate-toss-payments",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -208,7 +208,7 @@
     },
     "packages/tossinvest": {
       "name": "@pleaseai/emulate-tossinvest",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
@@ -219,7 +219,7 @@
     },
     "packages/workos": {
       "name": "@pleaseai/emulate-workos",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
         "jose": "^6.2.17",
@@ -232,7 +232,7 @@
     },
     "packages/x": {
       "name": "@pleaseai/emulate-x",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@emulators/core": "^0.14.0",
       },
