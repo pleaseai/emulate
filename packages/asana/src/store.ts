@@ -1,10 +1,14 @@
 import type { Collection, Store } from '@emulators/core'
 import type {
+  AsanaCustomField,
+  AsanaCustomFieldSetting,
+  AsanaFailureRule,
   AsanaProject,
   AsanaSection,
   AsanaStory,
   AsanaTag,
   AsanaTask,
+  AsanaTaskCustomFieldValue,
   AsanaTaskDependency,
   AsanaTaskProject,
   AsanaTaskTag,
@@ -29,6 +33,10 @@ export interface AsanaStore {
   tags: Collection<AsanaTag>
   stories: Collection<AsanaStory>
   webhooks: Collection<AsanaWebhook>
+  customFields: Collection<AsanaCustomField>
+  customFieldSettings: Collection<AsanaCustomFieldSetting>
+  taskCustomFieldValues: Collection<AsanaTaskCustomFieldValue>
+  failureRules: Collection<AsanaFailureRule>
 }
 
 export function getAsanaStore(store: Store): AsanaStore {
@@ -46,5 +54,9 @@ export function getAsanaStore(store: Store): AsanaStore {
     tags: store.collection<AsanaTag>('asana.tags', ['gid', 'workspace_gid']),
     stories: store.collection<AsanaStory>('asana.stories', ['gid', 'task_gid']),
     webhooks: store.collection<AsanaWebhook>('asana.webhooks', ['gid']),
+    customFields: store.collection<AsanaCustomField>('asana.custom_fields', ['gid', 'workspace_gid']),
+    customFieldSettings: store.collection<AsanaCustomFieldSetting>('asana.custom_field_settings', ['gid', 'project_gid', 'custom_field_gid']),
+    taskCustomFieldValues: store.collection<AsanaTaskCustomFieldValue>('asana.task_custom_field_values', ['task_gid', 'custom_field_gid']),
+    failureRules: store.collection<AsanaFailureRule>('asana.failure_rules'),
   }
 }

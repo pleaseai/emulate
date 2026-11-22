@@ -1,5 +1,6 @@
 import type { RouteContext } from '@emulators/core'
 import type { AsanaTask } from '../entities.js'
+import { applyCustomFieldValues, parseCustomFieldValues, projectCustomFieldGids } from '../custom-field-values.js'
 import {
   applyPagination,
   asanaData,
@@ -125,6 +126,11 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     if (parentGid && !as().tasks.findOneBy('gid', parentGid)) {
       return asanaError(c, 404, 'parent: Not Found')
     }
+    const taskProjectGids = [...projectGids, ...(membershipData ?? []).map(m => m.project)]
+    const customFields = parseCustomFieldValues(as(), body.custom_fields, projectCustomFieldGids(as(), taskProjectGids))
+    if (!customFields.ok) {
+      return asanaError(c, 400, customFields.message)
+    }
 
     // Resolve the assignee, mapping the 'me' keyword to the authenticated user
     const assigneeInput = body.assignee as string | undefined
@@ -177,6 +183,7 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
         }
       }
     }
+    applyCustomFieldValues(as(), gid, customFields.values)
 
     return c.json(asanaData(formatTask(task, as(), baseUrl)), 201)
   })
@@ -198,6 +205,14 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     }
 
     const body = await parseAsanaBody(c)
+    const customFields = parseCustomFieldValues(
+      as(),
+      body.custom_fields,
+      projectCustomFieldGids(as(), as().taskProjects.findBy('task_gid', gid).map(tp => tp.project_gid)),
+    )
+    if (!customFields.ok) {
+      return asanaError(c, 400, customFields.message)
+    }
     const updates: Partial<AsanaTask> = {}
     if (body.name !== undefined) {
       updates.name = body.name as string
@@ -229,6 +244,7 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     }
 
     const updated = as().tasks.update(task.id, updates)
+    applyCustomFieldValues(as(), gid, customFields.values)
     return c.json(asanaData(formatTask(updated ?? task, as(), baseUrl)))
   })
 
@@ -253,6 +269,9 @@ export function taskRoutes({ app, store, baseUrl }: RouteContext): void {
     }
     for (const story of as().stories.findBy('task_gid', gid)) {
       as().stories.delete(story.id)
+    }
+    for (const value of as().taskCustomFieldValues.findBy('task_gid', gid)) {
+      as().taskCustomFieldValues.delete(value.id)
     }
     for (const sub of as().tasks.findBy('parent_gid', gid)) {
       as().tasks.update(sub.id, { parent_gid: null })

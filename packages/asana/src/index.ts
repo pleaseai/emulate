@@ -1,5 +1,8 @@
 import type { AppEnv, Hono, RouteContext, ServicePlugin, Store, TokenMap, WebhookDispatcher } from '@emulators/core'
+import type { AsanaFailureRuleInput } from './failures.js'
+import { failNext, failureMiddleware } from './failures.js'
 import { generateGid } from './helpers.js'
+import { customFieldRoutes } from './routes/custom-fields.js'
 import { projectRoutes } from './routes/projects.js'
 import { sectionRoutes } from './routes/sections.js'
 import { storyRoutes } from './routes/stories.js'
@@ -12,6 +15,7 @@ import { workspaceRoutes } from './routes/workspaces.js'
 import { getAsanaStore } from './store.js'
 
 export * from './entities.js'
+export { type AsanaFailureRuleInput, clearFailures, failNext } from './failures.js'
 export { type AsanaStore, getAsanaStore } from './store.js'
 export { Hono, Store, WebhookDispatcher } from '@emulators/core'
 
@@ -55,6 +59,20 @@ export interface AsanaSeedConfig {
     workspace?: string
     color?: string
   }>
+  custom_fields?: Array<{
+    name: string
+    workspace?: string
+    resource_subtype?: 'text'
+    description?: string
+  }>
+  /** Attaches a custom field (by name) to a project (by name). */
+  custom_field_settings?: Array<{
+    project: string
+    custom_field: string
+    is_important?: boolean
+  }>
+  /** Failure rules applied to incoming requests; see `failNext`. */
+  failures?: AsanaFailureRuleInput[]
 }
 
 export function seedFromConfig(store: Store, baseUrl: string, config: AsanaSeedConfig): void {
@@ -205,6 +223,47 @@ export function seedFromConfig(store: Store, baseUrl: string, config: AsanaSeedC
     }
   }
 
+  if (config.custom_fields) {
+    for (const f of config.custom_fields) {
+      const wsGid = findWorkspaceGid(f.workspace)
+      if (!wsGid || as.customFields.findBy('workspace_gid', wsGid).some(field => field.name === f.name)) {
+        continue
+      }
+      as.customFields.insert({
+        gid: generateGid(),
+        resource_type: 'custom_field',
+        resource_subtype: f.resource_subtype ?? 'text',
+        name: f.name,
+        description: f.description ?? '',
+        workspace_gid: wsGid,
+      })
+    }
+  }
+
+  if (config.custom_field_settings) {
+    for (const s of config.custom_field_settings) {
+      const project = as.projects.all().find(p => p.name === s.project)
+      const field = project && as.customFields.findBy('workspace_gid', project.workspace_gid).find(f => f.name === s.custom_field)
+      if (!project || !field) {
+        continue
+      }
+      if (as.customFieldSettings.findBy('project_gid', project.gid).some(cfs => cfs.custom_field_gid === field.gid)) {
+        continue
+      }
+      as.customFieldSettings.insert({
+        gid: generateGid(),
+        resource_type: 'custom_field_setting',
+        project_gid: project.gid,
+        custom_field_gid: field.gid,
+        is_important: s.is_important ?? false,
+      })
+    }
+  }
+
+  for (const rule of config.failures ?? []) {
+    failNext(store, rule)
+  }
+
   // Seed tasks
   if (config.tasks) {
     for (const t of config.tasks) {
@@ -258,6 +317,7 @@ export const asanaPlugin: ServicePlugin = {
   name: 'asana',
   register(app: Hono<AppEnv>, store: Store, webhooks: WebhookDispatcher, baseUrl: string, tokenMap?: TokenMap): void {
     const ctx: RouteContext = { app, store, webhooks, baseUrl, tokenMap }
+    app.use('/api/1.0/*', failureMiddleware(store))
     userRoutes(ctx)
     workspaceRoutes(ctx)
     projectRoutes(ctx)
@@ -267,6 +327,7 @@ export const asanaPlugin: ServicePlugin = {
     storyRoutes(ctx)
     teamRoutes(ctx)
     webhookRoutes(ctx)
+    customFieldRoutes(ctx)
   },
   seed(store: Store, _baseUrl: string): void {
     const as = getAsanaStore(store)

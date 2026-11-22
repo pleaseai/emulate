@@ -1,5 +1,7 @@
 import type { ContentfulStatusCode, Context } from '@emulators/core'
 import type {
+  AsanaCustomField,
+  AsanaCustomFieldSetting,
   AsanaProject,
   AsanaSection,
   AsanaStory,
@@ -13,6 +15,7 @@ import type {
 } from './entities.js'
 import type { AsanaStore } from './store.js'
 import { randomBytes } from 'node:crypto'
+import { projectCustomFieldGids } from './custom-field-values.js'
 
 // Kept local: a value import from the upstream @emulators/core root runs its top-level font reads,
 // which throw in workerd (#79).
@@ -210,11 +213,65 @@ export function formatTask(task: AsanaTask, as: AsanaStore, baseUrl: string) {
     memberships,
     tags,
     followers,
+    custom_fields: formatTaskCustomFields(task, as),
     workspace: workspace ? compact(workspace.gid, workspace.resource_type, workspace.name) : null,
     permalink_url: task.permalink_url || `${baseUrl}/0/0/task/${task.gid}`,
     created_at: task.created_at,
     modified_at: task.updated_at,
   }
+}
+
+function compactCustomField(field: AsanaCustomField) {
+  return {
+    gid: field.gid,
+    resource_type: field.resource_type,
+    name: field.name,
+    resource_subtype: field.resource_subtype,
+    type: field.resource_subtype,
+  }
+}
+
+export function formatCustomField(field: AsanaCustomField, as: AsanaStore) {
+  const workspace = as.workspaces.findOneBy('gid', field.workspace_gid)
+  return {
+    ...compactCustomField(field),
+    description: field.description,
+    enabled: true,
+    workspace: workspace ? compact(workspace.gid, workspace.resource_type, workspace.name) : null,
+  }
+}
+
+export function formatCustomFieldSetting(setting: AsanaCustomFieldSetting, as: AsanaStore) {
+  const field = as.customFields.findOneBy('gid', setting.custom_field_gid)
+  const project = as.projects.findOneBy('gid', setting.project_gid)
+  const projectRef = project ? compact(project.gid, project.resource_type, project.name) : null
+  return {
+    gid: setting.gid,
+    resource_type: setting.resource_type,
+    custom_field: field ? compactCustomField(field) : null,
+    is_important: setting.is_important,
+    parent: projectRef,
+    project: projectRef,
+  }
+}
+
+function taskCustomFieldGids(taskGid: string, as: AsanaStore): string[] {
+  const gids = projectCustomFieldGids(as, as.taskProjects.findBy('task_gid', taskGid).map(tp => tp.project_gid))
+  for (const value of as.taskCustomFieldValues.findBy('task_gid', taskGid)) {
+    gids.add(value.custom_field_gid)
+  }
+  return [...gids]
+}
+
+function formatTaskCustomFields(task: AsanaTask, as: AsanaStore) {
+  const values = as.taskCustomFieldValues.findBy('task_gid', task.gid)
+  return taskCustomFieldGids(task.gid, as)
+    .map(gid => as.customFields.findOneBy('gid', gid))
+    .filter(Boolean)
+    .map((field) => {
+      const textValue = values.find(v => v.custom_field_gid === field!.gid)?.text_value ?? null
+      return { ...compactCustomField(field!), text_value: textValue, display_value: textValue }
+    })
 }
 
 export function formatTag(tag: AsanaTag, as: AsanaStore, baseUrl: string) {

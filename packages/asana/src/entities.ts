@@ -135,3 +135,35 @@ export interface AsanaWebhook extends Entity {
   last_failure_at: string | null
   last_failure_content: string
 }
+
+export interface AsanaCustomField extends Entity {
+  gid: string
+  resource_type: 'custom_field'
+  resource_subtype: 'text'
+  name: string
+  description: string
+  workspace_gid: string
+}
+
+export interface AsanaCustomFieldSetting extends Entity {
+  gid: string
+  resource_type: 'custom_field_setting'
+  project_gid: string
+  custom_field_gid: string
+  is_important: boolean
+}
+
+export interface AsanaTaskCustomFieldValue extends Entity {
+  task_gid: string
+  custom_field_gid: string
+  text_value: string | null
+}
+
+export interface AsanaFailureRule extends Entity {
+  method: string | null
+  path: string | null
+  status: number
+  remaining: number
+  headers: Record<string, string>
+  message: string | null
+}
