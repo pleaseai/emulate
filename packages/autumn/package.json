@@ -34,8 +34,8 @@
     "@emulators/core": "^0.14.0"
   },
   "devDependencies": {
-    "autumn-js": "1.6.2",
+    "autumn-js": "1.6.12",
     "tsup": "^9",
-    "typescript": "^6"
+    "typescript": "^7"
   }
 }
