@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/pleaseai/emulate/compare/emulate-linear-v0.4.0...emulate-linear-v0.5.0) (2026-11-22)
+
+
+### Miscellaneous Chores
+
+* **deps:** bump the production-dependencies group across 1 directory with 3 updates ([#71](https://github.com/pleaseai/emulate/issues/71)) ([ae1a7e6](https://github.com/pleaseai/emulate/commit/ae1a7e65315198aed279beb2c21d798c0e7314ee))
+
 ## [0.4.0](https://github.com/pleaseai/emulate/compare/emulate-linear-v0.3.2...emulate-linear-v0.4.0) (2026-11-20)
 
 
